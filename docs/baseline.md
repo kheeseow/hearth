@@ -7,7 +7,7 @@
 - Upstream release: `v3.24.0`
 - Upstream commit: `2c04da733f88836f788234a4bf1127599fbc1294`
 - Local branch: `hearth-main`
-- Origin: `git@github.com:kheeseow/hearth.git`
+- Origin: `https://github.com/kheeseow/hearth.git`
 - Upstream: `https://github.com/mealie-recipes/mealie.git`
 
 This is the reference point for Hearth development. Guide work must remain
@@ -26,6 +26,10 @@ end of each implementation phase.
 
 Task was installed through Homebrew because it was the only missing declared
 development prerequisite.
+
+HTTPS is used for this repository's origin because the active SSH identity is
+associated with a different GitHub account than the authenticated `gh` account.
+This leaves the user's global SSH configuration untouched.
 
 ## Setup result
 
