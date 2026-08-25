@@ -358,7 +358,7 @@ Migration defaults:
 
 ## Delivery phases
 
-### Phase 0 — Establish the real baseline
+### Phase 0 — Establish the real baseline (complete)
 
 Goal: make this plan safe to execute against the intended repository.
 
@@ -388,37 +388,14 @@ Exit criteria:
 - Baseline tests and database targets are recorded.
 - Upgrade-support decision is explicit.
 
-### Phase 1 — Create platform seams and flags
+### Phase 1 — Architecture research (complete)
 
-Goal: prevent new Guide code from depending directly on Recipe services.
+The upstream architecture, Recipe coupling, reuse boundaries, migration risks,
+and upstream-compatibility strategy have been assessed. The verified baseline
+is recorded in `docs/baseline.md`.
 
-Tasks:
-
-- Add typed application capability settings.
-- Expose capabilities in the existing app/about configuration response.
-- Gate legacy navigation and direct frontend routes.
-- Add domain-neutral Guide media storage using existing image primitives. Do
-  not refactor Recipe media unless a small shared helper clearly reduces both
-  implementations.
-- Extract reusable URL and ownership helpers only where Guide needs them.
-- Define domain-neutral content event primitives if current recipe events
-  cannot be reused without recipe fields.
-- Keep legacy behavior enabled for existing installations.
-
-Expected database impact:
-
-- None unless capability defaults need persisted site settings.
-
-Primary risks:
-
-- Accidentally disabling API routes needed by legacy screens.
-- Over-generalizing infrastructure before Guide requirements are concrete.
-
-Exit criteria:
-
-- Capability behavior is covered by backend and frontend tests.
-- Existing Recipe flows continue to pass with legacy flags enabled.
-- Guide code can use media primitives without importing Recipe schemas.
+Platform seams will now be introduced only when the Phase 2 Guide slice needs
+them. This avoids a broad refactor before there is a concrete second consumer.
 
 ### Phase 2 — Add the Guide backend vertical slice
 
@@ -438,6 +415,14 @@ Tasks:
 
 - Create Guide directories that mirror the current Recipe directories and
   follow their local naming and dependency-injection conventions.
+- Add the typed `GUIDES_ENABLED` capability and expose it through the existing
+  app configuration response. Defer legacy feature flags until the frontend
+  begins hiding those features.
+- Add domain-neutral Guide media storage using existing image primitives. Do
+  not refactor Recipe media unless a small shared helper clearly reduces both
+  implementations.
+- Extract URL, ownership, or event helpers only where the Guide implementation
+  demonstrates the same requirement.
 - Add Guide SQLAlchemy models and model registration.
 - Add a single additive Alembic revision.
 - Add Pydantic request and response schemas.
