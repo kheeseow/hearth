@@ -68,6 +68,70 @@ def test_guide_searches_title_and_description(api_client: TestClient, unique_use
     assert description_create.json()["id"] in ids
 
 
+def test_guide_classification_safety_search_and_filters(api_client: TestClient, unique_user: TestUser) -> None:
+    payload = guide_payload("Clean the washing machine")
+    payload.update(
+        {
+            "guideType": "cleaning",
+            "difficulty": "beginner",
+            "preparationMinutes": 10,
+            "executionMinutes": 30,
+            "category": "Laundry",
+            "tags": ["Appliances", "Monthly"],
+            "steps": [{"text": "Remove the detergent drawer"}, {"text": "Run a hot drum cycle"}],
+            "callouts": [
+                {"kind": "warning", "text": "Unplug before cleaning the filter"},
+                {"kind": "avoid", "text": "Never mix bleach with vinegar"},
+            ],
+        }
+    )
+    create = api_client.post(GUIDES, json=payload, headers=unique_user.token)
+    assert create.status_code == 201
+    guide = create.json()
+    assert guide["guideType"] == "cleaning"
+    assert guide["difficulty"] == "beginner"
+    assert guide["preparationMinutes"] == 10
+    assert guide["executionMinutes"] == 30
+    assert guide["category"]["name"] == "Laundry"
+    assert {tag["name"] for tag in guide["tags"]} == {"Appliances", "Monthly"}
+    assert [callout["kind"] for callout in guide["callouts"]] == ["warning", "avoid"]
+
+    for search_term in ("detergent drawer", "bleach", "appliances", "laundry"):
+        response = api_client.get(GUIDES, params={"search": search_term, "perPage": -1}, headers=unique_user.token)
+        assert guide["id"] in {item["id"] for item in response.json()["items"]}
+
+    for filters in (
+        {"guideType": "cleaning"},
+        {"difficulty": "beginner"},
+        {"category": "laundry"},
+        {"tag": "monthly"},
+    ):
+        response = api_client.get(GUIDES, params={**filters, "perPage": -1}, headers=unique_user.token)
+        assert response.status_code == 200
+        assert guide["id"] in {item["id"] for item in response.json()["items"]}
+
+    updated_payload = {**payload, "category": "Appliance care", "tags": ["Monthly", "monthly"]}
+    updated_payload["callouts"] = [
+        {"id": guide["callouts"][1]["id"], "kind": "avoid", "text": "Do not combine cleaning chemicals"}
+    ]
+    update = api_client.put(f"{GUIDES}/{guide['id']}", json=updated_payload, headers=unique_user.token)
+    assert update.status_code == 200
+    updated = update.json()
+    assert updated["category"]["name"] == "Appliance care"
+    assert [tag["name"] for tag in updated["tags"]] == ["Monthly"]
+    assert updated["callouts"][0]["id"] == guide["callouts"][1]["id"]
+
+    cleared = api_client.patch(
+        f"{GUIDES}/{guide['id']}",
+        json={"category": None, "difficulty": None, "preparationMinutes": None},
+        headers=unique_user.token,
+    )
+    assert cleared.status_code == 200
+    assert cleared.json()["category"] is None
+    assert cleared.json()["difficulty"] is None
+    assert cleared.json()["preparationMinutes"] is None
+
+
 def test_guides_are_group_readable_but_household_owned(
     api_client: TestClient, unique_user: TestUser, h2_user: TestUser
 ) -> None:

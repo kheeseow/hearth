@@ -7,6 +7,8 @@
 
 export type OrderByNullPosition = "first" | "last";
 export type OrderDirection = "asc" | "desc";
+export type GuideType = "cleaning" | "maintenance" | "setup" | "emergency" | "troubleshooting" | "care_instructions";
+export type GuideDifficulty = "beginner" | "intermediate" | "advanced";
 
 export interface ErrorResponse {
   message: string;
@@ -71,6 +73,20 @@ export interface GuideSummary {
   slug: string;
   title: string;
   description: string;
+  guideType?: GuideType | null;
+  difficulty?: GuideDifficulty | null;
+  preparationMinutes?: number | null;
+  executionMinutes?: number | null;
+  category?: GuideCategoryOut | null;
+  tags?: GuideTagOut[];
   createdAt: string;
   updatedAt: string;
+}
+export interface GuideCategoryOut {
+  id: string;
+  name: string;
+}
+export interface GuideTagOut {
+  id: string;
+  name: string;
 }

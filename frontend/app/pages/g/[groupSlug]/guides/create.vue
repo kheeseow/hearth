@@ -27,7 +27,18 @@ const groupSlug = computed(() => route.params.groupSlug as string);
 const api = useUserApi();
 const loading = ref(false);
 const error = ref("");
-const draft = ref<GuideDraft>({ title: "", description: "", steps: [{ text: "" }] });
+const draft = ref<GuideDraft>({
+  title: "",
+  description: "",
+  guideType: null,
+  difficulty: null,
+  preparationMinutes: null,
+  executionMinutes: null,
+  category: null,
+  tags: [],
+  steps: [{ text: "" }],
+  callouts: [],
+});
 
 async function save() {
   loading.value = true;

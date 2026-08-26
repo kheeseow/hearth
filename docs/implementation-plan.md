@@ -19,7 +19,7 @@ rewrite Mealie's platform or erase its repository history.
 ## Current status
 
 - Phase 1 architecture research is complete.
-- Product Slice 1 (minimal Guide CRUD) is implemented and validated locally.
+- Product Slices 1 and 2 are implemented and validated locally.
 - The Hearth fork is checked out from Mealie `v3.24.0` at commit
   `2c04da733f88836f788234a4bf1127599fbc1294`.
 - `origin` points to `kheeseow/hearth`; `upstream` points to
@@ -30,9 +30,11 @@ rewrite Mealie's platform or erase its repository history.
   `guide_steps`; Recipe tables remain untouched.
 - The first usable UI supports Guide cards, title/description search, reading,
   creation, editing, deletion, and ordered plain-text steps.
-- Phase 2 remains open for richer metadata, media, events, capability exposure,
-  and expanded search. Phase 3 remains open for the corresponding richer UX,
-  accessibility verification, and responsive browser testing.
+- Guide classification, timing, group-scoped category/tags, safety callouts,
+  expanded search, and exact metadata filters are now usable end to end.
+- Phase 2 remains open for media, events, and capability exposure. Phase 3
+  remains open for the corresponding media UX and complete accessibility
+  verification.
 
 ## Product Slice 1 — Minimal Guide CRUD (complete)
 
@@ -79,9 +81,46 @@ Validation completed on 2026-08-26:
 - User acceptance test: completed successfully
 - Guide-to-Recipe import boundary check: no imports found
 
-`RepositoryGuides` extends Mealie's generic household repository only to keep
-ordered step IDs stable when an edit mixes existing and new steps. All other
-CRUD, pagination, search, and scope behavior stays in Mealie's generic base.
+`RepositoryGuides` extends Mealie's generic household repository for ordered
+child reconciliation, group-scoped metadata reuse, the combined search
+document, and Guide-specific filters. It continues to use Mealie's generic
+pagination, query, and group/household scoping primitives.
+
+## Product Slice 2 — Classification and safety (complete)
+
+Included:
+
+- Guide type: cleaning, maintenance, setup, emergency, troubleshooting, or
+  care instructions
+- Difficulty: beginner, intermediate, or advanced
+- Preparation and execution durations stored as integer minutes
+- One reusable group-scoped category and reusable group-scoped tags
+- Ordered warnings and things to avoid
+- Search across title, description, type, difficulty, category, tags, step
+  text, warnings, and things to avoid
+- Exact list filters for type, difficulty, category, and tag
+- Metadata chips on cards and the reader
+- Safety callouts displayed before procedure steps
+- Additive backfill of existing Guide search documents
+
+The Slice 2 migration adds Guide-only tables and nullable Guide columns. It
+does not alter Recipe tables. SQLite and PostgreSQL 16 upgrade, downgrade, and
+re-upgrade paths pass from fresh databases.
+
+Validation completed on 2026-08-26:
+
+- Guide API integration suite: 5 passed
+- Full backend suite: 2,649 passed and 16 skipped by existing upstream markers
+- Python type check: 469 source files passed
+- Frontend ESLint: passed
+- Full frontend suite: 28 files and 274 tests passed
+- Nuxt production build: passed
+- SQLite and PostgreSQL 16 migration round trips: passed
+- Desktop browser flow: create, edit, read, safety-content search, and type
+  filter passed
+- Phone-width reader check at 390 x 844: passed
+- A sample “Monthly washing machine clean” Guide is available in local
+  development for acceptance testing
 
 ## Product outcome
 
@@ -862,7 +901,7 @@ Record material decisions here as they are made.
 
 ## Immediate next action
 
-Begin Product Slice 2 with Guide classification and safety metadata: type,
-category, tags, difficulty, duration, warnings, and things to avoid. Keep those
-additions inside the Guide domain and extend the existing additive migration
-chain rather than rewriting the released Slice 1 migration.
+Begin Product Slice 3 with Guide requirements and richer steps: frequency,
+ordered tools and materials, and optional per-step tips. Continue extending the
+Guide domain through additive migrations without changing Recipe tables or the
+released Slice 1 and Slice 2 migrations.

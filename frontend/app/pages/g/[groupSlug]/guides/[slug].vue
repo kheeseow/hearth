@@ -29,6 +29,25 @@
             <p v-if="guide.description" class="text-body-1 text-medium-emphasis guide-description">
               {{ guide.description }}
             </p>
+            <div class="d-flex flex-wrap ga-2 mt-3">
+              <v-chip v-if="guide.guideType" color="primary" variant="tonal">
+                {{ $t(`guide.types.${guide.guideType.replace('_', '-')}`) }}
+              </v-chip>
+              <v-chip v-if="guide.difficulty" variant="tonal">
+                {{ $t(`guide.difficulties.${guide.difficulty}`) }}
+              </v-chip>
+              <v-chip v-if="guide.category" variant="outlined">
+                {{ guide.category.name }}
+              </v-chip>
+              <v-chip v-if="totalMinutes" variant="outlined" :prepend-icon="$globals.icons.clockOutline">
+                {{ $t("guide.total-minutes", { count: totalMinutes }) }}
+              </v-chip>
+            </div>
+            <div v-if="guide.tags?.length" class="d-flex flex-wrap ga-2 mt-3">
+              <v-chip v-for="tag in guide.tags" :key="tag.id" size="small">
+                {{ tag.name }}
+              </v-chip>
+            </div>
           </div>
           <v-spacer />
           <v-btn
@@ -41,6 +60,30 @@
             {{ $t("general.edit") }}
           </v-btn>
         </div>
+
+        <section v-if="warnings.length || avoids.length" class="mt-6" aria-labelledby="guide-safety-heading">
+          <h2 id="guide-safety-heading" class="text-h5 mb-3">
+            {{ $t("guide.safety") }}
+          </h2>
+          <v-alert
+            v-for="warning in warnings"
+            :key="warning.id"
+            type="warning"
+            variant="tonal"
+            class="mb-3 guide-callout"
+          >
+            <strong>{{ $t("guide.warning") }}:</strong> {{ warning.text }}
+          </v-alert>
+          <v-alert
+            v-for="avoid in avoids"
+            :key="avoid.id"
+            type="error"
+            variant="tonal"
+            class="mb-3 guide-callout"
+          >
+            <strong>{{ $t("guide.thing-to-avoid") }}:</strong> {{ avoid.text }}
+          </v-alert>
+        </section>
 
         <v-divider class="my-6" />
         <h2 class="text-h5 mb-4">
@@ -91,7 +134,18 @@ const api = useUserApi();
 const groupSlug = computed(() => route.params.groupSlug as string);
 const slug = computed(() => route.params.slug as string);
 const guide = ref<GuideRead | null>(null);
-const draft = ref<GuideDraft>({ title: "", description: "", steps: [] });
+const draft = ref<GuideDraft>({
+  title: "",
+  description: "",
+  guideType: null,
+  difficulty: null,
+  preparationMinutes: null,
+  executionMinutes: null,
+  category: null,
+  tags: [],
+  steps: [],
+  callouts: [],
+});
 const loading = ref(true);
 const saving = ref(false);
 const editing = ref(false);
@@ -99,6 +153,11 @@ const deleteDialog = ref(false);
 const error = ref("");
 const saveError = ref("");
 const canEdit = computed(() => guide.value?.householdId === auth.user.value?.householdId);
+const warnings = computed(() => guide.value?.callouts?.filter(callout => callout.kind === "warning") || []);
+const avoids = computed(() => guide.value?.callouts?.filter(callout => callout.kind === "avoid") || []);
+const totalMinutes = computed(() =>
+  (guide.value?.preparationMinutes || 0) + (guide.value?.executionMinutes || 0),
+);
 
 useSeoMeta({ title: computed(() => guide.value?.title || i18n.t("guide.guide")) });
 
@@ -107,7 +166,18 @@ function setDraft() {
   draft.value = {
     title: guide.value.title,
     description: guide.value.description,
+    guideType: guide.value.guideType || null,
+    difficulty: guide.value.difficulty || null,
+    preparationMinutes: guide.value.preparationMinutes ?? null,
+    executionMinutes: guide.value.executionMinutes ?? null,
+    category: guide.value.category?.name || null,
+    tags: (guide.value.tags || []).map(tag => tag.name),
     steps: (guide.value.steps || []).map(step => ({ id: step.id, text: step.text })),
+    callouts: (guide.value.callouts || []).map(callout => ({
+      id: callout.id,
+      kind: callout.kind,
+      text: callout.text,
+    })),
   };
 }
 
@@ -166,7 +236,8 @@ onMounted(loadGuide);
 }
 
 .guide-description,
-.guide-steps li {
+.guide-steps li,
+.guide-callout {
   white-space: pre-wrap;
 }
 

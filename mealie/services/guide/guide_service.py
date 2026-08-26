@@ -5,7 +5,7 @@ from slugify import slugify
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from mealie.db.models.guide import GuideStepModel
+from mealie.db.models.guide import GuideCalloutModel, GuideStepModel
 from mealie.repos.all_repositories import AllRepositories, get_repositories
 from mealie.schema.guide import GuideCreate, GuidePatch, GuideRead, GuideSave, GuideUpdate
 from mealie.schema.response import PaginationBase, PaginationQuery
@@ -19,8 +19,23 @@ class GuideService:
         self.household_repos = get_repositories(session, group_id=user.group_id, household_id=user.household_id)
         self.group_repos = get_repositories(session, group_id=user.group_id, household_id=None)
 
-    def list(self, pagination: PaginationQuery, search: str | None = None) -> PaginationBase[GuideRead]:
-        return self.group_repos.guides.page_all(pagination, search=search)
+    def list(
+        self,
+        pagination: PaginationQuery,
+        search: str | None = None,
+        guide_type: str | None = None,
+        difficulty: str | None = None,
+        category: str | None = None,
+        tag: str | None = None,
+    ) -> PaginationBase[GuideRead]:
+        return self.group_repos.guides.page_filtered(
+            pagination,
+            search=search,
+            guide_type=guide_type,
+            difficulty=difficulty,
+            category=category,
+            tag=tag,
+        )
 
     def get(self, slug_or_id: str) -> GuideRead:
         guide = self._find(self.group_repos, slug_or_id)
@@ -43,6 +58,7 @@ class GuideService:
     def update(self, slug_or_id: str, data: GuideUpdate) -> GuideRead:
         guide = self._get_owned(slug_or_id)
         self._validate_step_ids(guide, data)
+        self._validate_callout_ids(guide, data)
         payload = data.model_dump()
         payload.update(
             group_id=guide.group_id,
@@ -54,12 +70,23 @@ class GuideService:
 
     def patch(self, slug_or_id: str, data: GuidePatch) -> GuideRead:
         guide = self._get_owned(slug_or_id)
-        merged = GuideUpdate.model_validate(
-            {
-                **guide.model_dump(include={"title", "description", "steps"}),
-                **data.model_dump(exclude_unset=True, exclude_none=True),
-            }
-        )
+        existing = {
+            "title": guide.title,
+            "description": guide.description,
+            "guide_type": guide.guide_type,
+            "difficulty": guide.difficulty,
+            "preparation_minutes": guide.preparation_minutes,
+            "execution_minutes": guide.execution_minutes,
+            "category": guide.category.name if guide.category else None,
+            "tags": [tag.name for tag in guide.tags],
+            "steps": [step.model_dump(include={"id", "text"}) for step in guide.steps],
+            "callouts": [callout.model_dump(include={"id", "kind", "text"}) for callout in guide.callouts],
+        }
+        changes = data.model_dump(exclude_unset=True)
+        for required_field in ("title", "description", "tags", "steps", "callouts"):
+            if changes.get(required_field) is None:
+                changes.pop(required_field, None)
+        merged = GuideUpdate.model_validate({**existing, **changes})
         return self.update(guide.slug, merged)
 
     def delete(self, slug_or_id: str) -> GuideRead:
@@ -97,3 +124,11 @@ class GuideService:
             owner_id = self.session.scalar(select(GuideStepModel.guide_id).where(GuideStepModel.id == step.id))
             if owner_id != guide.id:
                 raise HTTPException(status.HTTP_400_BAD_REQUEST, "Guide step does not belong to this guide")
+
+    def _validate_callout_ids(self, guide: GuideRead, data: GuideUpdate) -> None:
+        for callout in data.callouts:
+            if not callout.id:
+                continue
+            owner_id = self.session.scalar(select(GuideCalloutModel.guide_id).where(GuideCalloutModel.id == callout.id))
+            if owner_id != guide.id:
+                raise HTTPException(status.HTTP_400_BAD_REQUEST, "Guide callout does not belong to this guide")

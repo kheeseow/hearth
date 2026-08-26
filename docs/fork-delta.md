@@ -1,7 +1,8 @@
 # Hearth Fork Delta
 
 This file records the expected Hearth-owned paths and the small set of shared
-Mealie files touched by Product Slice 1. Use it when reviewing upstream merges.
+Mealie files touched by Product Slices 1 and 2. Use it when reviewing upstream
+merges.
 
 ## Hearth-owned paths
 
@@ -38,11 +39,14 @@ tests/utils/api_routes/__init__.py                 generated output
 
 ```text
 mealie/alembic/versions/2026-08-25-10.42.23_39ee4257d98e_add_guides.py
+mealie/alembic/versions/2026-08-26-11.26.02_e5564b5892ae_add_guide_classification_and_safety.py
 ```
 
-The migration creates `guides` and `guide_steps`. It does not alter Recipe
-tables. Its upgrade and downgrade paths have been exercised on fresh SQLite and
-PostgreSQL 16 databases.
+The first migration creates `guides` and `guide_steps`. The second adds Guide
+classification and timing columns plus `guide_categories`, `guide_tags`,
+`guides_to_tags`, and `guide_callouts`. Neither alters Recipe tables. Upgrade
+and downgrade paths have been exercised on fresh SQLite and PostgreSQL 16
+databases.
 
 ## Boundary rule
 
