@@ -186,6 +186,34 @@ The initial product does not include:
 - Automatic conversion of every Recipe into a Guide
 - QR codes before the core Guide experience is stable
 
+## Taxonomy strategy
+
+Use the existing group-scoped Guide tags to test additional ways of organizing
+Guides before introducing more database entities. A short namespace keeps these
+experimental dimensions recognizable without changing how ordinary tags work:
+
+- `home: Main`, `home: Rental Apartment`, or `home: Parents' House`
+- `space: Kitchen`, `space: Bathroom`, or `space: Garden`
+- ordinary descriptive tags such as `monthly`, `outdoor`, or `rental-safe`
+
+Category remains the Guide's primary subject classification, such as Appliance
+Care or Home Maintenance. Mealie Household remains an ownership and access
+boundary; it should not represent a physical property unless that property
+genuinely needs separate users or permissions.
+
+Deferred taxonomy scope:
+
+- Consider first-class Properties when users need dedicated property filters,
+  defaults, or an explicit “applies everywhere” state.
+- Consider Spaces when property-specific room or area browsing becomes useful.
+- Consider Assets or Equipment when Guides need to attach to individual models,
+  serial numbers, service history, or manuals.
+- Consider custom taxonomy definitions only after multiple recurring dimensions
+  demonstrate the same editing, filtering, and permission needs.
+- Keep future terms group-scoped and Guide relationships many-to-many. Decide
+  hierarchy, inheritance, and namespaced-tag migration only when real usage
+  establishes the required shape.
+
 ## Architectural direction
 
 Hearth will initially remain a modular monolith:
@@ -936,6 +964,7 @@ Record material decisions here as they are made.
 | 2026-08-23 | Delay package rename | Avoid mixing domain work with deployment migration |
 | 2026-08-23 | Remain structurally close to Mealie | Preserve the ability to adopt upstream features and fixes |
 | 2026-08-23 | Keep hidden Recipe modules tested | Product independence does not require destructive code removal |
+| 2026-08-26 | Use tags to test additional taxonomies | Avoid premature entities while allowing homes, spaces, and other dimensions to emerge from use |
 
 ## Immediate next action
 
