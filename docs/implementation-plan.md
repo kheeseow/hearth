@@ -19,7 +19,7 @@ rewrite Mealie's platform or erase its repository history.
 ## Current status
 
 - Phase 1 architecture research is complete.
-- Product Slices 1 and 2 are implemented and validated locally.
+- Product Slices 1, 2, and 3 are implemented and validated locally.
 - The Hearth fork is checked out from Mealie `v3.24.0` at commit
   `2c04da733f88836f788234a4bf1127599fbc1294`.
 - `origin` points to `kheeseow/hearth`; `upstream` points to
@@ -32,6 +32,8 @@ rewrite Mealie's platform or erase its repository history.
   creation, editing, deletion, and ordered plain-text steps.
 - Guide classification, timing, group-scoped category/tags, safety callouts,
   expanded search, and exact metadata filters are now usable end to end.
+- Guide frequency, ordered tools and materials, requirement notes, and optional
+  per-step tips are now usable end to end.
 - Phase 2 remains open for media, events, and capability exposure. Phase 3
   remains open for the corresponding media UX and complete accessibility
   verification.
@@ -121,6 +123,42 @@ Validation completed on 2026-08-26:
 - Phone-width reader check at 390 x 844: passed
 - A sample “Monthly washing machine clean” Guide is available in local
   development for acceptance testing
+
+## Product Slice 3 — Requirements and richer steps (complete)
+
+Included:
+
+- Frequency: one time, weekly, monthly, yearly, or as needed
+- Exact frequency filtering on the Guide list
+- Ordered tools and materials with optional preparation notes
+- Add, remove, edit, and reorder controls for Guide requirements
+- Optional tips attached directly to individual steps
+- Search across frequency, tool and material names, requirement notes, and
+  step tips
+- Frequency chips on Guide cards and the reader
+- An ordered “What you'll need” section before the procedure
+- Tip callouts displayed beneath their associated steps
+
+The Slice 3 migration adds one nullable Guide column, one nullable Guide-step
+column, and the Guide-owned `guide_requirements` table. It does not alter Recipe
+tables or modify the released Slice 1 and Slice 2 migrations. SQLite and
+PostgreSQL 16 upgrade, downgrade, and re-upgrade paths pass from fresh
+databases.
+
+Validation completed on 2026-08-26:
+
+- Guide API integration suite: 6 passed
+- Full backend suite: 2,650 passed and 16 skipped by existing upstream markers
+- Python type check: 470 source files passed
+- Frontend ESLint: passed
+- Full frontend suite: 28 files and 274 tests passed
+- Nuxt production build: passed
+- SQLite and PostgreSQL 16 migration round trips: passed
+- Desktop browser flow: edit, reorder, save, read, requirement-note search,
+  and exact frequency filtering passed
+- Phone-width reader check at 390 x 844: passed
+- The local “Monthly washing machine clean” acceptance Guide now demonstrates
+  monthly frequency, ordered requirements, requirement notes, and a step tip
 
 ## Product outcome
 
@@ -901,7 +939,8 @@ Record material decisions here as they are made.
 
 ## Immediate next action
 
-Begin Product Slice 3 with Guide requirements and richer steps: frequency,
-ordered tools and materials, and optional per-step tips. Continue extending the
-Guide domain through additive migrations without changing Recipe tables or the
-released Slice 1 and Slice 2 migrations.
+Begin Product Slice 4 with Guide media: a cover image and ordered step images
+with captions and useful alternative text. Reuse Mealie's media storage and
+cleanup infrastructure behind Guide-specific routes and tables, without
+coupling Guide models to Recipe models or changing the released Slice 1–3
+migrations.

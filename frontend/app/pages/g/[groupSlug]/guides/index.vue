@@ -56,6 +56,17 @@
         />
       </v-col>
       <v-col cols="12" sm="6" lg="3">
+        <v-select
+          v-model="frequency"
+          :label="$t('guide.frequency')"
+          :items="frequencyItems"
+          variant="outlined"
+          clearable
+          hide-details
+          @update:model-value="loadGuides"
+        />
+      </v-col>
+      <v-col cols="12" sm="6" lg="3">
         <v-text-field
           v-model="category"
           :label="$t('guide.category')"
@@ -102,7 +113,7 @@
 <script setup lang="ts">
 import { useUserApi } from "~/composables/api";
 import GuideCard from "~/components/Domain/Guide/GuideCard.vue";
-import type { GuideSummary, GuideDifficulty, GuideType } from "~/lib/api/types/guide";
+import type { GuideSummary, GuideDifficulty, GuideFrequency, GuideType } from "~/lib/api/types/guide";
 
 definePageMeta({ middleware: ["group-only"] });
 
@@ -115,6 +126,7 @@ const api = useUserApi();
 const search = ref("");
 const guideType = ref<GuideType | null>(null);
 const difficulty = ref<GuideDifficulty | null>(null);
+const frequency = ref<GuideFrequency | null>(null);
 const category = ref("");
 const tag = ref("");
 const guides = ref<GuideSummary[]>([]);
@@ -133,6 +145,13 @@ const difficultyItems = computed(() => [
   { title: i18n.t("guide.difficulties.intermediate"), value: "intermediate" },
   { title: i18n.t("guide.difficulties.advanced"), value: "advanced" },
 ]);
+const frequencyItems = computed(() => [
+  { title: i18n.t("guide.frequencies.one-time"), value: "one_time" },
+  { title: i18n.t("guide.frequencies.weekly"), value: "weekly" },
+  { title: i18n.t("guide.frequencies.monthly"), value: "monthly" },
+  { title: i18n.t("guide.frequencies.yearly"), value: "yearly" },
+  { title: i18n.t("guide.frequencies.as-needed"), value: "as_needed" },
+]);
 
 async function loadGuides() {
   loading.value = true;
@@ -141,6 +160,7 @@ async function loadGuides() {
     search: search.value || undefined,
     guideType: guideType.value || undefined,
     difficulty: difficulty.value || undefined,
+    frequency: frequency.value || undefined,
     category: category.value || undefined,
     tag: tag.value || undefined,
   });

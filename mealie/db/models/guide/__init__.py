@@ -1,3 +1,17 @@
-from .guide import GuideCalloutModel, GuideCategoryModel, GuideModel, GuideStepModel, GuideTagModel
+from .guide import (
+    GuideCalloutModel,
+    GuideCategoryModel,
+    GuideModel,
+    GuideRequirementModel,
+    GuideStepModel,
+    GuideTagModel,
+)
 
-__all__ = ["GuideCalloutModel", "GuideCategoryModel", "GuideModel", "GuideStepModel", "GuideTagModel"]
+__all__ = [
+    "GuideCalloutModel",
+    "GuideCategoryModel",
+    "GuideModel",
+    "GuideRequirementModel",
+    "GuideStepModel",
+    "GuideTagModel",
+]

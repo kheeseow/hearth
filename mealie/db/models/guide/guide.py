@@ -63,6 +63,7 @@ class GuideStepModel(SqlAlchemyBase):
     )
     position: Mapped[int] = mapped_column(sa.Integer, nullable=False, default=0)
     text: Mapped[str] = mapped_column(sa.Text, nullable=False)
+    tip: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
 
     model_config = ConfigDict(exclude={"id", "guide_id", "position"})
 
@@ -88,6 +89,25 @@ class GuideCalloutModel(SqlAlchemyBase):
     def __init__(self, **_) -> None: ...
 
 
+class GuideRequirementModel(SqlAlchemyBase):
+    __tablename__ = "guide_requirements"
+    __table_args__ = (sa.CheckConstraint("kind IN ('tool', 'material')", name="guide_requirement_kind_check"),)
+
+    id: Mapped[GUID] = mapped_column(GUID, primary_key=True, default=GUID.generate)
+    guide_id: Mapped[GUID] = mapped_column(
+        GUID, sa.ForeignKey("guides.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    position: Mapped[int] = mapped_column(sa.Integer, nullable=False, default=0)
+    kind: Mapped[str] = mapped_column(sa.String(20), nullable=False)
+    name: Mapped[str] = mapped_column(sa.String(100), nullable=False)
+    note: Mapped[str | None] = mapped_column(sa.String(500), nullable=True)
+
+    model_config = ConfigDict(exclude={"id", "guide_id", "position"})
+
+    @auto_init()
+    def __init__(self, **_) -> None: ...
+
+
 class GuideModel(SqlAlchemyBase, BaseMixins):
     __tablename__ = "guides"
     __table_args__ = (
@@ -100,6 +120,10 @@ class GuideModel(SqlAlchemyBase, BaseMixins):
         sa.CheckConstraint(
             "difficulty IS NULL OR difficulty IN ('beginner', 'intermediate', 'advanced')",
             name="guide_difficulty_check",
+        ),
+        sa.CheckConstraint(
+            "frequency IS NULL OR frequency IN ('one_time', 'weekly', 'monthly', 'yearly', 'as_needed')",
+            name="guide_frequency_check",
         ),
         sa.CheckConstraint(
             "preparation_minutes IS NULL OR preparation_minutes >= 0",
@@ -134,6 +158,7 @@ class GuideModel(SqlAlchemyBase, BaseMixins):
     description: FilterableColumn[str] = mapped_column(sa.Text, nullable=False, default="")
     guide_type: FilterableColumn[str | None] = mapped_column(sa.String(30), nullable=True, index=True)
     difficulty: FilterableColumn[str | None] = mapped_column(sa.String(20), nullable=True, index=True)
+    frequency: FilterableColumn[str | None] = mapped_column(sa.String(20), nullable=True, index=True)
     preparation_minutes: FilterableColumn[int | None] = mapped_column(sa.Integer, nullable=True)
     execution_minutes: FilterableColumn[int | None] = mapped_column(sa.Integer, nullable=True)
     title_normalized: FilterableColumn[str] = mapped_column(sa.String, nullable=False, index=True)
@@ -150,6 +175,12 @@ class GuideModel(SqlAlchemyBase, BaseMixins):
         GuideCalloutModel,
         cascade="all, delete-orphan",
         order_by=GuideCalloutModel.position,
+        collection_class=ordering_list("position"),
+    )
+    requirements: Mapped[list[GuideRequirementModel]] = orm.relationship(
+        GuideRequirementModel,
+        cascade="all, delete-orphan",
+        order_by=GuideRequirementModel.position,
         collection_class=ordering_list("position"),
     )
     tags: Mapped[list[GuideTagModel]] = orm.relationship(GuideTagModel, secondary=guides_to_tags)

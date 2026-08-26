@@ -7,6 +7,7 @@ from mealie.routes._base.routers import MealieCrudRoute, UserAPIRouter
 from mealie.schema.guide import (
     GuideCreate,
     GuideDifficulty,
+    GuideFrequency,
     GuidePagination,
     GuidePatch,
     GuideRead,
@@ -32,10 +33,11 @@ class GuideController(BaseUserController):
         search: str | None = Query(default=None),
         guide_type: GuideType | None = Query(default=None, alias="guideType"),
         difficulty: GuideDifficulty | None = Query(default=None),
+        frequency: GuideFrequency | None = Query(default=None),
         category: str | None = Query(default=None),
         tag: str | None = Query(default=None),
     ) -> GuidePagination:
-        response = self.service.list(q, search, guide_type, difficulty, category, tag)
+        response = self.service.list(q, search, guide_type, difficulty, frequency, category, tag)
         response.set_pagination_guides(
             router.url_path_for("get_all"),
             {
@@ -43,6 +45,7 @@ class GuideController(BaseUserController):
                 "search": search,
                 "guideType": guide_type,
                 "difficulty": difficulty,
+                "frequency": frequency,
                 "category": category,
                 "tag": tag,
             },

@@ -32,12 +32,14 @@ const draft = ref<GuideDraft>({
   description: "",
   guideType: null,
   difficulty: null,
+  frequency: null,
   preparationMinutes: null,
   executionMinutes: null,
   category: null,
   tags: [],
   steps: [{ text: "" }],
   callouts: [],
+  requirements: [],
 });
 
 async function save() {

@@ -9,6 +9,7 @@ export type OrderByNullPosition = "first" | "last";
 export type OrderDirection = "asc" | "desc";
 export type GuideType = "cleaning" | "maintenance" | "setup" | "emergency" | "troubleshooting" | "care_instructions";
 export type GuideDifficulty = "beginner" | "intermediate" | "advanced";
+export type GuideFrequency = "one_time" | "weekly" | "monthly" | "yearly" | "as_needed";
 
 export interface ErrorResponse {
   message: string;
@@ -75,6 +76,7 @@ export interface GuideSummary {
   description: string;
   guideType?: GuideType | null;
   difficulty?: GuideDifficulty | null;
+  frequency?: GuideFrequency | null;
   preparationMinutes?: number | null;
   executionMinutes?: number | null;
   category?: GuideCategoryOut | null;

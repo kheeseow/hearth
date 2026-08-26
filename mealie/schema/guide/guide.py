@@ -12,6 +12,9 @@ from mealie.schema.response.pagination import PaginationBase
 
 GuideCategoryName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
 GuideTagName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
+GuideRequirementName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
+GuideRequirementNote = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
+GuideStepTip = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
 
 
 class GuideType(StrEnum):
@@ -29,6 +32,14 @@ class GuideDifficulty(StrEnum):
     advanced = "advanced"
 
 
+class GuideFrequency(StrEnum):
+    one_time = "one_time"
+    weekly = "weekly"
+    monthly = "monthly"
+    yearly = "yearly"
+    as_needed = "as_needed"
+
+
 class GuideCalloutKind(StrEnum):
     warning = "warning"
     avoid = "avoid"
@@ -37,12 +48,21 @@ class GuideCalloutKind(StrEnum):
 class GuideStepIn(MealieModel):
     id: UUID4 | None = None
     text: str = Field(min_length=1)
+    tip: GuideStepTip | None = None
+
+    @field_validator("tip", mode="before")
+    @classmethod
+    def empty_tip_is_none(cls, tip: str | None) -> str | None:
+        if not isinstance(tip, str):
+            return tip
+        return tip.strip() or None
 
 
 class GuideStepOut(MealieModel):
     id: UUID4
     position: int
     text: str
+    tip: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -58,6 +78,35 @@ class GuideCalloutOut(MealieModel):
     position: int
     kind: GuideCalloutKind
     text: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GuideRequirementKind(StrEnum):
+    tool = "tool"
+    material = "material"
+
+
+class GuideRequirementIn(MealieModel):
+    id: UUID4 | None = None
+    kind: GuideRequirementKind
+    name: GuideRequirementName
+    note: GuideRequirementNote | None = None
+
+    @field_validator("note", mode="before")
+    @classmethod
+    def empty_note_is_none(cls, note: str | None) -> str | None:
+        if not isinstance(note, str):
+            return note
+        return note.strip() or None
+
+
+class GuideRequirementOut(MealieModel):
+    id: UUID4
+    position: int
+    kind: GuideRequirementKind
+    name: str
+    note: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -81,12 +130,14 @@ class GuideCreate(MealieModel):
     description: str = ""
     guide_type: GuideType | None = None
     difficulty: GuideDifficulty | None = None
+    frequency: GuideFrequency | None = None
     preparation_minutes: int | None = Field(default=None, ge=0, le=10080)
     execution_minutes: int | None = Field(default=None, ge=0, le=10080)
     category: GuideCategoryName | None = None
     tags: list[GuideTagName] = Field(default_factory=list)
     steps: list[GuideStepIn] = Field(default_factory=list)
     callouts: list[GuideCalloutIn] = Field(default_factory=list)
+    requirements: list[GuideRequirementIn] = Field(default_factory=list)
 
     @field_validator("tags")
     @classmethod
@@ -94,6 +145,13 @@ class GuideCreate(MealieModel):
         if len(tags) > 20:
             raise ValueError("A guide can have at most 20 tags")
         return tags
+
+    @field_validator("requirements")
+    @classmethod
+    def limit_requirements(cls, requirements: list[GuideRequirementIn]) -> list[GuideRequirementIn]:
+        if len(requirements) > 50:
+            raise ValueError("A guide can have at most 50 requirements")
+        return requirements
 
 
 class GuideUpdate(GuideCreate):
@@ -105,12 +163,14 @@ class GuidePatch(MealieModel):
     description: str | None = None
     guide_type: GuideType | None = None
     difficulty: GuideDifficulty | None = None
+    frequency: GuideFrequency | None = None
     preparation_minutes: int | None = Field(default=None, ge=0, le=10080)
     execution_minutes: int | None = Field(default=None, ge=0, le=10080)
     category: GuideCategoryName | None = None
     tags: list[GuideTagName] | None = None
     steps: list[GuideStepIn] | None = None
     callouts: list[GuideCalloutIn] | None = None
+    requirements: list[GuideRequirementIn] | None = None
 
     @field_validator("tags")
     @classmethod
@@ -118,6 +178,13 @@ class GuidePatch(MealieModel):
         if tags is not None and len(tags) > 20:
             raise ValueError("A guide can have at most 20 tags")
         return tags
+
+    @field_validator("requirements")
+    @classmethod
+    def limit_requirements(cls, requirements: list[GuideRequirementIn] | None) -> list[GuideRequirementIn] | None:
+        if requirements is not None and len(requirements) > 50:
+            raise ValueError("A guide can have at most 50 requirements")
+        return requirements
 
 
 class GuideSave(GuideCreate):
@@ -137,6 +204,7 @@ class GuideSummary(MealieModel):
     description: str
     guide_type: GuideType | None = None
     difficulty: GuideDifficulty | None = None
+    frequency: GuideFrequency | None = None
     preparation_minutes: int | None = None
     execution_minutes: int | None = None
     category: GuideCategoryOut | None = None
@@ -156,6 +224,7 @@ class GuideSummary(MealieModel):
 class GuideRead(GuideSummary):
     steps: list[GuideStepOut] = Field(default_factory=list)
     callouts: list[GuideCalloutOut] = Field(default_factory=list)
+    requirements: list[GuideRequirementOut] = Field(default_factory=list)
 
     @classmethod
     def loader_options(cls):
@@ -164,6 +233,7 @@ class GuideRead(GuideSummary):
             selectinload(GuideModel.tags),
             selectinload(GuideModel.steps),
             selectinload(GuideModel.callouts),
+            selectinload(GuideModel.requirements),
         ]
 
 

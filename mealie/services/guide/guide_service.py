@@ -5,7 +5,7 @@ from slugify import slugify
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from mealie.db.models.guide import GuideCalloutModel, GuideStepModel
+from mealie.db.models.guide import GuideCalloutModel, GuideRequirementModel, GuideStepModel
 from mealie.repos.all_repositories import AllRepositories, get_repositories
 from mealie.schema.guide import GuideCreate, GuidePatch, GuideRead, GuideSave, GuideUpdate
 from mealie.schema.response import PaginationBase, PaginationQuery
@@ -25,6 +25,7 @@ class GuideService:
         search: str | None = None,
         guide_type: str | None = None,
         difficulty: str | None = None,
+        frequency: str | None = None,
         category: str | None = None,
         tag: str | None = None,
     ) -> PaginationBase[GuideRead]:
@@ -33,6 +34,7 @@ class GuideService:
             search=search,
             guide_type=guide_type,
             difficulty=difficulty,
+            frequency=frequency,
             category=category,
             tag=tag,
         )
@@ -59,6 +61,7 @@ class GuideService:
         guide = self._get_owned(slug_or_id)
         self._validate_step_ids(guide, data)
         self._validate_callout_ids(guide, data)
+        self._validate_requirement_ids(guide, data)
         payload = data.model_dump()
         payload.update(
             group_id=guide.group_id,
@@ -75,15 +78,19 @@ class GuideService:
             "description": guide.description,
             "guide_type": guide.guide_type,
             "difficulty": guide.difficulty,
+            "frequency": guide.frequency,
             "preparation_minutes": guide.preparation_minutes,
             "execution_minutes": guide.execution_minutes,
             "category": guide.category.name if guide.category else None,
             "tags": [tag.name for tag in guide.tags],
-            "steps": [step.model_dump(include={"id", "text"}) for step in guide.steps],
+            "steps": [step.model_dump(include={"id", "text", "tip"}) for step in guide.steps],
             "callouts": [callout.model_dump(include={"id", "kind", "text"}) for callout in guide.callouts],
+            "requirements": [
+                requirement.model_dump(include={"id", "kind", "name", "note"}) for requirement in guide.requirements
+            ],
         }
         changes = data.model_dump(exclude_unset=True)
-        for required_field in ("title", "description", "tags", "steps", "callouts"):
+        for required_field in ("title", "description", "tags", "steps", "callouts", "requirements"):
             if changes.get(required_field) is None:
                 changes.pop(required_field, None)
         merged = GuideUpdate.model_validate({**existing, **changes})
@@ -132,3 +139,13 @@ class GuideService:
             owner_id = self.session.scalar(select(GuideCalloutModel.guide_id).where(GuideCalloutModel.id == callout.id))
             if owner_id != guide.id:
                 raise HTTPException(status.HTTP_400_BAD_REQUEST, "Guide callout does not belong to this guide")
+
+    def _validate_requirement_ids(self, guide: GuideRead, data: GuideUpdate) -> None:
+        for requirement in data.requirements:
+            if not requirement.id:
+                continue
+            owner_id = self.session.scalar(
+                select(GuideRequirementModel.guide_id).where(GuideRequirementModel.id == requirement.id)
+            )
+            if owner_id != guide.id:
+                raise HTTPException(status.HTTP_400_BAD_REQUEST, "Guide requirement does not belong to this guide")

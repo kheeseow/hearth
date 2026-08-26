@@ -37,6 +37,15 @@
         />
       </v-col>
       <v-col cols="12" sm="6">
+        <v-select
+          v-model="model.frequency"
+          :label="$t('guide.frequency')"
+          :items="frequencyItems"
+          variant="outlined"
+          clearable
+        />
+      </v-col>
+      <v-col cols="12" sm="6">
         <v-text-field v-model="model.category" :label="$t('guide.category')" variant="outlined" clearable />
       </v-col>
       <v-col cols="12" sm="6">
@@ -74,6 +83,95 @@
         />
       </v-col>
     </v-row>
+
+    <div class="d-flex flex-wrap align-center ga-2 mb-2">
+      <div>
+        <h2 class="text-h6">
+          {{ $t("guide.requirements") }}
+        </h2>
+        <p class="text-body-2 text-medium-emphasis">
+          {{ $t("guide.requirements-description") }}
+        </p>
+      </div>
+      <v-spacer />
+      <v-btn color="primary" variant="text" @click="addRequirement('tool')">
+        {{ $t("guide.add-tool") }}
+      </v-btn>
+      <v-btn color="primary" variant="text" @click="addRequirement('material')">
+        {{ $t("guide.add-material") }}
+      </v-btn>
+    </div>
+    <v-card
+      v-for="(requirement, index) in model.requirements"
+      :key="requirement.id || index"
+      variant="outlined"
+      class="mb-3 pa-3"
+    >
+      <div class="d-flex flex-column flex-sm-row align-start ga-2">
+        <div class="text-h6 pt-2 guide-requirement-number">
+          {{ index + 1 }}
+        </div>
+        <v-select
+          v-model="requirement.kind"
+          :label="$t('guide.requirement-type')"
+          :items="requirementKindItems"
+          variant="outlined"
+          hide-details="auto"
+          class="guide-requirement-kind"
+        />
+        <div class="flex-grow-1 w-100">
+          <v-text-field
+            v-model="requirement.name"
+            :label="requirement.kind === 'tool' ? $t('guide.tool') : $t('guide.material')"
+            :rules="[value => !!value?.trim() || $t('guide.requirement-required')]"
+            variant="outlined"
+            hide-details="auto"
+            class="mb-2"
+          />
+          <v-text-field
+            v-model="requirement.note"
+            :label="$t('guide.requirement-note')"
+            :hint="$t('guide.requirement-note-hint')"
+            variant="outlined"
+            hide-details="auto"
+          />
+        </div>
+        <div class="d-flex flex-sm-column">
+          <v-btn
+            icon
+            size="small"
+            variant="text"
+            :disabled="index === 0"
+            :aria-label="$t('guide.move-requirement-up')"
+            @click="moveRequirement(index, -1)"
+          >
+            <v-icon>{{ $globals.icons.arrowUp }}</v-icon>
+          </v-btn>
+          <v-btn
+            icon
+            size="small"
+            variant="text"
+            :disabled="index === model.requirements.length - 1"
+            :aria-label="$t('guide.move-requirement-down')"
+            @click="moveRequirement(index, 1)"
+          >
+            <v-icon style="transform: rotate(180deg)">
+              {{ $globals.icons.arrowUp }}
+            </v-icon>
+          </v-btn>
+          <v-btn
+            icon
+            size="small"
+            variant="text"
+            color="error"
+            :aria-label="$t('guide.remove-requirement')"
+            @click="model.requirements.splice(index, 1)"
+          >
+            <v-icon>{{ $globals.icons.delete }}</v-icon>
+          </v-btn>
+        </div>
+      </div>
+    </v-card>
 
     <div class="d-flex flex-wrap align-center ga-2 mb-2">
       <h2 class="text-h6">
@@ -148,14 +246,25 @@
         <div class="text-h6 pt-2 guide-step-number">
           {{ index + 1 }}
         </div>
-        <v-textarea
-          v-model="step.text"
-          :label="$t('guide.step')"
-          :rules="[value => !!value?.trim() || $t('guide.step-required')]"
-          variant="outlined"
-          rows="2"
-          hide-details="auto"
-        />
+        <div class="flex-grow-1">
+          <v-textarea
+            v-model="step.text"
+            :label="$t('guide.step')"
+            :rules="[value => !!value?.trim() || $t('guide.step-required')]"
+            variant="outlined"
+            rows="2"
+            hide-details="auto"
+            class="mb-2"
+          />
+          <v-textarea
+            v-model="step.tip"
+            :label="$t('guide.step-tip')"
+            :hint="$t('guide.step-tip-hint')"
+            variant="outlined"
+            rows="2"
+            hide-details="auto"
+          />
+        </div>
         <div class="d-flex flex-column">
           <v-btn
             icon
@@ -218,6 +327,9 @@ import type {
   GuideCalloutIn,
   GuideCalloutKind,
   GuideDifficulty,
+  GuideFrequency,
+  GuideRequirementIn,
+  GuideRequirementKind,
   GuideStepIn,
   GuideType,
 } from "~/lib/api/types/guide";
@@ -227,12 +339,14 @@ export interface GuideDraft {
   description: string;
   guideType: GuideType | null;
   difficulty: GuideDifficulty | null;
+  frequency: GuideFrequency | null;
   preparationMinutes: number | null;
   executionMinutes: number | null;
   category: string | null;
   tags: string[];
   steps: GuideStepIn[];
   callouts: GuideCalloutIn[];
+  requirements: GuideRequirementIn[];
 }
 
 defineProps<{
@@ -261,14 +375,26 @@ const difficultyItems = computed(() => [
   { title: i18n.t("guide.difficulties.intermediate"), value: "intermediate" },
   { title: i18n.t("guide.difficulties.advanced"), value: "advanced" },
 ]);
+const frequencyItems = computed(() => [
+  { title: i18n.t("guide.frequencies.one-time"), value: "one_time" },
+  { title: i18n.t("guide.frequencies.weekly"), value: "weekly" },
+  { title: i18n.t("guide.frequencies.monthly"), value: "monthly" },
+  { title: i18n.t("guide.frequencies.yearly"), value: "yearly" },
+  { title: i18n.t("guide.frequencies.as-needed"), value: "as_needed" },
+]);
 const calloutKindItems = computed(() => [
   { title: i18n.t("guide.warning"), value: "warning" },
   { title: i18n.t("guide.thing-to-avoid"), value: "avoid" },
 ]);
+const requirementKindItems = computed(() => [
+  { title: i18n.t("guide.tool"), value: "tool" },
+  { title: i18n.t("guide.material"), value: "material" },
+]);
 const isValid = computed(() =>
   model.value.title.trim()
   && model.value.steps.every(step => step.text.trim())
-  && model.value.callouts.every(callout => callout.text.trim()),
+  && model.value.callouts.every(callout => callout.text.trim())
+  && model.value.requirements.every(requirement => requirement.name.trim()),
 );
 
 function addStep() {
@@ -279,6 +405,10 @@ function addCallout(kind: GuideCalloutKind) {
   model.value.callouts.push({ kind, text: "" });
 }
 
+function addRequirement(kind: GuideRequirementKind) {
+  model.value.requirements.push({ kind, name: "", note: null });
+}
+
 function moveStep(index: number, direction: -1 | 1) {
   const target = index + direction;
   if (target < 0 || target >= model.value.steps.length) {
@@ -286,6 +416,15 @@ function moveStep(index: number, direction: -1 | 1) {
   }
   const [step] = model.value.steps.splice(index, 1);
   model.value.steps.splice(target, 0, step);
+}
+
+function moveRequirement(index: number, direction: -1 | 1) {
+  const target = index + direction;
+  if (target < 0 || target >= model.value.requirements.length) {
+    return;
+  }
+  const [requirement] = model.value.requirements.splice(index, 1);
+  model.value.requirements.splice(target, 0, requirement);
 }
 </script>
 
@@ -299,8 +438,18 @@ function moveStep(index: number, direction: -1 | 1) {
   max-width: 180px;
 }
 
+.guide-requirement-number {
+  width: 2rem;
+  text-align: center;
+}
+
+.guide-requirement-kind {
+  max-width: 160px;
+}
+
 @media (max-width: 599px) {
-  .guide-callout-kind {
+  .guide-callout-kind,
+  .guide-requirement-kind {
     max-width: none;
   }
 }

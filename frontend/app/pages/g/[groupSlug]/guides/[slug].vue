@@ -36,6 +36,9 @@
               <v-chip v-if="guide.difficulty" variant="tonal">
                 {{ $t(`guide.difficulties.${guide.difficulty}`) }}
               </v-chip>
+              <v-chip v-if="guide.frequency" variant="tonal">
+                {{ $t(`guide.frequencies.${guide.frequency.replace('_', '-')}`) }}
+              </v-chip>
               <v-chip v-if="guide.category" variant="outlined">
                 {{ guide.category.name }}
               </v-chip>
@@ -60,6 +63,25 @@
             {{ $t("general.edit") }}
           </v-btn>
         </div>
+
+        <section v-if="guide.requirements?.length" class="mt-6" aria-labelledby="guide-requirements-heading">
+          <h2 id="guide-requirements-heading" class="text-h5 mb-3">
+            {{ $t("guide.requirements") }}
+          </h2>
+          <ol class="guide-requirements">
+            <li v-for="requirement in guide.requirements" :key="requirement.id" class="mb-3 pl-2">
+              <div class="d-flex flex-wrap align-center ga-2">
+                <strong>{{ requirement.name }}</strong>
+                <v-chip size="x-small" variant="tonal">
+                  {{ $t(`guide.${requirement.kind}`) }}
+                </v-chip>
+              </div>
+              <p v-if="requirement.note" class="text-body-2 text-medium-emphasis mt-1">
+                {{ requirement.note }}
+              </p>
+            </li>
+          </ol>
+        </section>
 
         <section v-if="warnings.length || avoids.length" class="mt-6" aria-labelledby="guide-safety-heading">
           <h2 id="guide-safety-heading" class="text-h5 mb-3">
@@ -91,7 +113,10 @@
         </h2>
         <ol v-if="guide.steps?.length" class="guide-steps">
           <li v-for="step in guide.steps" :key="step.id" class="mb-5 pl-2 text-body-1">
-            {{ step.text }}
+            <p>{{ step.text }}</p>
+            <v-alert v-if="step.tip" type="info" variant="tonal" density="compact" class="mt-3 guide-tip">
+              <strong>{{ $t("guide.tip") }}:</strong> {{ step.tip }}
+            </v-alert>
           </li>
         </ol>
         <p v-else class="text-medium-emphasis">
@@ -139,12 +164,14 @@ const draft = ref<GuideDraft>({
   description: "",
   guideType: null,
   difficulty: null,
+  frequency: null,
   preparationMinutes: null,
   executionMinutes: null,
   category: null,
   tags: [],
   steps: [],
   callouts: [],
+  requirements: [],
 });
 const loading = ref(true);
 const saving = ref(false);
@@ -168,15 +195,22 @@ function setDraft() {
     description: guide.value.description,
     guideType: guide.value.guideType || null,
     difficulty: guide.value.difficulty || null,
+    frequency: guide.value.frequency || null,
     preparationMinutes: guide.value.preparationMinutes ?? null,
     executionMinutes: guide.value.executionMinutes ?? null,
     category: guide.value.category?.name || null,
     tags: (guide.value.tags || []).map(tag => tag.name),
-    steps: (guide.value.steps || []).map(step => ({ id: step.id, text: step.text })),
+    steps: (guide.value.steps || []).map(step => ({ id: step.id, text: step.text, tip: step.tip || null })),
     callouts: (guide.value.callouts || []).map(callout => ({
       id: callout.id,
       kind: callout.kind,
       text: callout.text,
+    })),
+    requirements: (guide.value.requirements || []).map(requirement => ({
+      id: requirement.id,
+      kind: requirement.kind,
+      name: requirement.name,
+      note: requirement.note || null,
     })),
   };
 }
@@ -237,15 +271,18 @@ onMounted(loadGuide);
 
 .guide-description,
 .guide-steps li,
-.guide-callout {
+.guide-callout,
+.guide-tip {
   white-space: pre-wrap;
 }
 
-.guide-steps {
+.guide-steps,
+.guide-requirements {
   padding-left: 2rem;
 }
 
-.guide-steps li::marker {
+.guide-steps li::marker,
+.guide-requirements li::marker {
   color: rgb(var(--v-theme-primary));
   font-size: 1.25rem;
   font-weight: 700;

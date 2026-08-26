@@ -8,6 +8,8 @@
 export type GuideCalloutKind = "warning" | "avoid";
 export type GuideType = "cleaning" | "maintenance" | "setup" | "emergency" | "troubleshooting" | "care_instructions";
 export type GuideDifficulty = "beginner" | "intermediate" | "advanced";
+export type GuideFrequency = "one_time" | "weekly" | "monthly" | "yearly" | "as_needed";
+export type GuideRequirementKind = "tool" | "material";
 
 export interface GuideCalloutIn {
   id?: string | null;
@@ -29,16 +31,25 @@ export interface GuideCreate {
   description?: string;
   guideType?: GuideType | null;
   difficulty?: GuideDifficulty | null;
+  frequency?: GuideFrequency | null;
   preparationMinutes?: number | null;
   executionMinutes?: number | null;
   category?: string | null;
   tags?: string[];
   steps?: GuideStepIn[];
   callouts?: GuideCalloutIn[];
+  requirements?: GuideRequirementIn[];
 }
 export interface GuideStepIn {
   id?: string | null;
   text: string;
+  tip?: string | null;
+}
+export interface GuideRequirementIn {
+  id?: string | null;
+  kind: GuideRequirementKind;
+  name: string;
+  note?: string | null;
 }
 export interface GuidePagination {
   page?: number;
@@ -59,6 +70,7 @@ export interface GuideSummary {
   description: string;
   guideType?: GuideType | null;
   difficulty?: GuideDifficulty | null;
+  frequency?: GuideFrequency | null;
   preparationMinutes?: number | null;
   executionMinutes?: number | null;
   category?: GuideCategoryOut | null;
@@ -75,12 +87,14 @@ export interface GuidePatch {
   description?: string | null;
   guideType?: GuideType | null;
   difficulty?: GuideDifficulty | null;
+  frequency?: GuideFrequency | null;
   preparationMinutes?: number | null;
   executionMinutes?: number | null;
   category?: string | null;
   tags?: string[] | null;
   steps?: GuideStepIn[] | null;
   callouts?: GuideCalloutIn[] | null;
+  requirements?: GuideRequirementIn[] | null;
 }
 export interface GuideRead {
   id: string;
@@ -92,6 +106,7 @@ export interface GuideRead {
   description: string;
   guideType?: GuideType | null;
   difficulty?: GuideDifficulty | null;
+  frequency?: GuideFrequency | null;
   preparationMinutes?: number | null;
   executionMinutes?: number | null;
   category?: GuideCategoryOut | null;
@@ -100,23 +115,34 @@ export interface GuideRead {
   updatedAt: string;
   steps?: GuideStepOut[];
   callouts?: GuideCalloutOut[];
+  requirements?: GuideRequirementOut[];
 }
 export interface GuideStepOut {
   id: string;
   position: number;
   text: string;
+  tip?: string | null;
+}
+export interface GuideRequirementOut {
+  id: string;
+  position: number;
+  kind: GuideRequirementKind;
+  name: string;
+  note?: string | null;
 }
 export interface GuideSave {
   title: string;
   description?: string;
   guideType?: GuideType | null;
   difficulty?: GuideDifficulty | null;
+  frequency?: GuideFrequency | null;
   preparationMinutes?: number | null;
   executionMinutes?: number | null;
   category?: string | null;
   tags?: string[];
   steps?: GuideStepIn[];
   callouts?: GuideCalloutIn[];
+  requirements?: GuideRequirementIn[];
   groupId: string;
   householdId: string;
   authorId: string;
@@ -127,10 +153,12 @@ export interface GuideUpdate {
   description?: string;
   guideType?: GuideType | null;
   difficulty?: GuideDifficulty | null;
+  frequency?: GuideFrequency | null;
   preparationMinutes?: number | null;
   executionMinutes?: number | null;
   category?: string | null;
   tags?: string[];
   steps?: GuideStepIn[];
   callouts?: GuideCalloutIn[];
+  requirements?: GuideRequirementIn[];
 }

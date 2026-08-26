@@ -7,12 +7,18 @@
       <span class="text-wrap">{{ guide.title }}</span>
     </v-card-title>
     <v-card-text class="flex-grow-1">
-      <div v-if="guide.guideType || guide.difficulty || guide.category" class="d-flex flex-wrap ga-1 mb-3">
+      <div
+        v-if="guide.guideType || guide.difficulty || guide.frequency || guide.category"
+        class="d-flex flex-wrap ga-1 mb-3"
+      >
         <v-chip v-if="guide.guideType" color="primary" size="small" variant="tonal">
           {{ $t(`guide.types.${guide.guideType.replace('_', '-')}`) }}
         </v-chip>
         <v-chip v-if="guide.difficulty" size="small" variant="tonal">
           {{ $t(`guide.difficulties.${guide.difficulty}`) }}
+        </v-chip>
+        <v-chip v-if="guide.frequency" size="small" variant="tonal">
+          {{ $t(`guide.frequencies.${guide.frequency.replace('_', '-')}`) }}
         </v-chip>
         <v-chip v-if="guide.category" size="small" variant="outlined">
           {{ guide.category.name }}

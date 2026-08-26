@@ -7,6 +7,7 @@ from mealie.db.models.guide import (
     GuideCalloutModel,
     GuideCategoryModel,
     GuideModel,
+    GuideRequirementModel,
     GuideStepModel,
     GuideTagModel,
 )
@@ -24,19 +25,31 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
         tag_names = payload.pop("tags", [])
         step_data = payload.pop("steps", [])
         callout_data = payload.pop("callouts", [])
+        requirement_data = payload.pop("requirements", [])
         payload["title_normalized"] = GuideModel.normalize(payload["title"])
         payload["description_normalized"] = GuideModel.normalize(payload.get("description", ""))
         payload["search_document_normalized"] = self._search_document(
-            payload, category_name, tag_names, step_data, callout_data
+            payload, category_name, tag_names, step_data, callout_data, requirement_data
         )
 
         document = GuideModel(session=self.session, **payload)
         document.category = self._resolve_category(category_name)
         document.tags = self._resolve_tags(tag_names)
-        document.steps = [GuideStepModel(session=self.session, text=step["text"]) for step in step_data]
+        document.steps = [
+            GuideStepModel(session=self.session, text=step["text"], tip=step.get("tip")) for step in step_data
+        ]
         document.callouts = [
             GuideCalloutModel(session=self.session, kind=callout["kind"], text=callout["text"])
             for callout in callout_data
+        ]
+        document.requirements = [
+            GuideRequirementModel(
+                session=self.session,
+                kind=requirement["kind"],
+                name=requirement["name"],
+                note=requirement.get("note"),
+            )
+            for requirement in requirement_data
         ]
         try:
             self.session.add(document)
@@ -52,16 +65,18 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
         tag_names = data.pop("tags", [])
         step_data = data.pop("steps", [])
         callout_data = data.pop("callouts", [])
+        requirement_data = data.pop("requirements", [])
         entry = self._query_one(match_value=match_value)
 
         entry.steps = self._merge_ordered_children(entry.steps, step_data, GuideStepModel)
         entry.callouts = self._merge_ordered_children(entry.callouts, callout_data, GuideCalloutModel)
+        entry.requirements = self._merge_ordered_children(entry.requirements, requirement_data, GuideRequirementModel)
         entry.category = self._resolve_category(category_name)
         entry.tags = self._resolve_tags(tag_names)
         data["title_normalized"] = GuideModel.normalize(data["title"])
         data["description_normalized"] = GuideModel.normalize(data.get("description", ""))
         data["search_document_normalized"] = self._search_document(
-            data, category_name, tag_names, step_data, callout_data
+            data, category_name, tag_names, step_data, callout_data, requirement_data
         )
 
         try:
@@ -70,6 +85,8 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
                 step.position = position
             for position, callout in enumerate(entry.callouts):
                 callout.position = position
+            for position, requirement in enumerate(entry.requirements):
+                requirement.position = position
             self.session.commit()
         except Exception:
             self.session.rollback()
@@ -83,6 +100,7 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
         search: str | None = None,
         guide_type: str | None = None,
         difficulty: str | None = None,
+        frequency: str | None = None,
         category: str | None = None,
         tag: str | None = None,
     ) -> PaginationBase[GuideRead]:
@@ -94,6 +112,8 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
             query = query.where(GuideModel.guide_type == guide_type)
         if difficulty:
             query = query.where(GuideModel.difficulty == difficulty)
+        if frequency:
+            query = query.where(GuideModel.frequency == frequency)
         if category:
             query = query.join(GuideModel.category).where(
                 GuideCategoryModel.normalized_name == GuideModel.normalize(category)
@@ -150,9 +170,9 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
         for item_data in incoming:
             item_id = item_data.get("id")
             if item_id and (item := existing_by_id.get(str(item_id))):
-                item.text = item_data["text"]
-                if hasattr(item, "kind"):
-                    item.kind = item_data["kind"]
+                for key, value in item_data.items():
+                    if key != "id":
+                        setattr(item, key, value)
                 merged.append(item)
             else:
                 values = {key: value for key, value in item_data.items() if key != "id"}
@@ -166,15 +186,20 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
         tags: Iterable[str],
         steps: Iterable[dict],
         callouts: Iterable[dict],
+        requirements: Iterable[dict],
     ) -> str:
         parts = [
             data.get("title", ""),
             data.get("description", ""),
             data.get("guide_type") or "",
             data.get("difficulty") or "",
+            data.get("frequency") or "",
             category or "",
             *(str(tag) for tag in tags),
             *(step.get("text", "") for step in steps),
+            *(step.get("tip") or "" for step in steps),
             *(callout.get("text", "") for callout in callouts),
+            *(requirement.get("name", "") for requirement in requirements),
+            *(requirement.get("note") or "" for requirement in requirements),
         ]
         return " ".join(GuideModel.normalize(str(part)) for part in parts if part)
