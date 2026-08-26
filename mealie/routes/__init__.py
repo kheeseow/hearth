@@ -7,6 +7,7 @@ from . import (
     comments,
     explore,
     groups,
+    guide,
     households,
     organizers,
     parser,
@@ -24,6 +25,7 @@ router.include_router(auth.router)
 router.include_router(users.router)
 router.include_router(households.router)
 router.include_router(groups.router)
+router.include_router(guide.router)
 router.include_router(recipe.router)
 router.include_router(organizers.router)
 router.include_router(shared.router)

@@ -54,3 +54,23 @@ export interface SuccessResponse {
 export interface ValidationResponse {
   valid: boolean;
 }
+export interface PaginationBaseGuideSummary {
+  page?: number;
+  per_page?: number;
+  total?: number;
+  total_pages?: number;
+  items: GuideSummary[];
+  next?: string | null;
+  previous?: string | null;
+}
+export interface GuideSummary {
+  id: string;
+  groupId: string;
+  householdId: string;
+  authorId: string;
+  slug: string;
+  title: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}

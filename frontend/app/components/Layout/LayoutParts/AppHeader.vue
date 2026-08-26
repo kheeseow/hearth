@@ -28,7 +28,7 @@
         Mealie
       </v-toolbar-title>
     </div>
-    <RecipeDialogSearch ref="domSearchDialog" />
+    <GuideDialogSearch ref="domSearchDialog" />
 
     <v-spacer />
 
@@ -86,7 +86,7 @@
 
 <script setup lang="ts">
 import { useLoggedInState } from "~/composables/use-logged-in-state";
-import type RecipeDialogSearch from "~/components/Domain/Recipe/RecipeDialogSearch.vue";
+import type GuideDialogSearch from "~/components/Domain/Guide/GuideDialogSearch.vue";
 
 defineProps({
   menu: {
@@ -101,7 +101,7 @@ const groupSlug = computed(() => route.params.groupSlug as string || auth.user.v
 const { xs, smAndUp } = useDisplay();
 
 const routerLink = computed(() => groupSlug.value ? `/g/${groupSlug.value}` : "/");
-const domSearchDialog = ref<InstanceType<typeof RecipeDialogSearch> | null>(null);
+const domSearchDialog = ref<InstanceType<typeof GuideDialogSearch> | null>(null);
 
 function activateSearch() {
   domSearchDialog.value?.open();

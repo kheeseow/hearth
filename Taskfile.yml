@@ -295,6 +295,22 @@ tasks:
     cmds:
       - pnpm run dev --no-fork
 
+  hearth:py:
+    desc: runs the Hearth backend on port 9010
+    env:
+      API_PORT: 9010
+      BASE_URL: http://localhost:3010
+    cmds:
+      - uv run python mealie/app.py
+
+  hearth:ui:
+    desc: runs the Hearth frontend on port 3010
+    dir: frontend
+    env:
+      API_URL: http://localhost:9010
+    cmds:
+      - pnpm run dev --no-fork --port 3010
+
   docker:build-from-package:
     desc: Builds the Docker image from the existing Python package in dist/
     deps:

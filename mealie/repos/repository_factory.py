@@ -10,6 +10,7 @@ from mealie.db.models.group import Group, ReportEntryModel, ReportModel
 from mealie.db.models.group.ai_providers import AIProvider, AIProviderSettings
 from mealie.db.models.group.exports import GroupDataExportsModel
 from mealie.db.models.group.preferences import GroupPreferencesModel
+from mealie.db.models.guide import GuideModel
 from mealie.db.models.household.cookbook import CookBook
 from mealie.db.models.household.events import GroupEventNotifierModel
 from mealie.db.models.household.household import Household
@@ -48,6 +49,7 @@ from mealie.schema.cookbook.cookbook import ReadCookBook
 from mealie.schema.group.ai_providers import AIProviderOut, AIProviderSettingsOut
 from mealie.schema.group.group_exports import GroupDataExport
 from mealie.schema.group.group_preferences import ReadGroupPreferences
+from mealie.schema.guide import GuideRead
 from mealie.schema.household.group_events import GroupEventNotifierOut
 from mealie.schema.household.group_recipe_action import GroupRecipeActionOut
 from mealie.schema.household.group_shopping_list import (
@@ -77,6 +79,7 @@ from mealie.schema.user.user_passwords import PrivatePasswordResetToken
 from ._utils import NOT_SET, NotSet
 from .repository_generic import GroupRepositoryGeneric, HouseholdRepositoryGeneric
 from .repository_group import RepositoryGroup
+from .repository_guides import RepositoryGuides
 from .repository_meals import RepositoryMeals
 from .repository_recipes import RepositoryRecipes
 from .repository_shopping_list import RepositoryShoppingList
@@ -134,6 +137,17 @@ class AllRepositories:
     def recipes(self) -> RepositoryRecipes:
         return RepositoryRecipes(
             self.session, PK_SLUG, RecipeModel, Recipe, group_id=self.group_id, household_id=self.household_id
+        )
+
+    @cached_property
+    def guides(self) -> RepositoryGuides:
+        return RepositoryGuides(
+            self.session,
+            PK_SLUG,
+            GuideModel,
+            GuideRead,
+            group_id=self.group_id,
+            household_id=self.household_id,
         )
 
     @cached_property

@@ -25,10 +25,12 @@ import { GroupEventNotifierApi } from "./user/group-event-notifier";
 import { MealPlanRulesApi } from "./user/group-mealplan-rules";
 import { GroupDataSeederApi } from "./user/group-seeder";
 import { AIProvidersAPI } from "./user/group-ai-providers";
+import { GuideAPI } from "./user/guides";
 import type { ApiRequestInstance } from "~/lib/api/types/non-generated";
 
 export class UserApiClient {
   public recipes: RecipeAPI;
+  public guides: GuideAPI;
   public users: UserApi;
   public households: HouseholdAPI;
   public groups: GroupAPI;
@@ -59,6 +61,7 @@ export class UserApiClient {
   constructor(requests: ApiRequestInstance) {
     // Recipes
     this.recipes = new RecipeAPI(requests);
+    this.guides = new GuideAPI(requests);
     this.categories = new CategoriesAPI(requests);
     this.tags = new TagsAPI(requests);
     this.units = new UnitAPI(requests);

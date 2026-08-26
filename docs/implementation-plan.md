@@ -19,14 +19,69 @@ rewrite Mealie's platform or erase its repository history.
 ## Current status
 
 - Phase 1 architecture research is complete.
+- Product Slice 1 (minimal Guide CRUD) is implemented and validated locally.
 - The Hearth fork is checked out from Mealie `v3.24.0` at commit
   `2c04da733f88836f788234a4bf1127599fbc1294`.
 - `origin` points to `kheeseow/hearth`; `upstream` points to
   `mealie-recipes/mealie`.
 - The unchanged SQLite application, backend suite, frontend suite, and frontend
   lint have passed. Detailed results are in `docs/baseline.md`.
-- No application code or database schema has been changed.
-- The repository is ready for the Phase 2 minimal Guide backend vertical slice.
+- The first additive Guide migration introduces only `guides` and
+  `guide_steps`; Recipe tables remain untouched.
+- The first usable UI supports Guide cards, title/description search, reading,
+  creation, editing, deletion, and ordered plain-text steps.
+- Phase 2 remains open for richer metadata, media, events, capability exposure,
+  and expanded search. Phase 3 remains open for the corresponding richer UX,
+  accessibility verification, and responsive browser testing.
+
+## Product Slice 1 — Minimal Guide CRUD (complete)
+
+This slice deliberately crosses the backend/frontend phase boundary to produce
+a small usable outcome before adding richer fields.
+
+Included:
+
+- Title and description
+- Ordered plain-text steps
+- Stable group-unique slug
+- Group-wide reading and discovery
+- Owning-household-only update and delete
+- Authenticated CRUD API
+- Normalized title and description search
+- Generated TypeScript contracts and user API client
+- Searchable Guide cards, reader, create form, and editor
+- Header search and `/` shortcut search Guides and open the selected Guide
+- Add, remove, and move step controls
+- Sidebar navigation
+
+Deferred to later slices:
+
+- Cover and step media
+- Categories, tags, tools, and materials
+- Guide type, difficulty, frequency, and duration
+- Warnings, notes, sources, and review dates
+- Domain events and backup/export integration
+- Capability-driven hiding of legacy Recipe UI
+- Step-text search
+
+Validation completed on 2026-08-26:
+
+- Full backend suite: 2,648 passed and 16 skipped by existing upstream markers
+- Fresh SQLite migration: upgrade, downgrade, and re-upgrade passed
+- Fresh PostgreSQL 16 migration: upgrade, downgrade, and re-upgrade passed
+- Frontend ESLint: passed
+- Full frontend suite: 28 files and 274 tests passed
+- Nuxt production build: passed
+- Phone-width browser smoke check: Guide list and editor render at 390 x 844;
+  add-step and reorder controls respond correctly
+- Browser search check: the header search and `/` shortcut find Guides by title
+  and open the selected Guide
+- User acceptance test: completed successfully
+- Guide-to-Recipe import boundary check: no imports found
+
+`RepositoryGuides` extends Mealie's generic household repository only to keep
+ordered step IDs stable when an edit mixes existing and new steps. All other
+CRUD, pagination, search, and scope behavior stays in Mealie's generic base.
 
 ## Product outcome
 
@@ -807,6 +862,7 @@ Record material decisions here as they are made.
 
 ## Immediate next action
 
-Start Phase 2 with the minimal Guide model and additive Alembic migration, then
-complete repository, service, CRUD route, search, permission, and migration
-tests before beginning the frontend slice.
+Begin Product Slice 2 with Guide classification and safety metadata: type,
+category, tags, difficulty, duration, warnings, and things to avoid. Keep those
+additions inside the Guide domain and extend the existing additive migration
+chain rather than rewriting the released Slice 1 migration.
