@@ -14,13 +14,23 @@
       <GuideEditor
         v-if="editing"
         v-model="draft"
+        :guide="guide"
         :loading="saving"
         :error="saveError"
         show-cancel
         @save="save"
         @cancel="cancelEdit"
+        @guide-updated="updateGuideFromMedia"
       />
       <template v-else>
+        <GuideMediaImage
+          v-if="guide.coverImageVersion"
+          :guide-slug="guide.slug"
+          :version="guide.coverImageVersion"
+          :alt="guide.title"
+          size="original"
+          class="guide-cover mb-5"
+        />
         <div class="d-flex align-start ga-3">
           <div>
             <h1 class="text-h4 mb-2">
@@ -114,6 +124,21 @@
         <ol v-if="guide.steps?.length" class="guide-steps">
           <li v-for="step in guide.steps" :key="step.id" class="mb-5 pl-2 text-body-1">
             <p>{{ step.text }}</p>
+            <div v-if="step.images?.length" class="guide-step-images mt-3">
+              <figure v-for="image in step.images || []" :key="image.id" class="ma-0">
+                <GuideMediaImage
+                  :guide-slug="guide.slug"
+                  :step-id="step.id"
+                  :image-id="image.id"
+                  :version="image.version"
+                  :alt="image.altText || image.caption || ''"
+                  size="small"
+                />
+                <figcaption v-if="image.caption" class="text-body-2 text-medium-emphasis mt-1">
+                  {{ image.caption }}
+                </figcaption>
+              </figure>
+            </div>
             <v-alert v-if="step.tip" type="info" variant="tonal" density="compact" class="mt-3 guide-tip">
               <strong>{{ $t("guide.tip") }}:</strong> {{ step.tip }}
             </v-alert>
@@ -250,6 +275,10 @@ async function save() {
   saving.value = false;
 }
 
+function updateGuideFromMedia(updated: GuideRead) {
+  guide.value = updated;
+}
+
 async function remove() {
   if (!guide.value) return;
   const { data } = await api.guides.deleteOne(guide.value.slug);
@@ -286,5 +315,17 @@ onMounted(loadGuide);
   color: rgb(var(--v-theme-primary));
   font-size: 1.25rem;
   font-weight: 700;
+}
+
+.guide-cover {
+  max-height: 460px;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.guide-step-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
 }
 </style>

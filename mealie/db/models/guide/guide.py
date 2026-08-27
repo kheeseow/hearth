@@ -65,7 +65,32 @@ class GuideStepModel(SqlAlchemyBase):
     text: Mapped[str] = mapped_column(sa.Text, nullable=False)
     tip: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
 
+    images: Mapped[list["GuideStepImageModel"]] = orm.relationship(
+        "GuideStepImageModel",
+        cascade="all, delete-orphan",
+        order_by="GuideStepImageModel.position",
+        collection_class=ordering_list("position"),
+    )
+
     model_config = ConfigDict(exclude={"id", "guide_id", "position"})
+
+    @auto_init()
+    def __init__(self, **_) -> None: ...
+
+
+class GuideStepImageModel(SqlAlchemyBase):
+    __tablename__ = "guide_step_images"
+
+    id: Mapped[GUID] = mapped_column(GUID, primary_key=True, default=GUID.generate)
+    step_id: Mapped[GUID] = mapped_column(
+        GUID, sa.ForeignKey("guide_steps.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    position: Mapped[int] = mapped_column(sa.Integer, nullable=False, default=0)
+    version: Mapped[str] = mapped_column(sa.String(20), nullable=False)
+    caption: Mapped[str | None] = mapped_column(sa.String(1000), nullable=True)
+    alt_text: Mapped[str | None] = mapped_column(sa.String(500), nullable=True)
+
+    model_config = ConfigDict(exclude={"step_id", "position"})
 
     @auto_init()
     def __init__(self, **_) -> None: ...
@@ -161,6 +186,7 @@ class GuideModel(SqlAlchemyBase, BaseMixins):
     frequency: FilterableColumn[str | None] = mapped_column(sa.String(20), nullable=True, index=True)
     preparation_minutes: FilterableColumn[int | None] = mapped_column(sa.Integer, nullable=True)
     execution_minutes: FilterableColumn[int | None] = mapped_column(sa.Integer, nullable=True)
+    cover_image_version: FilterableColumn[str | None] = mapped_column(sa.String(20), nullable=True)
     title_normalized: FilterableColumn[str] = mapped_column(sa.String, nullable=False, index=True)
     description_normalized: FilterableColumn[str] = mapped_column(sa.String, nullable=False, index=True)
     search_document_normalized: FilterableColumn[str] = mapped_column(sa.Text, nullable=False, default="")

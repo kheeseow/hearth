@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+from mealie.services.guide import GuideDataService
+from tests import data
 from tests.utils.factories import random_string
 from tests.utils.fixture_schemas import TestUser
 
@@ -220,3 +222,128 @@ def test_guides_are_group_readable_but_household_owned(
 
 def test_guide_requires_authentication(api_client: TestClient) -> None:
     assert api_client.get(GUIDES).status_code == 401
+
+
+def test_guide_cover_and_ordered_step_images(api_client: TestClient, unique_user: TestUser) -> None:
+    create = api_client.post(GUIDES, json=guide_payload("Photograph a maintenance task"), headers=unique_user.token)
+    assert create.status_code == 201
+    guide = create.json()
+    step_id = guide["steps"][0]["id"]
+    guide_data = GuideDataService(guide["id"])
+
+    cover = api_client.put(
+        f"{GUIDES}/{guide['slug']}/image",
+        data={"extension": "jpg"},
+        files={"image": ("cover.jpg", data.images_test_image_1.read_bytes(), "image/jpeg")},
+        headers=unique_user.token,
+    )
+    assert cover.status_code == 200
+    assert cover.json()["coverImageVersion"]
+    assert guide_data.cover_image_path().exists()
+    assert api_client.get(f"{GUIDES}/{guide['slug']}/image/tiny", headers=unique_user.token).status_code == 200
+    assert api_client.get(f"{GUIDES}/{guide['slug']}/image/tiny").status_code == 401
+
+    first = api_client.post(
+        f"{GUIDES}/{guide['slug']}/steps/{step_id}/images",
+        data={"extension": "jpg", "caption": "Before cleaning", "alt_text": "Dust on the filter"},
+        files={"image": ("before.jpg", data.images_test_image_1.read_bytes(), "image/jpeg")},
+        headers=unique_user.token,
+    )
+    assert first.status_code == 200
+    first_image = first.json()["steps"][0]["images"][0]
+    assert first_image["caption"] == "Before cleaning"
+    assert first_image["altText"] == "Dust on the filter"
+    assert guide_data.step_image_path(first_image["id"]).exists()
+
+    second = api_client.post(
+        f"{GUIDES}/{guide['slug']}/steps/{step_id}/images",
+        data={"extension": "png", "caption": "After cleaning", "alt_text": "Clean filter"},
+        files={"image": ("after.png", data.images_test_image_2.read_bytes(), "image/png")},
+        headers=unique_user.token,
+    )
+    assert second.status_code == 200
+    images = second.json()["steps"][0]["images"]
+    second_image = images[1]
+    assert [item["position"] for item in images] == [0, 1]
+
+    reordered = api_client.put(
+        f"{GUIDES}/{guide['slug']}/steps/{step_id}/images/order",
+        json={"imageIds": [second_image["id"], first_image["id"]]},
+        headers=unique_user.token,
+    )
+    assert reordered.status_code == 200
+    assert [item["id"] for item in reordered.json()["steps"][0]["images"]] == [
+        second_image["id"],
+        first_image["id"],
+    ]
+
+    updated = api_client.patch(
+        f"{GUIDES}/{guide['slug']}/steps/{step_id}/images/{first_image['id']}",
+        json={"caption": "Updated caption", "altText": "Updated alternative text"},
+        headers=unique_user.token,
+    )
+    assert updated.status_code == 200
+    assert updated.json()["steps"][0]["images"][1]["caption"] == "Updated caption"
+
+    replaced = api_client.put(
+        f"{GUIDES}/{guide['slug']}/steps/{step_id}/images/{first_image['id']}/file",
+        data={"extension": "png"},
+        files={"image": ("replacement.png", data.images_test_image_2.read_bytes(), "image/png")},
+        headers=unique_user.token,
+    )
+    assert replaced.status_code == 200
+    replaced_image = next(item for item in replaced.json()["steps"][0]["images"] if item["id"] == first_image["id"])
+    assert replaced_image["version"] != first_image["version"]
+
+    media = api_client.get(
+        f"{GUIDES}/{guide['slug']}/steps/{step_id}/images/{first_image['id']}/small",
+        headers=unique_user.token,
+    )
+    assert media.status_code == 200
+    assert media.headers["content-type"] == "image/webp"
+
+    deleted_image = api_client.delete(
+        f"{GUIDES}/{guide['slug']}/steps/{step_id}/images/{first_image['id']}", headers=unique_user.token
+    )
+    assert deleted_image.status_code == 200
+    assert not guide_data.step_image_dir(first_image["id"]).exists()
+
+    removed_step = api_client.put(
+        f"{GUIDES}/{guide['slug']}",
+        json={
+            "title": guide["title"],
+            "description": guide["description"],
+            "steps": [{"id": guide["steps"][1]["id"], "text": guide["steps"][1]["text"]}],
+        },
+        headers=unique_user.token,
+    )
+    assert removed_step.status_code == 200
+    assert not guide_data.step_image_dir(second_image["id"]).exists()
+
+    deleted_guide = api_client.delete(f"{GUIDES}/{guide['slug']}", headers=unique_user.token)
+    assert deleted_guide.status_code == 200
+    assert not guide_data.guide_dir.exists()
+
+
+def test_guide_media_rejects_invalid_images_and_non_owner_changes(
+    api_client: TestClient, unique_user: TestUser, h2_user: TestUser
+) -> None:
+    create = api_client.post(GUIDES, json=guide_payload(), headers=h2_user.token)
+    assert create.status_code == 201
+    guide = create.json()
+
+    invalid = api_client.put(
+        f"{GUIDES}/{guide['slug']}/image",
+        data={"extension": "txt"},
+        files={"image": ("bad.txt", b"not an image", "text/plain")},
+        headers=h2_user.token,
+    )
+    assert invalid.status_code == 400
+
+    forbidden = api_client.put(
+        f"{GUIDES}/{guide['slug']}/image",
+        data={"extension": "jpg"},
+        files={"image": ("cover.jpg", data.images_test_image_1.read_bytes(), "image/jpeg")},
+        headers=unique_user.token,
+    )
+    assert forbidden.status_code == 403

@@ -19,7 +19,7 @@ rewrite Mealie's platform or erase its repository history.
 ## Current status
 
 - Phase 1 architecture research is complete.
-- Product Slices 1, 2, and 3 are implemented and validated locally.
+- Product Slices 1 through 4 are implemented and validated locally.
 - The Hearth fork is checked out from Mealie `v3.24.0` at commit
   `2c04da733f88836f788234a4bf1127599fbc1294`.
 - `origin` points to `kheeseow/hearth`; `upstream` points to
@@ -34,9 +34,10 @@ rewrite Mealie's platform or erase its repository history.
   expanded search, and exact metadata filters are now usable end to end.
 - Guide frequency, ordered tools and materials, requirement notes, and optional
   per-step tips are now usable end to end.
-- Phase 2 remains open for media, events, and capability exposure. Phase 3
-  remains open for the corresponding media UX and complete accessibility
-  verification.
+- Guide cover images and ordered step images with captions and alternative text
+  are now usable end to end.
+- Phase 2 remains open for events and capability exposure. Phase 3 remains open
+  for complete accessibility verification.
 
 ## Product Slice 1 — Minimal Guide CRUD (complete)
 
@@ -159,6 +160,47 @@ Validation completed on 2026-08-26:
 - Phone-width reader check at 390 x 844: passed
 - The local “Monthly washing machine clean” acceptance Guide now demonstrates
   monthly frequency, ordered requirements, requirement notes, and a step tip
+
+## Product Slice 4 — Guide media (complete)
+
+Included:
+
+- One replaceable Guide cover image
+- Up to 20 ordered images per persisted Guide step
+- Optional captions and useful alternative text for every step image
+- Upload, replace, reorder, metadata-edit, and delete controls in the Guide
+  editor
+- Responsive cover and step-image presentation in the Guide reader
+- Cover thumbnails on Guide cards
+- Authenticated media reads so private Guide images are not exposed as public
+  files
+- Three generated WebP sizes using Mealie's domain-neutral image primitives
+- File cleanup when an image, step, or complete Guide is deleted
+
+The Slice 4 migration adds one nullable Guide cover-version column and the
+Guide-owned `guide_step_images` table. Files live beneath immutable Guide and
+image IDs in a separate Guide data directory. The implementation does not
+import Recipe models, schemas, repositories, routes, or services, and it does
+not alter Recipe tables or earlier Guide migrations.
+
+Validation completed on 2026-08-27:
+
+- Guide API integration suite: 8 passed
+- Full backend suite: 2,652 passed and 16 skipped by existing upstream markers
+- Python lint and type check: 472 source files passed
+- Frontend ESLint: passed
+- Full frontend suite: 28 files and 274 tests passed
+- Nuxt production build: passed
+- SQLite and PostgreSQL 16 migration upgrade, downgrade, and re-upgrade paths:
+  passed
+- SQLite migration drift check: passed
+- Existing local development data: all 15 seeded Guides preserved
+- Guide-to-Recipe import boundary check: no imports found
+- Desktop browser flow: cover and step images render in cards, reader, and
+  editor; media controls and accessible labels are present
+- Phone-width editor and reader check at 390 x 844: passed
+- The local “Monthly washing machine clean” acceptance Guide now demonstrates
+  a cover image and two captioned step images with alternative text
 
 ## Product outcome
 
@@ -968,8 +1010,7 @@ Record material decisions here as they are made.
 
 ## Immediate next action
 
-Begin Product Slice 4 with Guide media: a cover image and ordered step images
-with captions and useful alternative text. Reuse Mealie's media storage and
-cleanup infrastructure behind Guide-specific routes and tables, without
-coupling Guide models to Recipe models or changing the released Slice 1–3
-migrations.
+Begin Product Slice 5 with Guide notes, validated source/reference links,
+related Guides, and last-reviewed dates with a visible stale-review state.
+Keep these as Guide-owned additive fields and child tables, expand search only
+for useful textual content, and preserve the existing Recipe boundary.

@@ -8,6 +8,7 @@ from mealie.db.models.guide import (
     GuideCategoryModel,
     GuideModel,
     GuideRequirementModel,
+    GuideStepImageModel,
     GuideStepModel,
     GuideTagModel,
 )
@@ -91,6 +92,76 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
         except Exception:
             self.session.rollback()
             raise
+        return self.schema.model_validate(entry)
+
+    def set_cover_image(self, slug: str, version: str | None) -> GuideRead:
+        entry = self._query_one(slug)
+        entry.cover_image_version = version
+        self.session.commit()
+        return self.schema.model_validate(entry)
+
+    def create_step_image(
+        self,
+        guide_id: UUID4,
+        step_id: UUID4,
+        image_id: UUID4,
+        version: str,
+        caption: str | None,
+        alt_text: str | None,
+    ) -> GuideRead:
+        entry = self._query_one(guide_id, "id")
+        step = next(step for step in entry.steps if step.id == step_id)
+        step.images.append(
+            GuideStepImageModel(
+                session=self.session,
+                id=image_id,
+                version=version,
+                caption=caption,
+                alt_text=alt_text,
+            )
+        )
+        self.session.commit()
+        return self.schema.model_validate(entry)
+
+    def update_step_image(
+        self, guide_id: UUID4, step_id: UUID4, image_id: UUID4, caption: str | None, alt_text: str | None
+    ) -> GuideRead:
+        entry = self._query_one(guide_id, "id")
+        image = next(
+            image for step in entry.steps if step.id == step_id for image in step.images if image.id == image_id
+        )
+        image.caption = caption
+        image.alt_text = alt_text
+        self.session.commit()
+        return self.schema.model_validate(entry)
+
+    def set_step_image_version(self, guide_id: UUID4, step_id: UUID4, image_id: UUID4, version: str) -> GuideRead:
+        entry = self._query_one(guide_id, "id")
+        image = next(
+            image for step in entry.steps if step.id == step_id for image in step.images if image.id == image_id
+        )
+        image.version = version
+        self.session.commit()
+        return self.schema.model_validate(entry)
+
+    def reorder_step_images(self, guide_id: UUID4, step_id: UUID4, image_ids: list[UUID4]) -> GuideRead:
+        entry = self._query_one(guide_id, "id")
+        step = next(step for step in entry.steps if step.id == step_id)
+        images_by_id = {image.id: image for image in step.images}
+        step.images = [images_by_id[image_id] for image_id in image_ids]
+        for position, image in enumerate(step.images):
+            image.position = position
+        self.session.commit()
+        return self.schema.model_validate(entry)
+
+    def delete_step_image(self, guide_id: UUID4, step_id: UUID4, image_id: UUID4) -> GuideRead:
+        entry = self._query_one(guide_id, "id")
+        step = next(step for step in entry.steps if step.id == step_id)
+        image = next(image for image in step.images if image.id == image_id)
+        step.images.remove(image)
+        for position, remaining in enumerate(step.images):
+            remaining.position = position
+        self.session.commit()
         return self.schema.model_validate(entry)
 
     def page_filtered(

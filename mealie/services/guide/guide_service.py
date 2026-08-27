@@ -1,4 +1,5 @@
-from uuid import UUID
+from pathlib import Path
+from uuid import UUID, uuid4
 
 from fastapi import HTTPException, status
 from slugify import slugify
@@ -6,10 +7,21 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from mealie.db.models.guide import GuideCalloutModel, GuideRequirementModel, GuideStepModel
+from mealie.pkgs import cache
 from mealie.repos.all_repositories import AllRepositories, get_repositories
-from mealie.schema.guide import GuideCreate, GuidePatch, GuideRead, GuideSave, GuideUpdate
+from mealie.schema.guide import (
+    GuideCreate,
+    GuidePatch,
+    GuideRead,
+    GuideSave,
+    GuideStepImageOrder,
+    GuideStepImageUpdate,
+    GuideUpdate,
+)
 from mealie.schema.response import PaginationBase, PaginationQuery
 from mealie.schema.user import PrivateUser
+
+from .guide_data_service import GuideDataService
 
 
 class GuideService:
@@ -69,7 +81,15 @@ class GuideService:
             author_id=guide.author_id,
             slug=guide.slug,
         )
-        return self.household_repos.guides.update(guide.slug, payload)
+        retained_step_ids = {step.id for step in data.steps if step.id}
+        removed_image_ids = [
+            image.id for step in guide.steps if step.id not in retained_step_ids for image in step.images
+        ]
+        updated = self.household_repos.guides.update(guide.slug, payload)
+        data_service = GuideDataService(guide.id)
+        for image_id in removed_image_ids:
+            data_service.delete_step_image(image_id)
+        return updated
 
     def patch(self, slug_or_id: str, data: GuidePatch) -> GuideRead:
         guide = self._get_owned(slug_or_id)
@@ -98,7 +118,90 @@ class GuideService:
 
     def delete(self, slug_or_id: str) -> GuideRead:
         guide = self._get_owned(slug_or_id)
-        return self.household_repos.guides.delete(guide.slug)
+        deleted = self.household_repos.guides.delete(guide.slug)
+        GuideDataService(guide.id).delete_all_data()
+        return deleted
+
+    def update_cover_image(self, slug_or_id: str, image: bytes, extension: str) -> GuideRead:
+        guide = self._get_owned(slug_or_id)
+        GuideDataService(guide.id).write_cover(image, extension)
+        return self.household_repos.guides.set_cover_image(guide.slug, cache.new_key())
+
+    def delete_cover_image(self, slug_or_id: str) -> GuideRead:
+        guide = self._get_owned(slug_or_id)
+        updated = self.household_repos.guides.set_cover_image(guide.slug, None)
+        GuideDataService(guide.id).delete_cover()
+        return updated
+
+    def add_step_image(
+        self,
+        slug_or_id: str,
+        step_id: UUID,
+        image: bytes,
+        extension: str,
+        caption: str | None,
+        alt_text: str | None,
+    ) -> GuideRead:
+        guide = self._get_owned(slug_or_id)
+        step = self._get_step(guide, step_id)
+        if len(step.images) >= 20:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "A step can have at most 20 images")
+        image_id = uuid4()
+        data_service = GuideDataService(guide.id)
+        data_service.write_step_image(image_id, image, extension)
+        try:
+            return self.household_repos.guides.create_step_image(
+                guide.id, step.id, image_id, cache.new_key(), caption, alt_text
+            )
+        except Exception:
+            data_service.delete_step_image(image_id)
+            raise
+
+    def update_step_image(
+        self, slug_or_id: str, step_id: UUID, image_id: UUID, data: GuideStepImageUpdate
+    ) -> GuideRead:
+        guide = self._get_owned(slug_or_id)
+        self._get_step_image(guide, step_id, image_id)
+        return self.household_repos.guides.update_step_image(guide.id, step_id, image_id, data.caption, data.alt_text)
+
+    def replace_step_image(
+        self, slug_or_id: str, step_id: UUID, image_id: UUID, image: bytes, extension: str
+    ) -> GuideRead:
+        guide = self._get_owned(slug_or_id)
+        self._get_step_image(guide, step_id, image_id)
+        GuideDataService(guide.id).write_step_image(image_id, image, extension)
+        return self.household_repos.guides.set_step_image_version(guide.id, step_id, image_id, cache.new_key())
+
+    def reorder_step_images(self, slug_or_id: str, step_id: UUID, data: GuideStepImageOrder) -> GuideRead:
+        guide = self._get_owned(slug_or_id)
+        step = self._get_step(guide, step_id)
+        if set(data.image_ids) != {image.id for image in step.images} or len(data.image_ids) != len(step.images):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Image order must contain every step image exactly once")
+        return self.household_repos.guides.reorder_step_images(guide.id, step_id, data.image_ids)
+
+    def delete_step_image(self, slug_or_id: str, step_id: UUID, image_id: UUID) -> GuideRead:
+        guide = self._get_owned(slug_or_id)
+        self._get_step_image(guide, step_id, image_id)
+        updated = self.household_repos.guides.delete_step_image(guide.id, step_id, image_id)
+        GuideDataService(guide.id).delete_step_image(image_id)
+        return updated
+
+    def cover_image_path(self, slug_or_id: str, size: str) -> Path:
+        guide = self.get(slug_or_id)
+        if not guide.cover_image_version:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Guide cover image not found")
+        path = GuideDataService(guide.id).cover_image_path(size)
+        if not path.exists():
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Guide cover image not found")
+        return path
+
+    def step_image_path(self, slug_or_id: str, step_id: UUID, image_id: UUID, size: str) -> Path:
+        guide = self.get(slug_or_id)
+        self._get_step_image(guide, step_id, image_id)
+        path = GuideDataService(guide.id).step_image_path(image_id, size)
+        if not path.exists():
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Guide step image not found")
+        return path
 
     def _find(self, repos: AllRepositories, slug_or_id: str) -> GuideRead | None:
         try:
@@ -114,6 +217,20 @@ class GuideService:
         if guide.household_id != self.user.household_id:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "Only the owning household can change this guide")
         return guide
+
+    @staticmethod
+    def _get_step(guide: GuideRead, step_id: UUID):
+        step = next((step for step in guide.steps if step.id == step_id), None)
+        if not step:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Guide step not found")
+        return step
+
+    def _get_step_image(self, guide: GuideRead, step_id: UUID, image_id: UUID):
+        step = self._get_step(guide, step_id)
+        image = next((image for image in step.images if image.id == image_id), None)
+        if not image:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Guide step image not found")
+        return image
 
     def _unique_slug(self, title: str) -> str:
         base = slugify(title) or "guide"

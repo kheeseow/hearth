@@ -1,5 +1,13 @@
 <template>
   <v-card :to="to" hover height="100%" class="d-flex flex-column">
+    <GuideMediaImage
+      v-if="guide.coverImageVersion"
+      :guide-slug="guide.slug"
+      :version="guide.coverImageVersion"
+      :alt="guide.title"
+      size="tiny"
+      :aspect-ratio="16 / 9"
+    />
     <v-card-title class="d-flex align-center ga-2">
       <v-icon color="primary">
         {{ $globals.icons.book }}

@@ -14,6 +14,8 @@
       rows="3"
     />
 
+    <GuideCoverMediaEditor v-if="guide" :guide="guide" @updated="emit('guide-updated', $event)" />
+
     <h2 class="text-h6 mb-3">
       {{ $t("guide.classification") }}
     </h2>
@@ -264,6 +266,15 @@
             rows="2"
             hide-details="auto"
           />
+          <GuideStepMediaEditor
+            v-if="persistedStep(step.id)"
+            :guide-slug="guide?.slug || ''"
+            :step="persistedStep(step.id)!"
+            @updated="emit('guide-updated', $event)"
+          />
+          <v-alert v-else-if="guide" type="info" variant="tonal" density="compact" class="mt-3">
+            {{ $t("guide.save-before-adding-images") }}
+          </v-alert>
         </div>
         <div class="d-flex flex-column">
           <v-btn
@@ -330,6 +341,8 @@ import type {
   GuideFrequency,
   GuideRequirementIn,
   GuideRequirementKind,
+  GuideRead,
+  GuideStepOut,
   GuideStepIn,
   GuideType,
 } from "~/lib/api/types/guide";
@@ -349,15 +362,17 @@ export interface GuideDraft {
   requirements: GuideRequirementIn[];
 }
 
-defineProps<{
+const props = defineProps<{
   loading?: boolean;
   error?: string;
   showCancel?: boolean;
+  guide?: GuideRead;
 }>();
 
 const emit = defineEmits<{
-  save: [];
-  cancel: [];
+  "save": [];
+  "cancel": [];
+  "guide-updated": [guide: GuideRead];
 }>();
 
 const model = defineModel<GuideDraft>({ required: true });
@@ -425,6 +440,11 @@ function moveRequirement(index: number, direction: -1 | 1) {
   }
   const [requirement] = model.value.requirements.splice(index, 1);
   model.value.requirements.splice(target, 0, requirement);
+}
+
+function persistedStep(stepId?: string | null): GuideStepOut | undefined {
+  if (!stepId) return undefined;
+  return props.guide?.steps?.find(step => step.id === stepId);
 }
 </script>
 

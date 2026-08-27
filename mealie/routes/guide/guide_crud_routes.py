@@ -1,6 +1,9 @@
+from enum import StrEnum
 from functools import cached_property
 
-from fastapi import Depends, Query, status
+from fastapi import Depends, File, Form, HTTPException, Query, status
+from pydantic import UUID4
+from starlette.responses import FileResponse
 
 from mealie.routes._base import BaseUserController, controller
 from mealie.routes._base.routers import MealieCrudRoute, UserAPIRouter
@@ -11,6 +14,8 @@ from mealie.schema.guide import (
     GuidePagination,
     GuidePatch,
     GuideRead,
+    GuideStepImageOrder,
+    GuideStepImageUpdate,
     GuideType,
     GuideUpdate,
 )
@@ -18,6 +23,12 @@ from mealie.schema.response import PaginationQuery
 from mealie.services.guide import GuideService
 
 router = UserAPIRouter(prefix="/guides", tags=["Guides"], route_class=MealieCrudRoute)
+
+
+class GuideImageSize(StrEnum):
+    original = "original"
+    small = "small"
+    tiny = "tiny"
 
 
 @controller(router)
@@ -71,3 +82,84 @@ class GuideController(BaseUserController):
     @router.delete("/{slug_or_id}", response_model=GuideRead)
     def delete(self, slug_or_id: str) -> GuideRead:
         return self.service.delete(slug_or_id)
+
+    @router.put("/{slug_or_id}/image", response_model=GuideRead)
+    def update_cover_image(self, slug_or_id: str, image: bytes = File(...), extension: str = Form(...)) -> GuideRead:
+        try:
+            return self.service.update_cover_image(slug_or_id, image, extension)
+        except ValueError as exc:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
+
+    @router.delete("/{slug_or_id}/image", response_model=GuideRead)
+    def delete_cover_image(self, slug_or_id: str) -> GuideRead:
+        return self.service.delete_cover_image(slug_or_id)
+
+    @router.get("/{slug_or_id}/image/{size}", response_class=FileResponse)
+    def get_cover_image(self, slug_or_id: str, size: GuideImageSize = GuideImageSize.original) -> FileResponse:
+        return FileResponse(self.service.cover_image_path(slug_or_id, size.value), media_type="image/webp")
+
+    @router.post("/{slug_or_id}/steps/{step_id}/images", response_model=GuideRead)
+    def add_step_image(
+        self,
+        slug_or_id: str,
+        step_id: UUID4,
+        image: bytes = File(...),
+        extension: str = Form(...),
+        caption: str | None = Form(default=None),
+        alt_text: str | None = Form(default=None),
+    ) -> GuideRead:
+        metadata = GuideStepImageUpdate(caption=caption, alt_text=alt_text)
+        try:
+            return self.service.add_step_image(
+                slug_or_id, step_id, image, extension, metadata.caption, metadata.alt_text
+            )
+        except ValueError as exc:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
+
+    @router.patch("/{slug_or_id}/steps/{step_id}/images/{image_id}", response_model=GuideRead)
+    def update_step_image(
+        self,
+        slug_or_id: str,
+        step_id: UUID4,
+        image_id: UUID4,
+        data: GuideStepImageUpdate,
+    ) -> GuideRead:
+        return self.service.update_step_image(slug_or_id, step_id, image_id, data)
+
+    @router.put("/{slug_or_id}/steps/{step_id}/images/{image_id}/file", response_model=GuideRead)
+    def replace_step_image(
+        self,
+        slug_or_id: str,
+        step_id: UUID4,
+        image_id: UUID4,
+        image: bytes = File(...),
+        extension: str = Form(...),
+    ) -> GuideRead:
+        try:
+            return self.service.replace_step_image(slug_or_id, step_id, image_id, image, extension)
+        except ValueError as exc:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
+
+    @router.put("/{slug_or_id}/steps/{step_id}/images/order", response_model=GuideRead)
+    def reorder_step_images(self, slug_or_id: str, step_id: UUID4, data: GuideStepImageOrder) -> GuideRead:
+        return self.service.reorder_step_images(slug_or_id, step_id, data)
+
+    @router.delete("/{slug_or_id}/steps/{step_id}/images/{image_id}", response_model=GuideRead)
+    def delete_step_image(self, slug_or_id: str, step_id: UUID4, image_id: UUID4) -> GuideRead:
+        return self.service.delete_step_image(slug_or_id, step_id, image_id)
+
+    @router.get(
+        "/{slug_or_id}/steps/{step_id}/images/{image_id}/{size}",
+        response_class=FileResponse,
+    )
+    def get_step_image(
+        self,
+        slug_or_id: str,
+        step_id: UUID4,
+        image_id: UUID4,
+        size: GuideImageSize = GuideImageSize.original,
+    ) -> FileResponse:
+        return FileResponse(
+            self.service.step_image_path(slug_or_id, step_id, image_id, size.value),
+            media_type="image/webp",
+        )

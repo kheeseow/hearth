@@ -3,6 +3,7 @@ from .guide import (
     GuideCategoryModel,
     GuideModel,
     GuideRequirementModel,
+    GuideStepImageModel,
     GuideStepModel,
     GuideTagModel,
 )
@@ -13,5 +14,6 @@ __all__ = [
     "GuideModel",
     "GuideRequirementModel",
     "GuideStepModel",
+    "GuideStepImageModel",
     "GuideTagModel",
 ]

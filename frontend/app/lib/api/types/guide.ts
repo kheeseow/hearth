@@ -1,5 +1,5 @@
 /* tslint:disable */
-
+/* eslint-disable */
 /**
 /* This file was automatically generated from pydantic models by running pydantic2ts.
 /* Do not modify it by hand - just update the pydantic models and then re-run the script
@@ -73,6 +73,7 @@ export interface GuideSummary {
   frequency?: GuideFrequency | null;
   preparationMinutes?: number | null;
   executionMinutes?: number | null;
+  coverImageVersion?: string | null;
   category?: GuideCategoryOut | null;
   tags?: GuideTagOut[];
   createdAt: string;
@@ -109,6 +110,7 @@ export interface GuideRead {
   frequency?: GuideFrequency | null;
   preparationMinutes?: number | null;
   executionMinutes?: number | null;
+  coverImageVersion?: string | null;
   category?: GuideCategoryOut | null;
   tags?: GuideTagOut[];
   createdAt: string;
@@ -122,6 +124,14 @@ export interface GuideStepOut {
   position: number;
   text: string;
   tip?: string | null;
+  images?: GuideStepImageOut[];
+}
+export interface GuideStepImageOut {
+  id: string;
+  position: number;
+  version: string;
+  caption?: string | null;
+  altText?: string | null;
 }
 export interface GuideRequirementOut {
   id: string;
@@ -147,6 +157,145 @@ export interface GuideSave {
   householdId: string;
   authorId: string;
   slug: string;
+}
+export interface GuideStepImageOrder {
+  imageIds:
+    | []
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string, string, string]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ];
+}
+export interface GuideStepImageUpdate {
+  caption?: string | null;
+  altText?: string | null;
 }
 export interface GuideUpdate {
   title: string;

@@ -7,6 +7,7 @@ class AppDirectories:
         self.BACKUP_DIR = data_dir.joinpath("backups")
         self.USER_DIR = data_dir.joinpath("users")
         self.RECIPE_DATA_DIR = data_dir.joinpath("recipes")
+        self.GUIDE_DATA_DIR = data_dir.joinpath("guides")
         self.TEMPLATE_DIR = data_dir.joinpath("templates")
 
         self.GROUPS_DIR = self.DATA_DIR.joinpath("groups")
@@ -30,6 +31,7 @@ class AppDirectories:
             self.BACKUP_DIR,
             self.TEMPLATE_DIR,
             self.RECIPE_DATA_DIR,
+            self.GUIDE_DATA_DIR,
             self.USER_DIR,
         ]
 

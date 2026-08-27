@@ -360,6 +360,41 @@ def guides_slug_or_id(slug_or_id):
     return f"{prefix}/guides/{slug_or_id}"
 
 
+def guides_slug_or_id_image(slug_or_id):
+    """`/api/guides/{slug_or_id}/image`"""
+    return f"{prefix}/guides/{slug_or_id}/image"
+
+
+def guides_slug_or_id_image_size(slug_or_id, size):
+    """`/api/guides/{slug_or_id}/image/{size}`"""
+    return f"{prefix}/guides/{slug_or_id}/image/{size}"
+
+
+def guides_slug_or_id_steps_step_id_images(slug_or_id, step_id):
+    """`/api/guides/{slug_or_id}/steps/{step_id}/images`"""
+    return f"{prefix}/guides/{slug_or_id}/steps/{step_id}/images"
+
+
+def guides_slug_or_id_steps_step_id_images_image_id(slug_or_id, step_id, image_id):
+    """`/api/guides/{slug_or_id}/steps/{step_id}/images/{image_id}`"""
+    return f"{prefix}/guides/{slug_or_id}/steps/{step_id}/images/{image_id}"
+
+
+def guides_slug_or_id_steps_step_id_images_image_id_file(slug_or_id, step_id, image_id):
+    """`/api/guides/{slug_or_id}/steps/{step_id}/images/{image_id}/file`"""
+    return f"{prefix}/guides/{slug_or_id}/steps/{step_id}/images/{image_id}/file"
+
+
+def guides_slug_or_id_steps_step_id_images_image_id_size(slug_or_id, step_id, image_id, size):
+    """`/api/guides/{slug_or_id}/steps/{step_id}/images/{image_id}/{size}`"""
+    return f"{prefix}/guides/{slug_or_id}/steps/{step_id}/images/{image_id}/{size}"
+
+
+def guides_slug_or_id_steps_step_id_images_order(slug_or_id, step_id):
+    """`/api/guides/{slug_or_id}/steps/{step_id}/images/order`"""
+    return f"{prefix}/guides/{slug_or_id}/steps/{step_id}/images/order"
+
+
 def households_cookbooks_item_id(item_id):
     """`/api/households/cookbooks/{item_id}`"""
     return f"{prefix}/households/cookbooks/{item_id}"

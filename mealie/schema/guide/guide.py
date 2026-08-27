@@ -5,7 +5,7 @@ from typing import Annotated
 from pydantic import UUID4, ConfigDict, Field, StringConstraints, field_validator
 from sqlalchemy.orm import selectinload
 
-from mealie.db.models.guide import GuideModel
+from mealie.db.models.guide import GuideModel, GuideStepModel
 from mealie.schema._mealie import MealieModel
 from mealie.schema._mealie.mealie_model import UpdatedAtField
 from mealie.schema.response.pagination import PaginationBase
@@ -15,6 +15,8 @@ GuideTagName = Annotated[str, StringConstraints(strip_whitespace=True, min_lengt
 GuideRequirementName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
 GuideRequirementNote = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
 GuideStepTip = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
+GuideImageCaption = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
+GuideImageAltText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
 
 
 class GuideType(StrEnum):
@@ -58,11 +60,38 @@ class GuideStepIn(MealieModel):
         return tip.strip() or None
 
 
+class GuideStepImageOut(MealieModel):
+    id: UUID4
+    position: int
+    version: str
+    caption: str | None = None
+    alt_text: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GuideStepImageUpdate(MealieModel):
+    caption: GuideImageCaption | None = None
+    alt_text: GuideImageAltText | None = None
+
+    @field_validator("caption", "alt_text", mode="before")
+    @classmethod
+    def empty_text_is_none(cls, value: str | None) -> str | None:
+        if not isinstance(value, str):
+            return value
+        return value.strip() or None
+
+
+class GuideStepImageOrder(MealieModel):
+    image_ids: list[UUID4] = Field(max_length=20)
+
+
 class GuideStepOut(MealieModel):
     id: UUID4
     position: int
     text: str
     tip: str | None = None
+    images: list[GuideStepImageOut] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -207,6 +236,7 @@ class GuideSummary(MealieModel):
     frequency: GuideFrequency | None = None
     preparation_minutes: int | None = None
     execution_minutes: int | None = None
+    cover_image_version: str | None = None
     category: GuideCategoryOut | None = None
     tags: list[GuideTagOut] = Field(default_factory=list)
     created_at: datetime
@@ -232,6 +262,7 @@ class GuideRead(GuideSummary):
             selectinload(GuideModel.category),
             selectinload(GuideModel.tags),
             selectinload(GuideModel.steps),
+            selectinload(GuideModel.steps).selectinload(GuideStepModel.images),
             selectinload(GuideModel.callouts),
             selectinload(GuideModel.requirements),
         ]

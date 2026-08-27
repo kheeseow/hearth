@@ -79,6 +79,7 @@ export interface GuideSummary {
   frequency?: GuideFrequency | null;
   preparationMinutes?: number | null;
   executionMinutes?: number | null;
+  coverImageVersion?: string | null;
   category?: GuideCategoryOut | null;
   tags?: GuideTagOut[];
   createdAt: string;
