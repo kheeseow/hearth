@@ -88,6 +88,10 @@ class GuideStepImageOrder(MealieModel):
     image_ids: list[UUID4] = Field(max_length=20)
 
 
+class GuideExportRequest(MealieModel):
+    guide_ids: list[UUID4] = Field(min_length=1, max_length=500)
+
+
 class GuideStepOut(MealieModel):
     id: UUID4
     position: int

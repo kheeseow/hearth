@@ -86,6 +86,8 @@
     },
     "difficulty": "Difficulty",
     "execution-minutes": "Time to complete (minutes)",
+    "export-error": "The guides could not be exported.",
+    "export-guides": "Export shown guides",
     "frequencies": {
       "as-needed": "As needed",
       "monthly": "Monthly",

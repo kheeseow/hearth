@@ -14,12 +14,20 @@ from ._abc_exporter import ABCExporter
 
 
 class Exporter(BaseService):
-    def __init__(self, group_id: UUID, temp_zip: Path, exporters: list[ABCExporter]) -> None:
+    def __init__(
+        self,
+        group_id: UUID,
+        temp_zip: Path,
+        exporters: list[ABCExporter],
+        *,
+        name: str = "Data Export",
+    ) -> None:
         super().__init__()
 
         self.group_id = group_id
         self.temp_path = temp_zip
         self.exporters = exporters
+        self.name = name
 
     def run(self, db: AllRepositories) -> GroupDataExport:
         # Create Zip File
@@ -40,12 +48,10 @@ class Exporter(BaseService):
             id=export_id,
             group_id=self.group_id,
             path=str(export_path),
-            name="Data Export",
+            name=self.name,
             size=pretty_size(export_path.stat().st_size),
             filename=export_path.name,
             expires=datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1),
         )
 
-        db.group_exports.create(group_data_export)
-
-        return group_data_export
+        return db.group_exports.create(group_data_export)

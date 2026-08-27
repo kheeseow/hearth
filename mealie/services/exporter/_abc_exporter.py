@@ -63,11 +63,14 @@ class ABCExporter(BaseService):
                 self.logger.error("Failed to export item. no item found")
                 continue
 
-            zip.writestr(f"{self.destination_dir}/{item.name}/{item.name}.json", item.model.model_dump_json())
+            zip.writestr(f"{self.destination_dir}/{item.name}/{item.name}.json", self.serialize_item(item))
 
             self._post_export_hook(item.model)
 
         self.write_dir_to_zip = None
+
+    def serialize_item(self, item: ExportedItem) -> str:
+        return item.model.model_dump_json()
 
     def write_dir_to_zip_func(self, zip: zipfile.ZipFile):
         """Returns a recursive function that writes a directory to a zip file.

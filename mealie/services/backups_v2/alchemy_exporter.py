@@ -57,7 +57,7 @@ class AlchemyExporter(BaseService):
     meta: MetaData
 
     look_for_datetime = {"created_at", "update_at", "date_updated", "timestamp", "expires_at", "locked_at", "last_made"}
-    look_for_date = {"date_added", "date"}
+    look_for_date = {"date_added", "date", "last_reviewed"}
     look_for_time = {"scheduled_time"}
 
     class DateTimeParser(BaseModel):

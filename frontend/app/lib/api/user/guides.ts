@@ -5,9 +5,12 @@ import type {
   GuideStepImageUpdate,
   GuideUpdate,
 } from "~/lib/api/types/guide";
+import type { GroupDataExport } from "~/lib/api/types/group";
 
 const routes = {
   guides: "/api/guides",
+  exportGuides: "/api/guides/export",
+  exportDownload: (exportId: string) => `/api/guides/export/${exportId}/download`,
   guide: (slugOrId: string | number) => `/api/guides/${slugOrId}`,
   coverImage: (slugOrId: string | number) => `/api/guides/${slugOrId}/image`,
   coverImageFile: (slugOrId: string | number, size: string) => `/api/guides/${slugOrId}/image/${size}`,
@@ -21,6 +24,14 @@ const routes = {
 export class GuideAPI extends BaseCRUDAPI<GuideCreate, GuideRead, GuideUpdate> {
   baseRoute = routes.guides;
   itemRoute = routes.guide;
+
+  exportGuides(guideIds: string[]) {
+    return this.requests.post<GroupDataExport>(routes.exportGuides, { guideIds });
+  }
+
+  exportDownloadUrl(exportId: string) {
+    return routes.exportDownload(exportId);
+  }
 
   updateCoverImage(slugOrId: string | number, file: File) {
     const formData = this.imageForm(file);

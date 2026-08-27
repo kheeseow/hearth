@@ -1,5 +1,8 @@
+import shutil
 import statistics
+from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
@@ -19,9 +22,13 @@ from mealie.db.models.recipe.recipe import RecipeModel
 from mealie.db.models.recipe.tool import Tool
 from mealie.db.models.users.user_to_recipe import UserToRecipe
 from mealie.db.models.users.users import User
+from mealie.repos.all_repositories import get_repositories
+from mealie.schema.guide import GuideSave
 from mealie.services.backups_v2.alchemy_exporter import AlchemyExporter
 from mealie.services.backups_v2.backup_file import BackupFile
 from mealie.services.backups_v2.backup_v2 import BackupV2
+from mealie.services.guide import GuideDataService
+from tests.utils.fixture_schemas import TestUser
 
 
 def dict_sorter(d: dict) -> Any:
@@ -61,6 +68,103 @@ def test_database_restore():
 
     for s1, s2 in zip(snapshop_1, snapshop_2, strict=False):
         assert snapshop_1[s1].sort(key=dict_sorter) == snapshop_2[s2].sort(key=dict_sorter)
+
+
+def test_guide_backup_restore_preserves_fields_and_media(unique_user_fn_scoped: TestUser, tmp_path: Path) -> None:
+    backup_v2 = BackupV2()
+    baseline_generated = backup_v2.backup()
+    baseline_backup = Path(shutil.copy(baseline_generated, tmp_path / "baseline.zip"))
+    guide_backup: Path | None = None
+    guide_generated: Path | None = None
+
+    try:
+        repos = unique_user_fn_scoped.repos
+        related = repos.guides.create(
+            GuideSave(
+                title="Check the stop valve",
+                group_id=unique_user_fn_scoped.group_id,
+                household_id=unique_user_fn_scoped.household_id,
+                author_id=unique_user_fn_scoped.user_id,
+                slug=f"check-stop-valve-{uuid4()}",
+            )
+        )
+        guide = repos.guides.create(
+            GuideSave(
+                title="Prepare the house for travel",
+                description="A complete backup round-trip Guide",
+                guide_type="maintenance",
+                difficulty="intermediate",
+                frequency="as_needed",
+                preparation_minutes=15,
+                execution_minutes=45,
+                notes="Leave the checklist with the house sitter.",
+                last_reviewed="2026-07-15",
+                category="Travel",
+                tags=["Home A"],
+                steps=[{"text": "Turn off the water", "tip": "Photograph the valve position"}],
+                callouts=[{"kind": "warning", "text": "Keep fire suppression active"}],
+                requirements=[{"kind": "tool", "name": "Valve key", "note": "Stored near the meter"}],
+                sources=[{"label": "Utility guidance", "url": "https://example.com/water"}],
+                related_guide_ids=[related.id],
+                group_id=unique_user_fn_scoped.group_id,
+                household_id=unique_user_fn_scoped.household_id,
+                author_id=unique_user_fn_scoped.user_id,
+                slug=f"prepare-house-for-travel-{uuid4()}",
+            )
+        )
+
+        guide_data = GuideDataService(guide.id)
+        guide_data.write_cover(test_data.images_test_image_1.read_bytes(), "jpg")
+        repos.guides.set_cover_image(guide.slug, "cover-version")
+        image_id = uuid4()
+        guide_data.write_step_image(image_id, test_data.images_test_image_2.read_bytes(), "png")
+        guide = repos.guides.create_step_image(
+            guide.id,
+            guide.steps[0].id,
+            image_id,
+            "step-version",
+            "Valve location",
+            "Blue valve beside the meter",
+        )
+
+        expected_document = guide.model_dump(mode="json")
+        expected_media = {
+            path.relative_to(guide_data.guide_dir): path.read_bytes()
+            for path in guide_data.guide_dir.glob("**/*")
+            if path.is_file()
+        }
+
+        guide_generated = backup_v2.backup()
+        guide_backup = Path(shutil.copy(guide_generated, tmp_path / "guide.zip"))
+
+        repos.guides.delete(guide.slug)
+        GuideDataService(guide.id).delete_all_data()
+        repos.session.close()
+        backup_v2.restore(guide_backup)
+
+        with session_context() as session:
+            restored_repos = get_repositories(
+                session,
+                group_id=unique_user_fn_scoped.group_id,
+                household_id=None,
+            )
+            restored = restored_repos.guides.get_one(guide.id, key="id")
+            assert restored is not None
+            assert restored.model_dump(mode="json") == expected_document
+
+        restored_data = GuideDataService(guide.id)
+        restored_media = {
+            path.relative_to(restored_data.guide_dir): path.read_bytes()
+            for path in restored_data.guide_dir.glob("**/*")
+            if path.is_file()
+        }
+        assert restored_media == expected_media
+    finally:
+        unique_user_fn_scoped.repos.session.close()
+        backup_v2.restore(baseline_backup)
+        baseline_generated.unlink(missing_ok=True)
+        if guide_generated:
+            guide_generated.unlink(missing_ok=True)
 
 
 def _5ab195a474eb_add_normalized_search_properties(session: Session):

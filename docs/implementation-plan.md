@@ -19,7 +19,7 @@ rewrite Mealie's platform or erase its repository history.
 ## Current status
 
 - Phase 1 architecture research is complete.
-- Product Slices 1 through 5 are implemented and validated locally.
+- Product Slices 1 through 6 are implemented and validated locally.
 - The Hearth fork is checked out from Mealie `v3.24.0` at commit
   `2c04da733f88836f788234a4bf1127599fbc1294`.
 - `origin` points to `kheeseow/hearth`; `upstream` points to
@@ -38,6 +38,10 @@ rewrite Mealie's platform or erase its repository history.
   are now usable end to end.
 - Guide notes, ordered references, related Guides, review dates, and visible
   stale-review states are now usable end to end.
+- Guide libraries can be exported as readable JSON with their complete media,
+  and full installation backups restore all Guide fields and files.
+- Phase 4 is complete. Its Guide domain, export, and backup checkpoint remains
+  additive and does not alter Recipe persistence.
 - Phase 2 remains open for events and capability exposure. Phase 3 remains open
   for complete accessibility verification.
 
@@ -241,6 +245,46 @@ Validation completed on 2026-08-27:
   responsive reader header
 - The local “Monthly washing machine clean” acceptance Guide now demonstrates
   an overdue review, notes, two ordered references, and two related Guides
+
+## Product Slice 6 — Guide export and backup (complete)
+
+Included:
+
+- Export all Guides currently shown in the Guide library with one action
+- Human-readable, camel-case JSON containing the full Guide response contract
+- Self-contained cover and step-image directories beneath each exported Guide
+- Group-scoped export validation and download authorization
+- Reuse of Mealie's tracked group-export ZIP and file-token flow
+- Full installation backup and restore coverage for every Guide field,
+  relationship, media reference, and generated media file
+- PostgreSQL-safe conversion of the Guide last-reviewed date during restore
+- Continued restoration coverage for all existing pre-Guide Mealie backup
+  fixtures
+
+The Slice 6 implementation adds one Guide-specific exporter and one narrow
+orchestration service. Mealie's generic backup format, Recipe exporter, data
+directories, and database schema remain structurally unchanged. A small
+backward-compatible extension point lets individual exporters choose their JSON
+serialization while preserving Recipe export behavior.
+
+Validation completed on 2026-08-27:
+
+- Guide API and backup/export suites: 19 passed
+- Full backend suite: 2,656 passed and 16 skipped by existing upstream markers
+- Complete Guide export contract, group boundary, media archive, and download
+  token checks: passed
+- Full Guide server-backup mutation and restore round trip: passed
+- All nine historical Mealie backup fixtures restored successfully
+- Python lint and type check: 475 source files passed
+- Frontend ESLint: passed
+- Full frontend suite: 29 files and 277 tests passed
+- Nuxt production build: passed
+- Browser flow: the Guide library export action created a tracked ZIP, issued
+  an authorized download token, and returned the archive successfully
+- Guide-to-Recipe import boundary check: no imports found
+- Phase-end upstream checkpoint: a virtual merge with upstream `mealie-next`
+  at `8d6027770ce366e9a283254c43be896d9f507935` completed without conflicts;
+  the fork was 10 commits ahead and 18 commits behind at the checkpoint
 
 ## Product outcome
 
@@ -1050,7 +1094,9 @@ Record material decisions here as they are made.
 
 ## Immediate next action
 
-Begin Product Slice 6 with Guide-aware backup, restore, and export coverage.
-Extend Mealie's existing orchestration through narrow Guide-specific handlers,
-preserve every Guide field and media reference, prove existing Mealie backups
-still restore, and finish Phase 4 with an upstream-merge checkpoint.
+Begin Product Slice 7 with Phase 5's capability behavior. Inventory the
+existing Mealie capability and preference seams, define Hearth defaults for a
+fresh install, and preserve legacy Recipe, meal-planning, shopping, and
+nutrition behavior for upgraded installations. Keep the first change shallow:
+hide legacy navigation and landing-page entry points through centralized
+capabilities before changing any underlying backend module.

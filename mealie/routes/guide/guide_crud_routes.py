@@ -1,15 +1,20 @@
 from enum import StrEnum
 from functools import cached_property
+from pathlib import Path
 
 from fastapi import Depends, File, Form, HTTPException, Query, status
 from pydantic import UUID4
 from starlette.responses import FileResponse
 
+from mealie.core.dependencies.dependencies import get_temporary_zip_path
+from mealie.core.security import create_file_token
 from mealie.routes._base import BaseUserController, controller
 from mealie.routes._base.routers import MealieCrudRoute, UserAPIRouter
+from mealie.schema.group.group_exports import GroupDataExport
 from mealie.schema.guide import (
     GuideCreate,
     GuideDifficulty,
+    GuideExportRequest,
     GuideFrequency,
     GuidePagination,
     GuidePatch,
@@ -20,7 +25,7 @@ from mealie.schema.guide import (
     GuideUpdate,
 )
 from mealie.schema.response import PaginationQuery
-from mealie.services.guide import GuideService
+from mealie.services.guide import GuideExportService, GuideService
 
 router = UserAPIRouter(prefix="/guides", tags=["Guides"], route_class=MealieCrudRoute)
 
@@ -36,6 +41,10 @@ class GuideController(BaseUserController):
     @cached_property
     def service(self) -> GuideService:
         return GuideService(self.session, self.user)
+
+    @cached_property
+    def export_service(self) -> GuideExportService:
+        return GuideExportService(self.session, self.user)
 
     @router.get("", response_model=GuidePagination)
     def get_all(
@@ -66,6 +75,18 @@ class GuideController(BaseUserController):
     @router.post("", response_model=GuideRead, status_code=status.HTTP_201_CREATED)
     def create(self, data: GuideCreate) -> GuideRead:
         return self.service.create(data)
+
+    @router.post("/export", response_model=GroupDataExport, status_code=status.HTTP_201_CREATED)
+    def export_guides(self, data: GuideExportRequest) -> GroupDataExport:
+        with get_temporary_zip_path() as temp_path:
+            return self.export_service.export_guides(temp_path, data.guide_ids)
+
+    @router.get("/export/{export_id}/download")
+    def get_export_download_token(self, export_id: UUID4) -> dict[str, str]:
+        export = self.export_service.get_export(export_id)
+        if not export:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Export not found")
+        return {"fileToken": create_file_token(Path(export.path).resolve())}
 
     @router.get("/{slug_or_id}", response_model=GuideRead)
     def get_one(self, slug_or_id: str) -> GuideRead:

@@ -30,6 +30,17 @@
       >
         {{ $t("guide.new-guide") }}
       </v-btn>
+      <v-btn
+        color="info"
+        size="large"
+        variant="outlined"
+        :prepend-icon="$globals.icons.download"
+        :loading="exporting"
+        :disabled="!guides.length"
+        @click="exportGuides"
+      >
+        {{ $t("guide.export-guides") }}
+      </v-btn>
     </div>
 
     <v-row density="compact" class="mb-4">
@@ -114,6 +125,7 @@
 import { useUserApi } from "~/composables/api";
 import GuideCard from "~/components/Domain/Guide/GuideCard.vue";
 import type { GuideSummary, GuideDifficulty, GuideFrequency, GuideType } from "~/lib/api/types/guide";
+import { alert } from "~/composables/use-toast";
 
 definePageMeta({ middleware: ["group-only"] });
 
@@ -131,6 +143,7 @@ const category = ref("");
 const tag = ref("");
 const guides = ref<GuideSummary[]>([]);
 const loading = ref(false);
+const exporting = ref(false);
 const error = ref("");
 const guideTypeItems = computed(() => [
   { title: i18n.t("guide.types.cleaning"), value: "cleaning" },
@@ -171,6 +184,25 @@ async function loadGuides() {
     error.value = i18n.t("guide.load-error");
   }
   loading.value = false;
+}
+
+async function exportGuides() {
+  exporting.value = true;
+  try {
+    const { data } = await api.guides.exportGuides(guides.value.map(guide => guide.id));
+    if (!data) {
+      alert.error(i18n.t("guide.export-error"));
+      return;
+    }
+
+    await api.utils.download(api.guides.exportDownloadUrl(data.id));
+  }
+  catch {
+    alert.error(i18n.t("guide.export-error"));
+  }
+  finally {
+    exporting.value = false;
+  }
 }
 
 onMounted(loadGuides);

@@ -1,5 +1,12 @@
+import json
+from pathlib import Path
+from zipfile import ZipFile
+
 from fastapi.testclient import TestClient
 
+from mealie.core.dependencies.dependencies import validate_file_token
+from mealie.db.db_setup import session_context
+from mealie.repos.all_repositories import get_repositories
 from mealie.services.guide import GuideDataService
 from tests import data
 from tests.utils.factories import random_string
@@ -456,3 +463,114 @@ def test_guide_media_rejects_invalid_images_and_non_owner_changes(
         headers=unique_user.token,
     )
     assert forbidden.status_code == 403
+
+
+def test_guide_export_contains_full_document_and_media(
+    api_client: TestClient, unique_user: TestUser, g2_user: TestUser
+) -> None:
+    related_response = api_client.post(
+        GUIDES,
+        json=guide_payload("Check the water shut-off valve"),
+        headers=unique_user.token,
+    )
+    assert related_response.status_code == 201
+    related = related_response.json()
+
+    payload = guide_payload("Prepare the home for a long trip")
+    payload.update(
+        {
+            "guideType": "maintenance",
+            "difficulty": "intermediate",
+            "frequency": "as_needed",
+            "preparationMinutes": 15,
+            "executionMinutes": 45,
+            "notes": "Leave a copy with the house sitter.",
+            "lastReviewed": "2026-07-15",
+            "category": "Travel",
+            "tags": ["Home A", "Before leaving"],
+            "steps": [{"text": "Turn off the water", "tip": "Photograph the valve position"}],
+            "callouts": [{"kind": "warning", "text": "Do not turn off fire suppression water"}],
+            "requirements": [{"kind": "tool", "name": "Valve key", "note": "Keep near the meter"}],
+            "sources": [{"label": "Utility guidance", "url": "https://example.com/water"}],
+            "relatedGuideIds": [related["id"]],
+        }
+    )
+    create = api_client.post(GUIDES, json=payload, headers=unique_user.token)
+    assert create.status_code == 201
+    guide = create.json()
+    step_id = guide["steps"][0]["id"]
+
+    cover = api_client.put(
+        f"{GUIDES}/{guide['id']}/image",
+        data={"extension": "jpg"},
+        files={"image": ("cover.jpg", data.images_test_image_1.read_bytes(), "image/jpeg")},
+        headers=unique_user.token,
+    )
+    assert cover.status_code == 200
+    image = api_client.post(
+        f"{GUIDES}/{guide['id']}/steps/{step_id}/images",
+        data={"extension": "png", "caption": "Valve location", "alt_text": "Blue valve beside the meter"},
+        files={"image": ("valve.png", data.images_test_image_2.read_bytes(), "image/png")},
+        headers=unique_user.token,
+    )
+    assert image.status_code == 200
+    exported_guide = image.json()
+    image_id = exported_guide["steps"][0]["images"][0]["id"]
+
+    denied = api_client.post(
+        f"{GUIDES}/export",
+        json={"guideIds": [guide["id"]]},
+        headers=g2_user.token,
+    )
+    assert denied.status_code == 404
+
+    duplicate = api_client.post(
+        f"{GUIDES}/export",
+        json={"guideIds": [guide["id"], guide["id"]]},
+        headers=unique_user.token,
+    )
+    assert duplicate.status_code == 400
+
+    response = api_client.post(
+        f"{GUIDES}/export",
+        json={"guideIds": [guide["id"], related["id"]]},
+        headers=unique_user.token,
+    )
+    assert response.status_code == 201
+    export = response.json()
+    assert export["name"] == "Guide Export (2)"
+
+    export_path = Path(export["path"])
+    try:
+        with ZipFile(export_path) as archive:
+            document_path = f"guides/{guide['slug']}/{guide['slug']}.json"
+            document = json.loads(archive.read(document_path))
+            assert document["title"] == payload["title"]
+            assert document["guideType"] == payload["guideType"]
+            assert document["notes"] == payload["notes"]
+            assert document["lastReviewed"] == payload["lastReviewed"]
+            assert document["category"]["name"] == payload["category"]
+            assert {tag["name"] for tag in document["tags"]} == set(payload["tags"])
+            assert document["steps"][0]["tip"] == payload["steps"][0]["tip"]
+            assert document["steps"][0]["images"][0]["caption"] == "Valve location"
+            assert document["callouts"][0]["text"] == payload["callouts"][0]["text"]
+            assert document["requirements"][0]["note"] == payload["requirements"][0]["note"]
+            assert document["sources"][0]["url"] == payload["sources"][0]["url"]
+            assert document["relatedGuides"][0]["id"] == related["id"]
+
+            paths = set(archive.namelist())
+            assert f"guides/{guide['slug']}/media/cover/original.webp" in paths
+            assert f"guides/{guide['slug']}/media/step-images/{image_id}/original.webp" in paths
+
+        token_response = api_client.get(
+            f"{GUIDES}/export/{export['id']}/download",
+            headers=unique_user.token,
+        )
+        assert token_response.status_code == 200, token_response.json()
+        assert validate_file_token(token_response.json()["fileToken"]) == export_path.resolve()
+    finally:
+        export_path.unlink(missing_ok=True)
+        with session_context() as session:
+            repos = get_repositories(session, group_id=unique_user.group_id, household_id=None)
+            if repos.group_exports.get_one(export["id"]):
+                repos.group_exports.delete(export["id"])

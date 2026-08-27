@@ -60,6 +60,9 @@ export interface GuideSourceIn {
   label: string;
   url: string;
 }
+export interface GuideExportRequest {
+  guideIds: [string, ...string[]];
+}
 export interface GuidePagination {
   page?: number;
   per_page?: number;

@@ -87,6 +87,8 @@ groups_storage = "/api/groups/storage"
 """`/api/groups/storage`"""
 guides = "/api/guides"
 """`/api/guides`"""
+guides_export = "/api/guides/export"
+"""`/api/guides/export`"""
 households_cookbooks = "/api/households/cookbooks"
 """`/api/households/cookbooks`"""
 households_events_notifications = "/api/households/events/notifications"
@@ -353,6 +355,11 @@ def groups_members_username_or_id(username_or_id):
 def groups_reports_item_id(item_id):
     """`/api/groups/reports/{item_id}`"""
     return f"{prefix}/groups/reports/{item_id}"
+
+
+def guides_export_export_id_download(export_id):
+    """`/api/guides/export/{export_id}/download`"""
+    return f"{prefix}/guides/export/{export_id}/download"
 
 
 def guides_slug_or_id(slug_or_id):
