@@ -31,7 +31,7 @@
           size="original"
           class="guide-cover mb-5"
         />
-        <div class="d-flex align-start ga-3">
+        <div class="d-flex flex-column flex-sm-row align-start ga-3">
           <div>
             <h1 class="text-h4 mb-2">
               {{ guide.title }}
@@ -55,6 +55,19 @@
               <v-chip v-if="totalMinutes" variant="outlined" :prepend-icon="$globals.icons.clockOutline">
                 {{ $t("guide.total-minutes", { count: totalMinutes }) }}
               </v-chip>
+              <v-chip
+                v-if="guide.lastReviewed"
+                :color="reviewState === 'stale' ? 'warning' : 'success'"
+                variant="tonal"
+                :prepend-icon="$globals.icons.calendar"
+              >
+                {{ reviewState === "stale"
+                  ? $t("guide.review-overdue", { date: reviewDateLabel })
+                  : $t("guide.reviewed-on", { date: reviewDateLabel }) }}
+              </v-chip>
+              <v-chip v-else color="warning" variant="tonal" :prepend-icon="$globals.icons.calendar">
+                {{ $t("guide.not-reviewed") }}
+              </v-chip>
             </div>
             <div v-if="guide.tags?.length" class="d-flex flex-wrap ga-2 mt-3">
               <v-chip v-for="tag in guide.tags" :key="tag.id" size="small">
@@ -68,11 +81,21 @@
             color="primary"
             variant="outlined"
             :prepend-icon="$globals.icons.edit"
+            class="guide-edit-button"
             @click="editing = true"
           >
             {{ $t("general.edit") }}
           </v-btn>
         </div>
+
+        <section v-if="guide.notes" class="mt-6" aria-labelledby="guide-notes-heading">
+          <h2 id="guide-notes-heading" class="text-h5 mb-3">
+            {{ $t("guide.notes") }}
+          </h2>
+          <p class="text-body-1 guide-notes">
+            {{ guide.notes }}
+          </p>
+        </section>
 
         <section v-if="guide.requirements?.length" class="mt-6" aria-labelledby="guide-requirements-heading">
           <h2 id="guide-requirements-heading" class="text-h5 mb-3">
@@ -148,6 +171,44 @@
           {{ $t("guide.no-steps") }}
         </p>
 
+        <section v-if="guide.sources?.length" class="mt-7" aria-labelledby="guide-sources-heading">
+          <v-divider class="mb-6" />
+          <h2 id="guide-sources-heading" class="text-h5 mb-3">
+            {{ $t("guide.sources") }}
+          </h2>
+          <v-list density="compact" class="pa-0">
+            <v-list-item
+              v-for="source in guide.sources"
+              :key="source.id"
+              :title="source.label"
+              :subtitle="source.url"
+              :href="source.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              :prepend-icon="$globals.icons.link"
+            />
+          </v-list>
+        </section>
+
+        <section v-if="guide.relatedGuides?.length" class="mt-7" aria-labelledby="guide-related-heading">
+          <v-divider class="mb-6" />
+          <h2 id="guide-related-heading" class="text-h5 mb-3">
+            {{ $t("guide.related-guides") }}
+          </h2>
+          <v-row dense>
+            <v-col v-for="related in guide.relatedGuides" :key="related.id" cols="12" sm="6">
+              <v-card :to="`/g/${groupSlug}/guides/${related.slug}`" variant="outlined" hover>
+                <v-card-title class="text-subtitle-1 text-wrap">
+                  {{ related.title }}
+                </v-card-title>
+                <v-card-subtitle v-if="related.guideType">
+                  {{ $t(`guide.types.${related.guideType.replace('_', '-')}`) }}
+                </v-card-subtitle>
+              </v-card>
+            </v-col>
+          </v-row>
+        </section>
+
         <div v-if="canEdit" class="d-flex justify-end mt-8">
           <v-btn color="error" variant="text" :prepend-icon="$globals.icons.delete" @click="deleteDialog = true">
             {{ $t("general.delete") }}
@@ -173,6 +234,7 @@
 import { useUserApi } from "~/composables/api";
 import GuideEditor, { type GuideDraft } from "~/components/Domain/Guide/GuideEditor.vue";
 import type { GuideRead } from "~/lib/api/types/guide";
+import { guideReviewState } from "~/composables/guides/use-guide-review";
 
 definePageMeta({ middleware: ["group-only"] });
 
@@ -192,11 +254,15 @@ const draft = ref<GuideDraft>({
   frequency: null,
   preparationMinutes: null,
   executionMinutes: null,
+  notes: null,
+  lastReviewed: null,
   category: null,
   tags: [],
   steps: [],
   callouts: [],
   requirements: [],
+  sources: [],
+  relatedGuideIds: [],
 });
 const loading = ref(true);
 const saving = ref(false);
@@ -210,6 +276,12 @@ const avoids = computed(() => guide.value?.callouts?.filter(callout => callout.k
 const totalMinutes = computed(() =>
   (guide.value?.preparationMinutes || 0) + (guide.value?.executionMinutes || 0),
 );
+const reviewState = computed(() => guideReviewState(guide.value?.lastReviewed));
+const reviewDateLabel = computed(() => {
+  if (!guide.value?.lastReviewed) return "";
+  return new Intl.DateTimeFormat(i18n.locale.value, { dateStyle: "medium", timeZone: "UTC" })
+    .format(new Date(`${guide.value.lastReviewed}T00:00:00Z`));
+});
 
 useSeoMeta({ title: computed(() => guide.value?.title || i18n.t("guide.guide")) });
 
@@ -223,6 +295,8 @@ function setDraft() {
     frequency: guide.value.frequency || null,
     preparationMinutes: guide.value.preparationMinutes ?? null,
     executionMinutes: guide.value.executionMinutes ?? null,
+    notes: guide.value.notes || null,
+    lastReviewed: guide.value.lastReviewed || null,
     category: guide.value.category?.name || null,
     tags: (guide.value.tags || []).map(tag => tag.name),
     steps: (guide.value.steps || []).map(step => ({ id: step.id, text: step.text, tip: step.tip || null })),
@@ -237,6 +311,12 @@ function setDraft() {
       name: requirement.name,
       note: requirement.note || null,
     })),
+    sources: (guide.value.sources || []).map(source => ({
+      id: source.id,
+      label: source.label,
+      url: source.url,
+    })),
+    relatedGuideIds: (guide.value.relatedGuides || []).map(related => related.id),
   };
 }
 
@@ -299,6 +379,7 @@ onMounted(loadGuide);
 }
 
 .guide-description,
+.guide-notes,
 .guide-steps li,
 .guide-callout,
 .guide-tip {
@@ -327,5 +408,11 @@ onMounted(loadGuide);
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
+}
+
+@media (max-width: 599px) {
+  .guide-edit-button {
+    align-self: flex-end;
+  }
 }
 </style>

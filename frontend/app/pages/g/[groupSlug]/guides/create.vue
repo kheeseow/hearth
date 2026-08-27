@@ -35,11 +35,15 @@ const draft = ref<GuideDraft>({
   frequency: null,
   preparationMinutes: null,
   executionMinutes: null,
+  notes: null,
+  lastReviewed: null,
   category: null,
   tags: [],
   steps: [{ text: "" }],
   callouts: [],
   requirements: [],
+  sources: [],
+  relatedGuideIds: [],
 });
 
 async function save() {

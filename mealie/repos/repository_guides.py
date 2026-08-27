@@ -8,6 +8,7 @@ from mealie.db.models.guide import (
     GuideCategoryModel,
     GuideModel,
     GuideRequirementModel,
+    GuideSourceModel,
     GuideStepImageModel,
     GuideStepModel,
     GuideTagModel,
@@ -27,10 +28,13 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
         step_data = payload.pop("steps", [])
         callout_data = payload.pop("callouts", [])
         requirement_data = payload.pop("requirements", [])
+        source_data = payload.pop("sources", [])
+        related_guide_ids = payload.pop("related_guide_ids", [])
+        related_guides = self._resolve_related_guides(related_guide_ids)
         payload["title_normalized"] = GuideModel.normalize(payload["title"])
         payload["description_normalized"] = GuideModel.normalize(payload.get("description", ""))
         payload["search_document_normalized"] = self._search_document(
-            payload, category_name, tag_names, step_data, callout_data, requirement_data
+            payload, category_name, tag_names, step_data, callout_data, requirement_data, source_data
         )
 
         document = GuideModel(session=self.session, **payload)
@@ -52,6 +56,14 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
             )
             for requirement in requirement_data
         ]
+        document.sources = [
+            GuideSourceModel(
+                session=self.session,
+                **{key: value for key, value in self._source_values(source).items() if key != "id"},
+            )
+            for source in source_data
+        ]
+        document.related_guides = related_guides
         try:
             self.session.add(document)
             self.session.commit()
@@ -67,17 +79,29 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
         step_data = data.pop("steps", [])
         callout_data = data.pop("callouts", [])
         requirement_data = data.pop("requirements", [])
+        source_data = data.pop("sources", [])
+        related_guide_ids = data.pop("related_guide_ids", [])
         entry = self._query_one(match_value=match_value)
 
         entry.steps = self._merge_ordered_children(entry.steps, step_data, GuideStepModel)
         entry.callouts = self._merge_ordered_children(entry.callouts, callout_data, GuideCalloutModel)
         entry.requirements = self._merge_ordered_children(entry.requirements, requirement_data, GuideRequirementModel)
+        entry.sources = self._merge_ordered_children(
+            entry.sources, [self._source_values(source) for source in source_data], GuideSourceModel
+        )
+        entry.related_guides = self._resolve_related_guides(related_guide_ids)
         entry.category = self._resolve_category(category_name)
         entry.tags = self._resolve_tags(tag_names)
         data["title_normalized"] = GuideModel.normalize(data["title"])
         data["description_normalized"] = GuideModel.normalize(data.get("description", ""))
         data["search_document_normalized"] = self._search_document(
-            data, category_name, tag_names, step_data, callout_data, requirement_data
+            data,
+            category_name,
+            tag_names,
+            step_data,
+            callout_data,
+            requirement_data,
+            source_data,
         )
 
         try:
@@ -88,6 +112,8 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
                 callout.position = position
             for position, requirement in enumerate(entry.requirements):
                 requirement.position = position
+            for position, source in enumerate(entry.sources):
+                source.position = position
             self.session.commit()
         except Exception:
             self.session.rollback()
@@ -235,6 +261,20 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
             tags.append(tag or GuideTagModel(session=self.session, group_id=self.group_id, name=name))
         return tags
 
+    def _resolve_related_guides(self, guide_ids: Iterable[UUID4]) -> list[GuideModel]:
+        ordered_ids = list(guide_ids)
+        if not ordered_ids:
+            return []
+        guides = self.session.scalars(
+            select(GuideModel).where(GuideModel.group_id == self.group_id, GuideModel.id.in_(ordered_ids))
+        ).all()
+        guides_by_id = {str(guide.id): guide for guide in guides}
+        return [guides_by_id[str(guide_id)] for guide_id in ordered_ids if str(guide_id) in guides_by_id]
+
+    @staticmethod
+    def _source_values(source: dict) -> dict:
+        return {key: str(value) if key == "url" else value for key, value in source.items()}
+
     def _merge_ordered_children(self, existing, incoming: list[dict], model_type):
         existing_by_id = {str(item.id): item for item in existing}
         merged = []
@@ -258,6 +298,7 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
         steps: Iterable[dict],
         callouts: Iterable[dict],
         requirements: Iterable[dict],
+        sources: Iterable[dict],
     ) -> str:
         parts = [
             data.get("title", ""),
@@ -265,6 +306,7 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
             data.get("guide_type") or "",
             data.get("difficulty") or "",
             data.get("frequency") or "",
+            data.get("notes") or "",
             category or "",
             *(str(tag) for tag in tags),
             *(step.get("text", "") for step in steps),
@@ -272,5 +314,7 @@ class RepositoryGuides(HouseholdRepositoryGeneric[GuideRead, GuideModel]):
             *(callout.get("text", "") for callout in callouts),
             *(requirement.get("name", "") for requirement in requirements),
             *(requirement.get("note") or "" for requirement in requirements),
+            *(source.get("label", "") for source in sources),
+            *(str(source.get("url") or "") for source in sources),
         ]
         return " ".join(GuideModel.normalize(str(part)) for part in parts if part)

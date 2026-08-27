@@ -32,6 +32,16 @@
           {{ guide.category.name }}
         </v-chip>
       </div>
+      <v-chip
+        v-if="reviewState === 'stale'"
+        color="warning"
+        size="small"
+        variant="tonal"
+        :prepend-icon="$globals.icons.calendar"
+        class="mb-3"
+      >
+        {{ $t("guide.review-needed") }}
+      </v-chip>
       <p v-if="guide.description" class="text-body-2 text-medium-emphasis guide-description">
         {{ guide.description }}
       </p>
@@ -46,11 +56,14 @@
 
 <script setup lang="ts">
 import type { GuideSummary } from "~/lib/api/types/guide";
+import { guideReviewState } from "~/composables/guides/use-guide-review";
 
-defineProps<{
+const props = defineProps<{
   guide: GuideSummary;
   to: string;
 }>();
+
+const reviewState = computed(() => guideReviewState(props.guide.lastReviewed));
 </script>
 
 <style scoped>

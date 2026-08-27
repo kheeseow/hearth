@@ -1,3 +1,4 @@
+from datetime import date
 from typing import TYPE_CHECKING
 
 import sqlalchemy as sa
@@ -21,6 +22,14 @@ guides_to_tags = sa.Table(
     SqlAlchemyBase.metadata,
     sa.Column("guide_id", GUID, sa.ForeignKey("guides.id", ondelete="CASCADE"), primary_key=True),
     sa.Column("tag_id", GUID, sa.ForeignKey("guide_tags.id", ondelete="CASCADE"), primary_key=True),
+)
+
+guide_relations = sa.Table(
+    "guide_relations",
+    SqlAlchemyBase.metadata,
+    sa.Column("guide_id", GUID, sa.ForeignKey("guides.id", ondelete="CASCADE"), primary_key=True),
+    sa.Column("related_guide_id", GUID, sa.ForeignKey("guides.id", ondelete="CASCADE"), primary_key=True),
+    sa.CheckConstraint("guide_id != related_guide_id", name="guide_relation_not_self_check"),
 )
 
 
@@ -133,6 +142,23 @@ class GuideRequirementModel(SqlAlchemyBase):
     def __init__(self, **_) -> None: ...
 
 
+class GuideSourceModel(SqlAlchemyBase):
+    __tablename__ = "guide_sources"
+
+    id: Mapped[GUID] = mapped_column(GUID, primary_key=True, default=GUID.generate)
+    guide_id: Mapped[GUID] = mapped_column(
+        GUID, sa.ForeignKey("guides.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    position: Mapped[int] = mapped_column(sa.Integer, nullable=False, default=0)
+    label: Mapped[str] = mapped_column(sa.String(200), nullable=False)
+    url: Mapped[str] = mapped_column(sa.String(2000), nullable=False)
+
+    model_config = ConfigDict(exclude={"id", "guide_id", "position"})
+
+    @auto_init()
+    def __init__(self, **_) -> None: ...
+
+
 class GuideModel(SqlAlchemyBase, BaseMixins):
     __tablename__ = "guides"
     __table_args__ = (
@@ -186,6 +212,8 @@ class GuideModel(SqlAlchemyBase, BaseMixins):
     frequency: FilterableColumn[str | None] = mapped_column(sa.String(20), nullable=True, index=True)
     preparation_minutes: FilterableColumn[int | None] = mapped_column(sa.Integer, nullable=True)
     execution_minutes: FilterableColumn[int | None] = mapped_column(sa.Integer, nullable=True)
+    notes: FilterableColumn[str | None] = mapped_column(sa.Text, nullable=True)
+    last_reviewed: FilterableColumn[date | None] = mapped_column(sa.Date, nullable=True, index=True)
     cover_image_version: FilterableColumn[str | None] = mapped_column(sa.String(20), nullable=True)
     title_normalized: FilterableColumn[str] = mapped_column(sa.String, nullable=False, index=True)
     description_normalized: FilterableColumn[str] = mapped_column(sa.String, nullable=False, index=True)
@@ -209,7 +237,19 @@ class GuideModel(SqlAlchemyBase, BaseMixins):
         order_by=GuideRequirementModel.position,
         collection_class=ordering_list("position"),
     )
+    sources: Mapped[list[GuideSourceModel]] = orm.relationship(
+        GuideSourceModel,
+        cascade="all, delete-orphan",
+        order_by=GuideSourceModel.position,
+        collection_class=ordering_list("position"),
+    )
     tags: Mapped[list[GuideTagModel]] = orm.relationship(GuideTagModel, secondary=guides_to_tags)
+    related_guides: Mapped[list["GuideModel"]] = orm.relationship(
+        "GuideModel",
+        secondary=guide_relations,
+        primaryjoin=lambda: GuideModel.id == guide_relations.c.guide_id,
+        secondaryjoin=lambda: GuideModel.id == guide_relations.c.related_guide_id,
+    )
 
     model_config = ConfigDict(exclude={"group", "household", "author"})
 

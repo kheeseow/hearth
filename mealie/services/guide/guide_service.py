@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -6,7 +7,13 @@ from slugify import slugify
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from mealie.db.models.guide import GuideCalloutModel, GuideRequirementModel, GuideStepModel
+from mealie.db.models.guide import (
+    GuideCalloutModel,
+    GuideModel,
+    GuideRequirementModel,
+    GuideSourceModel,
+    GuideStepModel,
+)
 from mealie.pkgs import cache
 from mealie.repos.all_repositories import AllRepositories, get_repositories
 from mealie.schema.guide import (
@@ -58,6 +65,7 @@ class GuideService:
         return guide
 
     def create(self, data: GuideCreate) -> GuideRead:
+        self._validate_related_guide_ids(None, data.related_guide_ids)
         slug = self._unique_slug(data.title)
         return self.household_repos.guides.create(
             GuideSave(
@@ -74,6 +82,8 @@ class GuideService:
         self._validate_step_ids(guide, data)
         self._validate_callout_ids(guide, data)
         self._validate_requirement_ids(guide, data)
+        self._validate_source_ids(guide, data)
+        self._validate_related_guide_ids(guide.id, data.related_guide_ids)
         payload = data.model_dump()
         payload.update(
             group_id=guide.group_id,
@@ -101,6 +111,8 @@ class GuideService:
             "frequency": guide.frequency,
             "preparation_minutes": guide.preparation_minutes,
             "execution_minutes": guide.execution_minutes,
+            "notes": guide.notes,
+            "last_reviewed": guide.last_reviewed,
             "category": guide.category.name if guide.category else None,
             "tags": [tag.name for tag in guide.tags],
             "steps": [step.model_dump(include={"id", "text", "tip"}) for step in guide.steps],
@@ -108,9 +120,20 @@ class GuideService:
             "requirements": [
                 requirement.model_dump(include={"id", "kind", "name", "note"}) for requirement in guide.requirements
             ],
+            "sources": [source.model_dump(include={"id", "label", "url"}) for source in guide.sources],
+            "related_guide_ids": [related.id for related in guide.related_guides],
         }
         changes = data.model_dump(exclude_unset=True)
-        for required_field in ("title", "description", "tags", "steps", "callouts", "requirements"):
+        for required_field in (
+            "title",
+            "description",
+            "tags",
+            "steps",
+            "callouts",
+            "requirements",
+            "sources",
+            "related_guide_ids",
+        ):
             if changes.get(required_field) is None:
                 changes.pop(required_field, None)
         merged = GuideUpdate.model_validate({**existing, **changes})
@@ -266,3 +289,29 @@ class GuideService:
             )
             if owner_id != guide.id:
                 raise HTTPException(status.HTTP_400_BAD_REQUEST, "Guide requirement does not belong to this guide")
+
+    def _validate_source_ids(self, guide: GuideRead, data: GuideUpdate) -> None:
+        for source in data.sources:
+            if not source.id:
+                continue
+            owner_id = self.session.scalar(select(GuideSourceModel.guide_id).where(GuideSourceModel.id == source.id))
+            if owner_id != guide.id:
+                raise HTTPException(status.HTTP_400_BAD_REQUEST, "Guide source does not belong to this guide")
+
+    def _validate_related_guide_ids(self, guide_id: UUID | None, related_guide_ids: Sequence[UUID]) -> None:
+        if len(related_guide_ids) != len(set(related_guide_ids)):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Related guides must be unique")
+        if guide_id and guide_id in related_guide_ids:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "A guide cannot relate to itself")
+        if not related_guide_ids:
+            return
+        found_ids = set(
+            self.session.scalars(
+                select(GuideModel.id).where(
+                    GuideModel.group_id == self.user.group_id,
+                    GuideModel.id.in_(related_guide_ids),
+                )
+            ).all()
+        )
+        if found_ids != set(related_guide_ids):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Related guide not found in this group")

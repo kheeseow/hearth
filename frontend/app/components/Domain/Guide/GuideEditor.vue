@@ -86,6 +86,128 @@
       </v-col>
     </v-row>
 
+    <h2 class="text-h6 mb-1">
+      {{ $t("guide.knowledge-upkeep") }}
+    </h2>
+    <p class="text-body-2 text-medium-emphasis mb-3">
+      {{ $t("guide.knowledge-upkeep-description") }}
+    </p>
+    <v-row density="compact">
+      <v-col cols="12" sm="6">
+        <v-text-field
+          v-model="model.lastReviewed"
+          :label="$t('guide.last-reviewed')"
+          type="date"
+          variant="outlined"
+          clearable
+        />
+      </v-col>
+      <v-col cols="12">
+        <v-textarea
+          v-model="model.notes"
+          :label="$t('guide.notes')"
+          :hint="$t('guide.notes-hint')"
+          variant="outlined"
+          rows="3"
+          persistent-hint
+          class="mb-3"
+        />
+      </v-col>
+      <v-col cols="12">
+        <v-autocomplete
+          v-model="model.relatedGuideIds"
+          :label="$t('guide.related-guides')"
+          :hint="$t('guide.related-guides-hint')"
+          :items="relatedGuideItems"
+          item-title="title"
+          item-value="id"
+          variant="outlined"
+          multiple
+          chips
+          closable-chips
+          persistent-hint
+        />
+      </v-col>
+    </v-row>
+
+    <div class="d-flex flex-wrap align-center ga-2 mb-2">
+      <div>
+        <h2 class="text-h6">
+          {{ $t("guide.sources") }}
+        </h2>
+        <p class="text-body-2 text-medium-emphasis">
+          {{ $t("guide.sources-description") }}
+        </p>
+      </div>
+      <v-spacer />
+      <v-btn color="primary" variant="text" :prepend-icon="$globals.icons.link" @click="addSource">
+        {{ $t("guide.add-source") }}
+      </v-btn>
+    </div>
+    <v-card
+      v-for="(source, index) in model.sources"
+      :key="source.id || index"
+      variant="outlined"
+      class="mb-3 pa-3"
+    >
+      <div class="d-flex flex-column flex-sm-row align-start ga-2">
+        <div class="text-h6 pt-2 guide-source-number">
+          {{ index + 1 }}
+        </div>
+        <div class="flex-grow-1 w-100">
+          <v-text-field
+            v-model="source.label"
+            :label="$t('guide.source-label')"
+            :rules="[value => !!value?.trim() || $t('guide.source-label-required')]"
+            variant="outlined"
+            hide-details="auto"
+            class="mb-2"
+          />
+          <v-text-field
+            v-model="source.url"
+            :label="$t('guide.source-url')"
+            :rules="[value => sourceUrlIsValid(value) || $t('guide.source-url-required')]"
+            variant="outlined"
+            hide-details="auto"
+          />
+        </div>
+        <div class="d-flex flex-sm-column">
+          <v-btn
+            icon
+            size="small"
+            variant="text"
+            :disabled="index === 0"
+            :aria-label="$t('guide.move-source-up')"
+            @click="moveSource(index, -1)"
+          >
+            <v-icon>{{ $globals.icons.arrowUp }}</v-icon>
+          </v-btn>
+          <v-btn
+            icon
+            size="small"
+            variant="text"
+            :disabled="index === model.sources.length - 1"
+            :aria-label="$t('guide.move-source-down')"
+            @click="moveSource(index, 1)"
+          >
+            <v-icon style="transform: rotate(180deg)">
+              {{ $globals.icons.arrowUp }}
+            </v-icon>
+          </v-btn>
+          <v-btn
+            icon
+            size="small"
+            variant="text"
+            color="error"
+            :aria-label="$t('guide.remove-source')"
+            @click="model.sources.splice(index, 1)"
+          >
+            <v-icon>{{ $globals.icons.delete }}</v-icon>
+          </v-btn>
+        </div>
+      </div>
+    </v-card>
+
     <div class="d-flex flex-wrap align-center ga-2 mb-2">
       <div>
         <h2 class="text-h6">
@@ -342,10 +464,12 @@ import type {
   GuideRequirementIn,
   GuideRequirementKind,
   GuideRead,
+  GuideSourceIn,
   GuideStepOut,
   GuideStepIn,
   GuideType,
 } from "~/lib/api/types/guide";
+import { useUserApi } from "~/composables/api";
 
 export interface GuideDraft {
   title: string;
@@ -355,11 +479,15 @@ export interface GuideDraft {
   frequency: GuideFrequency | null;
   preparationMinutes: number | null;
   executionMinutes: number | null;
+  notes: string | null;
+  lastReviewed: string | null;
   category: string | null;
   tags: string[];
   steps: GuideStepIn[];
   callouts: GuideCalloutIn[];
   requirements: GuideRequirementIn[];
+  sources: GuideSourceIn[];
+  relatedGuideIds: string[];
 }
 
 const props = defineProps<{
@@ -377,6 +505,8 @@ const emit = defineEmits<{
 
 const model = defineModel<GuideDraft>({ required: true });
 const i18n = useI18n();
+const api = useUserApi();
+const relatedGuideItems = ref<Array<{ id: string; title: string }>>([]);
 const guideTypeItems = computed(() => [
   { title: i18n.t("guide.types.cleaning"), value: "cleaning" },
   { title: i18n.t("guide.types.maintenance"), value: "maintenance" },
@@ -409,7 +539,8 @@ const isValid = computed(() =>
   model.value.title.trim()
   && model.value.steps.every(step => step.text.trim())
   && model.value.callouts.every(callout => callout.text.trim())
-  && model.value.requirements.every(requirement => requirement.name.trim()),
+  && model.value.requirements.every(requirement => requirement.name.trim())
+  && model.value.sources.every(source => source.label.trim() && sourceUrlIsValid(source.url)),
 );
 
 function addStep() {
@@ -422,6 +553,10 @@ function addCallout(kind: GuideCalloutKind) {
 
 function addRequirement(kind: GuideRequirementKind) {
   model.value.requirements.push({ kind, name: "", note: null });
+}
+
+function addSource() {
+  model.value.sources.push({ label: "", url: "" });
 }
 
 function moveStep(index: number, direction: -1 | 1) {
@@ -442,10 +577,38 @@ function moveRequirement(index: number, direction: -1 | 1) {
   model.value.requirements.splice(target, 0, requirement);
 }
 
+function moveSource(index: number, direction: -1 | 1) {
+  const target = index + direction;
+  if (target < 0 || target >= model.value.sources.length) {
+    return;
+  }
+  const [source] = model.value.sources.splice(index, 1);
+  model.value.sources.splice(target, 0, source);
+}
+
+function sourceUrlIsValid(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  }
+  catch {
+    return false;
+  }
+}
+
+async function loadRelatedGuides() {
+  const { data } = await api.guides.getAll(1, -1);
+  relatedGuideItems.value = (data?.items || [])
+    .filter(item => item.id !== props.guide?.id)
+    .map(item => ({ id: item.id, title: item.title }));
+}
+
 function persistedStep(stepId?: string | null): GuideStepOut | undefined {
   if (!stepId) return undefined;
   return props.guide?.steps?.find(step => step.id === stepId);
 }
+
+onMounted(loadRelatedGuides);
 </script>
 
 <style scoped>
@@ -459,6 +622,11 @@ function persistedStep(stepId?: string | null): GuideStepOut | undefined {
 }
 
 .guide-requirement-number {
+  width: 2rem;
+  text-align: center;
+}
+
+.guide-source-number {
   width: 2rem;
   text-align: center;
 }

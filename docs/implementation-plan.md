@@ -19,7 +19,7 @@ rewrite Mealie's platform or erase its repository history.
 ## Current status
 
 - Phase 1 architecture research is complete.
-- Product Slices 1 through 4 are implemented and validated locally.
+- Product Slices 1 through 5 are implemented and validated locally.
 - The Hearth fork is checked out from Mealie `v3.24.0` at commit
   `2c04da733f88836f788234a4bf1127599fbc1294`.
 - `origin` points to `kheeseow/hearth`; `upstream` points to
@@ -36,6 +36,8 @@ rewrite Mealie's platform or erase its repository history.
   per-step tips are now usable end to end.
 - Guide cover images and ordered step images with captions and alternative text
   are now usable end to end.
+- Guide notes, ordered references, related Guides, review dates, and visible
+  stale-review states are now usable end to end.
 - Phase 2 remains open for events and capability exposure. Phase 3 remains open
   for complete accessibility verification.
 
@@ -201,6 +203,44 @@ Validation completed on 2026-08-27:
 - Phone-width editor and reader check at 390 x 844: passed
 - The local “Monthly washing machine clean” acceptance Guide now demonstrates
   a cover image and two captioned step images with alternative text
+
+## Product Slice 5 — Knowledge upkeep (complete)
+
+Included:
+
+- Optional Guide notes and a nullable last-reviewed date
+- A visible review state in the reader and a card warning after 365 days
+- Up to 50 ordered reference links with required labels and HTTP/HTTPS URL
+  validation
+- Up to 20 directed related-Guide links within the same group
+- Self-link, duplicate-link, missing-Guide, and cross-group safeguards
+- Mutual related links remain valid for ordinary “see also” relationships;
+  responses use shallow summaries and never recurse through the relation graph
+- Search across notes, reference labels, and reference URLs
+- Add, remove, edit, reorder, and clear controls in the Guide editor
+- Reader sections for notes, references, and related Guides
+
+The Slice 5 migration adds two nullable Guide columns, the ordered
+`guide_sources` table, and the `guide_relations` association table. It changes
+no Recipe table or prior Guide migration.
+
+Validation completed on 2026-08-27:
+
+- Guide API integration suite: 10 passed
+- Full backend suite: 2,654 passed and 16 skipped by existing upstream markers
+- Python lint and type check: 473 source files passed
+- Frontend ESLint: passed
+- Full frontend suite: 29 files and 277 tests passed
+- Nuxt production build: passed
+- SQLite and PostgreSQL 16 migration upgrade, downgrade, and re-upgrade paths:
+  passed
+- SQLite migration drift check: passed
+- Desktop browser flow: stale card state, reader content, editor controls, and
+  related-Guide labels passed
+- Phone-width editor and reader check at 390 x 844: passed after correcting the
+  responsive reader header
+- The local “Monthly washing machine clean” acceptance Guide now demonstrates
+  an overdue review, notes, two ordered references, and two related Guides
 
 ## Product outcome
 
@@ -1010,7 +1050,7 @@ Record material decisions here as they are made.
 
 ## Immediate next action
 
-Begin Product Slice 5 with Guide notes, validated source/reference links,
-related Guides, and last-reviewed dates with a visible stale-review state.
-Keep these as Guide-owned additive fields and child tables, expand search only
-for useful textual content, and preserve the existing Recipe boundary.
+Begin Product Slice 6 with Guide-aware backup, restore, and export coverage.
+Extend Mealie's existing orchestration through narrow Guide-specific handlers,
+preserve every Guide field and media reference, prove existing Mealie backups
+still restore, and finish Phase 4 with an upstream-merge checkpoint.

@@ -204,6 +204,115 @@ def test_guide_frequency_requirements_and_step_tips(api_client: TestClient, uniq
     assert cleared.json()["requirements"] == []
 
 
+def test_guide_notes_sources_relations_and_review_date(api_client: TestClient, unique_user: TestUser) -> None:
+    marker = random_string(12)
+    related_create = api_client.post(
+        GUIDES,
+        json=guide_payload(f"Check the {marker} shut-off valve"),
+        headers=unique_user.token,
+    )
+    assert related_create.status_code == 201
+    related = related_create.json()
+
+    payload = guide_payload("Prepare the home for a long trip")
+    payload.update(
+        {
+            "notes": f"Keep the {marker} spare key with the neighbour",
+            "lastReviewed": "2025-07-15",
+            "sources": [
+                {"label": "Manufacturer checklist", "url": "https://example.com/checklist"},
+                {"label": "Water safety reference", "url": "https://example.org/water"},
+            ],
+            "relatedGuideIds": [related["id"]],
+        }
+    )
+    create = api_client.post(GUIDES, json=payload, headers=unique_user.token)
+    assert create.status_code == 201
+    guide = create.json()
+    assert guide["notes"] == payload["notes"]
+    assert guide["lastReviewed"] == "2025-07-15"
+    assert [source["position"] for source in guide["sources"]] == [0, 1]
+    assert [source["label"] for source in guide["sources"]] == [
+        "Manufacturer checklist",
+        "Water safety reference",
+    ]
+    assert [item["id"] for item in guide["relatedGuides"]] == [related["id"]]
+
+    for search_term in (marker, "manufacturer checklist", "example.org"):
+        response = api_client.get(GUIDES, params={"search": search_term, "perPage": -1}, headers=unique_user.token)
+        assert response.status_code == 200
+        assert guide["id"] in {item["id"] for item in response.json()["items"]}
+
+    sources = guide["sources"]
+    update_payload = {
+        **payload,
+        "sources": [
+            {"id": sources[1]["id"], "label": "Updated water reference", "url": "https://example.org/new"},
+            {"id": sources[0]["id"], "label": sources[0]["label"], "url": sources[0]["url"]},
+        ],
+    }
+    update = api_client.put(f"{GUIDES}/{guide['id']}", json=update_payload, headers=unique_user.token)
+    assert update.status_code == 200
+    assert [source["id"] for source in update.json()["sources"]] == [sources[1]["id"], sources[0]["id"]]
+    assert [source["position"] for source in update.json()["sources"]] == [0, 1]
+
+    mutual = api_client.patch(
+        f"{GUIDES}/{related['id']}",
+        json={"relatedGuideIds": [guide["id"]]},
+        headers=unique_user.token,
+    )
+    assert mutual.status_code == 200
+
+    cleared = api_client.patch(
+        f"{GUIDES}/{guide['id']}",
+        json={"notes": None, "lastReviewed": None, "sources": [], "relatedGuideIds": []},
+        headers=unique_user.token,
+    )
+    assert cleared.status_code == 200
+    assert cleared.json()["notes"] is None
+    assert cleared.json()["lastReviewed"] is None
+    assert cleared.json()["sources"] == []
+    assert cleared.json()["relatedGuides"] == []
+
+
+def test_guide_sources_and_relations_are_validated(
+    api_client: TestClient, unique_user: TestUser, g2_user: TestUser
+) -> None:
+    guide_create = api_client.post(GUIDES, json=guide_payload(), headers=unique_user.token)
+    other_create = api_client.post(GUIDES, json=guide_payload(), headers=unique_user.token)
+    outside_group_create = api_client.post(GUIDES, json=guide_payload(), headers=g2_user.token)
+    assert guide_create.status_code == other_create.status_code == outside_group_create.status_code == 201
+    guide = guide_create.json()
+    other = other_create.json()
+    outside_group = outside_group_create.json()
+
+    invalid_url = api_client.post(
+        GUIDES,
+        json={**guide_payload(), "sources": [{"label": "Unsafe link", "url": "javascript:alert(1)"}]},
+        headers=unique_user.token,
+    )
+    assert invalid_url.status_code == 422
+
+    duplicate = api_client.patch(
+        f"{GUIDES}/{guide['id']}",
+        json={"relatedGuideIds": [other["id"], other["id"]]},
+        headers=unique_user.token,
+    )
+    assert duplicate.status_code == 400
+
+    self_relation = api_client.patch(
+        f"{GUIDES}/{guide['id']}", json={"relatedGuideIds": [guide["id"]]}, headers=unique_user.token
+    )
+    assert self_relation.status_code == 400
+
+    outside_group_relation = api_client.patch(
+        f"{GUIDES}/{guide['id']}",
+        json={"relatedGuideIds": [outside_group["id"]]},
+        headers=unique_user.token,
+    )
+    assert outside_group_relation.status_code == 400
+
+
 def test_guides_are_group_readable_but_household_owned(
     api_client: TestClient, unique_user: TestUser, h2_user: TestUser
 ) -> None:
