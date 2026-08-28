@@ -27,7 +27,7 @@ preference test.
 | Part | Candidate rule |
 |---|---|
 | Type | Use the existing system font stack. Body text is 16–17 px with a 1.55–1.65 line height; task text is limited to about 65 characters per line. |
-| Spacing | Use a 4 px base with 8, 12, 16, 20, 24, 32, 48, 64, and 96 px steps. Use fewer, larger gaps between sections than within them. |
+| Spacing | Use a 4 px base with 8, 12, 16, 20, 24, 32, 48, 64, and 96 px steps. Peer controls use a 12 px gap; the compact mobile bar keeps at least 6 px between highlights. Use fewer, larger gaps between sections than within them. |
 | Surfaces | Canvas, flat surface, raised surface, soft surface, and border are the complete depth set. Use borders first and shadows only for raised or sticky elements. |
 | Colour | Warm neutrals carry the layout. Hearth rust marks primary actions, green marks positive/trust information, amber marks caution, and red is reserved for danger or failure. Meaning must also appear in words or icons. |
 | Corners | 10 px for controls, 16 px for cards, and 24 px only for large media. Pills are limited to short states and removable filters. |

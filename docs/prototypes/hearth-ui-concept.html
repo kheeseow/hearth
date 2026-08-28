@@ -28,6 +28,7 @@
       --radius-sm: 10px;
       --radius-md: 16px;
       --radius-lg: 24px;
+      --control-gap: 12px;
       --rail-width: 236px;
       --top-height: 72px;
     }
@@ -178,7 +179,7 @@
 
     .nav-stack {
       display: grid;
-      gap: 6px;
+      gap: 10px;
     }
 
     .nav-item {
@@ -271,7 +272,7 @@
     .topbar-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--control-gap);
     }
 
     .icon-button,
@@ -510,7 +511,7 @@
 
     .filter-panel {
       position: absolute;
-      top: 48px;
+      top: 52px;
       right: 0;
       z-index: 10;
       width: min(520px, calc(100vw - 40px));
@@ -530,14 +531,14 @@
     .chip-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: var(--control-gap);
     }
 
     .active-filters {
       display: flex;
       min-height: 36px;
       align-items: center;
-      gap: 8px;
+      gap: var(--control-gap);
       margin-bottom: 20px;
     }
 
@@ -816,7 +817,7 @@
 
     .reader-actions {
       display: flex;
-      gap: 8px;
+      gap: var(--control-gap);
     }
 
     .reader-hero {
@@ -1021,7 +1022,7 @@
     .save-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--control-gap);
     }
 
     .save-status {
@@ -1188,7 +1189,7 @@
     .prototype-note-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: var(--control-gap);
       margin-top: 14px;
     }
 
@@ -1196,6 +1197,7 @@
       position: fixed;
       inset: auto 12px 12px;
       z-index: 30;
+      gap: 6px;
       grid-template-columns: repeat(3, 1fr);
       padding: 6px;
       border: 1px solid var(--line);
