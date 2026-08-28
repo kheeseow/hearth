@@ -42,6 +42,7 @@ const i18n = useI18n();
 const auth = useMealieAuth();
 const groupSlug = computed(() => auth.user.value?.groupSlug);
 const { $globals } = useNuxtApp();
+const capabilities = useAppCapabilities();
 
 const sections = ref([
   {
@@ -99,6 +100,22 @@ const sections = ref([
     ],
   },
 ]);
+
+if (!capabilities.value.legacyRecipes) {
+  sections.value[0].links = sections.value[0].links.slice(0, 1);
+  sections.value[1] = {
+    title: i18n.t("guide.create-guides"),
+    color: "success",
+    links: [
+      {
+        icon: $globals.icons.createAlt,
+        to: computed(() => `/g/${groupSlug.value || ""}/guides/create`),
+        text: i18n.t("guide.new-guide"),
+        description: i18n.t("guide.create-guide-description"),
+      },
+    ],
+  };
+}
 </script>
 
 <style>

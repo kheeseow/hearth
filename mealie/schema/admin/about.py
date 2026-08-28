@@ -1,6 +1,14 @@
 from mealie.schema._mealie import MealieModel
 
 
+class AppCapabilities(MealieModel):
+    guides: bool
+    legacy_recipes: bool
+    meal_planning: bool
+    shopping_lists: bool
+    nutrition: bool
+
+
 class AppStatistics(MealieModel):
     total_recipes: int
     total_users: int
@@ -23,6 +31,7 @@ class AppInfo(MealieModel):
     oidc_provider_name: str
     token_time: int
     allowed_iframe_hosts: list[str] = []
+    capabilities: AppCapabilities
 
 
 class AppTheme(MealieModel):

@@ -7,6 +7,7 @@ from mealie.db.db_setup import generate_session
 from mealie.db.models.users.users import User
 from mealie.repos.all_repositories import get_repositories
 from mealie.schema.admin.about import AppInfo, AppStartupInfo, AppTheme
+from mealie.services.app_capabilities_service import AppCapabilitiesService
 
 router = APIRouter(prefix="/about")
 
@@ -44,6 +45,7 @@ def get_app_info(session: Session = Depends(generate_session)):
         allow_password_login=settings.ALLOW_PASSWORD_LOGIN,
         token_time=settings.TOKEN_TIME,
         allowed_iframe_hosts=settings.allowed_iframe_hosts,
+        capabilities=AppCapabilitiesService(session, settings.HEARTH_LEGACY_FEATURES).get(),
     )
 
 

@@ -1,5 +1,9 @@
 import pathlib
 
+import pytest
+import sqlalchemy as sa
+from alembic.migration import MigrationContext
+from alembic.operations import Operations
 from pydantic import BaseModel
 
 from tests.utils.alembic_reader import ALEMBIC_MIGRATIONS, import_file
@@ -45,3 +49,28 @@ def test_alembic_revisions_are_in_order() -> None:
 
         last = migration
         last = migration
+
+
+@pytest.mark.parametrize("existing_users", [0, 1], ids=["fresh Hearth", "upgraded Mealie"])
+def test_app_capability_migration_preserves_installation_profile(existing_users: int) -> None:
+    migration_path = sorted(ALEMBIC_MIGRATIONS.glob("*.py"))[-1]
+    migration = import_file("app_capability_migration", migration_path)
+    engine = sa.create_engine("sqlite://")
+
+    with engine.begin() as connection:
+        connection.execute(sa.text("CREATE TABLE users (id INTEGER PRIMARY KEY)"))
+        if existing_users:
+            connection.execute(sa.text("INSERT INTO users (id) VALUES (1)"))
+
+        context = MigrationContext.configure(connection)
+        with Operations.context(context):
+            migration.upgrade()
+
+        capabilities = connection.execute(sa.text("SELECT * FROM app_capabilities WHERE id = 1")).mappings().one()
+
+    legacy_features = bool(existing_users)
+    assert capabilities["guides"] is True or capabilities["guides"] == 1
+    assert bool(capabilities["legacy_recipes"]) is legacy_features
+    assert bool(capabilities["meal_planning"]) is legacy_features
+    assert bool(capabilities["shopping_lists"]) is legacy_features
+    assert bool(capabilities["nutrition"]) is legacy_features

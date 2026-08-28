@@ -152,6 +152,10 @@ class AppSettings(AppLoggingSettings):
 
     IS_DEMO: bool = False
 
+    HEARTH_LEGACY_FEATURES: bool | None = None
+    """Override the database capability profile. Leave unset to preserve the
+    fresh-install or upgraded-install profile recorded by the migration."""
+
     HOST_IP: str = "*"
 
     API_HOST: str = "0.0.0.0"

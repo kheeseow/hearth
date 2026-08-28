@@ -26,6 +26,13 @@ def test_public_about_get_app_info(
     assert as_dict["version"] == APP_VERSION
     assert as_dict["demoStatus"] == settings.IS_DEMO
     assert as_dict["allowSignup"] == settings.ALLOW_SIGNUP
+    assert as_dict["capabilities"] == {
+        "guides": True,
+        "legacyRecipes": False,
+        "mealPlanning": False,
+        "shoppingLists": False,
+        "nutrition": False,
+    }
 
     if is_private_group:
         assert as_dict["defaultGroupSlug"] is None
@@ -47,6 +54,7 @@ def test_admin_about_get_app_info(api_client: TestClient, admin_user: TestUser):
     assert as_dict["dbType"] == settings.DB_ENGINE
     # assert as_dict["dbUrl"] == settings.DB_URL_PUBLIC
     assert as_dict["defaultGroup"] == settings.DEFAULT_GROUP
+    assert as_dict["capabilities"]["guides"] is True
 
 
 def test_admin_about_get_app_statistics(api_client: TestClient, admin_user: TestUser):

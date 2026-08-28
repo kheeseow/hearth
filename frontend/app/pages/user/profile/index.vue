@@ -41,6 +41,7 @@
       </div>
       <v-row tag="section">
         <v-col
+          v-if="capabilities.legacyRecipes"
           cols="12"
           sm="12"
           md="12"
@@ -144,6 +145,7 @@
           </UserProfileLinkCard>
         </v-col>
         <v-col
+          v-if="capabilities.legacyRecipes"
           cols="12"
           sm="12"
           md="6"
@@ -291,6 +293,7 @@ definePageMeta({
 const i18n = useI18n();
 const auth = useMealieAuth();
 const { $appInfo } = useNuxtApp();
+const capabilities = useAppCapabilities();
 const route = useRoute();
 const groupSlug = computed(() => route.params.groupSlug || auth.user.value?.groupSlug || "");
 

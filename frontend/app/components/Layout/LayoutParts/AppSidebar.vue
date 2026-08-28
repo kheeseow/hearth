@@ -13,7 +13,7 @@
               {{ sessionUser.fullName }}
             </v-list-item-title>
             <v-list-item-subtitle class="opacity-100">
-              <v-btn v-if="isOwnGroup" class="px-2 pa-0" variant="text" :to="userFavoritesLink" size="small">
+              <v-btn v-if="isOwnGroup && capabilities.legacyRecipes" class="px-2 pa-0" variant="text" :to="userFavoritesLink" size="small">
                 <v-icon start size="small">
                   {{ $globals.icons.heart }}
                 </v-icon>
@@ -184,6 +184,7 @@ const modelValue = defineModel<boolean>({ default: false });
 const auth = useMealieAuth();
 const sessionUser = computed(() => auth.user.value);
 const { loggedIn, isOwnGroup } = useLoggedInState();
+const capabilities = useAppCapabilities();
 const isAdmin = computed(() => auth.user.value?.admin);
 const canManage = computed(() => auth.user.value?.canManage);
 

@@ -24,7 +24,7 @@
       >
         <template #activator="{ props }">
           <v-btn
-            v-if="isOwnGroup"
+            v-if="isOwnGroup && createLinks.length"
             rounded
             size="large"
             class="ml-2 mt-3"
@@ -107,6 +107,7 @@ const display = useDisplay();
 const auth = useMealieAuth();
 const { isOwnGroup } = useLoggedInState();
 const { group } = useGroupSelf();
+const capabilities = useAppCapabilities();
 
 const route = useRoute();
 const groupSlug = computed(() => route.params.groupSlug as string || auth.user.value?.groupSlug || "");
@@ -152,7 +153,7 @@ function cookbookAsLink(cookbook: ReadCookBook): SideBarLink {
 
 const currentUserHouseholdId = computed(() => auth.user.value?.householdId);
 const cookbookLinks = computed<SideBarLink[]>(() => {
-  if (!cookbooks.value?.length) {
+  if (!capabilities.value.legacyRecipes || !cookbooks.value?.length) {
     return [];
   }
 
@@ -221,52 +222,62 @@ const createLinks = computed(() => [
     restricted: true,
     hide: false,
   },
-]);
+].filter(() => capabilities.value.legacyRecipes));
 
-const topLinks = computed<SideBarLink[]>(() => [
+type CapabilitySideBarLink = SideBarLink & { enabled: boolean };
+
+const topLinks = computed<SideBarLink[]>(() => ([
   {
+    enabled: capabilities.value.legacyRecipes,
     icon: $globals.icons.silverwareForkKnife,
     to: `/g/${groupSlug.value}`,
     title: i18n.t("general.recipes"),
     restricted: false,
   },
   {
+    enabled: capabilities.value.legacyRecipes,
     icon: $globals.icons.search,
     to: `/g/${groupSlug.value}/recipes/finder`,
     title: i18n.t("recipe-finder.recipe-finder"),
     restricted: false,
   },
   {
+    enabled: capabilities.value.guides,
     icon: $globals.icons.book,
     to: `/g/${groupSlug.value}/guides`,
     title: i18n.t("guide.guides"),
     restricted: true,
   },
   {
+    enabled: capabilities.value.mealPlanning,
     icon: $globals.icons.calendarMultiselect,
     title: i18n.t("meal-plan.meal-planner"),
     to: "/household/mealplan/planner/view",
     restricted: true,
   },
   {
+    enabled: capabilities.value.shoppingLists,
     icon: $globals.icons.formatListCheck,
     title: i18n.t("shopping-list.shopping-lists"),
     to: "/shopping-lists",
     restricted: true,
   },
   {
+    enabled: capabilities.value.legacyRecipes,
     icon: $globals.icons.timelineText,
     title: i18n.t("recipe.timeline"),
     to: `/g/${groupSlug.value}/recipes/timeline`,
     restricted: true,
   },
   {
+    enabled: capabilities.value.legacyRecipes,
     icon: $globals.icons.book,
     to: `/g/${groupSlug.value}/cookbooks`,
     title: i18n.t("cookbook.cookbooks"),
     restricted: true,
   },
   {
+    enabled: capabilities.value.legacyRecipes,
     icon: $globals.icons.organizers,
     title: i18n.t("general.organizers"),
     restricted: true,
@@ -291,5 +302,5 @@ const topLinks = computed<SideBarLink[]>(() => [
       },
     ],
   },
-]);
+] satisfies CapabilitySideBarLink[]).filter(link => link.enabled));
 </script>

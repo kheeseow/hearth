@@ -18,6 +18,7 @@ export interface AdminAboutInfo {
   oidcProviderName: string;
   tokenTime: number;
   allowedIframeHosts?: string[];
+  capabilities: AppCapabilities;
   versionLatest: string;
   apiPort: number;
   apiDocs: boolean;
@@ -27,6 +28,13 @@ export interface AdminAboutInfo {
   defaultHousehold: string;
   buildId: string;
   recipeScraperVersion: string;
+}
+export interface AppCapabilities {
+  guides: boolean;
+  legacyRecipes: boolean;
+  mealPlanning: boolean;
+  shoppingLists: boolean;
+  nutrition: boolean;
 }
 export interface AllBackups {
   imports: BackupFile[];
@@ -50,6 +58,7 @@ export interface AppInfo {
   oidcProviderName: string;
   tokenTime: number;
   allowedIframeHosts?: string[];
+  capabilities: AppCapabilities;
 }
 export interface AppStartupInfo {
   isFirstLogin: boolean;

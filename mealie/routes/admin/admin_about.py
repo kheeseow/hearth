@@ -4,6 +4,7 @@ from mealie.core.release_checker import get_latest_version
 from mealie.core.settings.static import APP_VERSION
 from mealie.routes._base import BaseAdminController, controller
 from mealie.schema.admin.about import AdminAboutInfo, AppStatistics, CheckAppConfig
+from mealie.services.app_capabilities_service import AppCapabilitiesService
 
 router = APIRouter(prefix="/about")
 
@@ -36,6 +37,7 @@ class AdminAboutController(BaseAdminController):
             enable_oidc=settings.OIDC_AUTH_ENABLED,
             oidc_redirect=settings.OIDC_AUTO_REDIRECT,
             oidc_provider_name=settings.OIDC_PROVIDER_NAME,
+            capabilities=AppCapabilitiesService(self.repos.session, settings.HEARTH_LEGACY_FEATURES).get(),
         )
 
     @router.get("/statistics", response_model=AppStatistics)

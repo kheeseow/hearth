@@ -19,7 +19,7 @@ rewrite Mealie's platform or erase its repository history.
 ## Current status
 
 - Phase 1 architecture research is complete.
-- Product Slices 1 through 6 are implemented and validated locally.
+- Product Slices 1 through 7 are implemented and validated locally.
 - The Hearth fork is checked out from Mealie `v3.24.0` at commit
   `2c04da733f88836f788234a4bf1127599fbc1294`.
 - `origin` points to `kheeseow/hearth`; `upstream` points to
@@ -40,10 +40,13 @@ rewrite Mealie's platform or erase its repository history.
   stale-review states are now usable end to end.
 - Guide libraries can be exported as readable JSON with their complete media,
   and full installation backups restore all Guide fields and files.
+- Fresh Hearth installations now present Guides as the sole product workflow,
+  while upgraded Mealie installations retain their existing Recipe, meal-plan,
+  shopping-list, and nutrition entry points.
 - Phase 4 is complete. Its Guide domain, export, and backup checkpoint remains
   additive and does not alter Recipe persistence.
-- Phase 2 remains open for events and capability exposure. Phase 3 remains open
-  for complete accessibility verification.
+- Phase 2 remains open for Guide events. Phase 3 remains open for complete
+  accessibility verification. Phase 5 capability isolation is underway.
 
 ## Product Slice 1 — Minimal Guide CRUD (complete)
 
@@ -285,6 +288,58 @@ Validation completed on 2026-08-27:
 - Phase-end upstream checkpoint: a virtual merge with upstream `mealie-next`
   at `8d6027770ce366e9a283254c43be896d9f507935` completed without conflicts;
   the fork was 10 commits ahead and 18 commits behind at the checkpoint
+
+## Product Slice 7 — Fresh-install product isolation (complete)
+
+Included:
+
+- One typed application-capability response for Guides, legacy Recipes, meal
+  planning, shopping lists, and nutrition
+- A persisted installation profile created by an additive migration
+- Fresh-install detection before the default user is seeded, so new Hearth
+  databases disable legacy workflows without inspecting data on every startup
+- Upgrade-safe detection that leaves all Mealie workflows enabled when the
+  database already contains users
+- A single `HEARTH_LEGACY_FEATURES` operator override for temporarily enabling
+  or disabling the complete legacy bundle without deleting data
+- Capability-driven sidebar, create-menu, favorites, profile, and setup-page
+  entry points
+- A Guide-first group landing redirect for fresh Hearth installations
+- Frontend redirects away from disabled Recipe, cookbook, meal-plan,
+  shopping-list, and Recipe-favorites routes
+- Fail-open behavior when a capability record is unexpectedly absent, avoiding
+  accidental loss of access during an incomplete upgrade
+- No removal or modification of Recipe, meal-plan, shopping-list, or nutrition
+  backend modules
+
+The capability table is server-wide rather than household-specific because it
+describes the installed product profile, not authorization or content
+ownership. Individual legacy capabilities remain separate in the public
+contract so later slices can isolate their related actions and backend routes
+without changing frontend consumers again.
+
+Validation completed on 2026-08-28:
+
+- Fresh SQLite migration profile: Guides on; all legacy capabilities off
+- Upgraded SQLite migration profile: all existing capabilities remain on
+- Fresh PostgreSQL 16 migration profile: Guides on; all legacy capabilities off
+- Upgraded PostgreSQL 16 migration profile: all existing capabilities remain on
+- Capability service, public configuration response, fallback, override, and
+  route-policy tests: passed
+- Full backend suite: 2,661 passed and 16 skipped by existing upstream markers
+- Python lint and type check: 478 source files passed
+- Frontend ESLint: passed
+- Full frontend suite: 30 files and 286 tests passed
+- Nuxt production build: passed
+- Browser fresh-install check: only Guides remained in primary navigation; the
+  Recipe create menu and favorites link were absent
+- Browser direct-route check: Recipe creation returned to Guides, and disabled
+  meal-planning and shopping-list pages returned to the application landing
+- Browser upgraded-install check: all legacy navigation returned after the
+  persisted compatibility profile was restored
+- A synthetic merge with upstream `mealie-next` at
+  `1ff92450a32cbe7edc3a25792a88208e84099788` completed without conflicts;
+  the fork was 11 commits ahead and 28 commits behind at the checkpoint
 
 ## Product outcome
 
@@ -1091,12 +1146,13 @@ Record material decisions here as they are made.
 | 2026-08-23 | Remain structurally close to Mealie | Preserve the ability to adopt upstream features and fixes |
 | 2026-08-23 | Keep hidden Recipe modules tested | Product independence does not require destructive code removal |
 | 2026-08-26 | Use tags to test additional taxonomies | Avoid premature entities while allowing homes, spaces, and other dimensions to emerge from use |
+| 2026-08-28 | Persist a server-wide fresh-or-upgraded capability profile | Give new Hearth installs a Guide-first product while preserving all legacy Mealie entry points on upgrade |
 
 ## Immediate next action
 
-Begin Product Slice 7 with Phase 5's capability behavior. Inventory the
-existing Mealie capability and preference seams, define Hearth defaults for a
-fresh install, and preserve legacy Recipe, meal-planning, shopping, and
-nutrition behavior for upgraded installations. Keep the first change shallow:
-hide legacy navigation and landing-page entry points through centralized
-capabilities before changing any underlying backend module.
+Begin Product Slice 8 with Phase 5's branding and landing work. Centralize the
+Hearth product name, shallow theme defaults, manifest metadata, and user-facing
+identity through existing configuration seams without renaming the Python
+package, API paths, data directories, or Mealie-compatible environment
+variables. Then make Guide search the primary landing affordance while keeping
+the capability boundary from Slice 7 as the only legacy-visibility policy.

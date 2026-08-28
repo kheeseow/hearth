@@ -75,6 +75,8 @@
     "classification": "Classification and timing",
     "cover-image": "Cover image",
     "cover-image-hint": "A clear overview photo helps people recognize this guide.",
+    "create-guide-description": "Capture a process your household can follow and keep up to date.",
+    "create-guides": "Create guides",
     "delete-confirmation": "Are you sure you want to delete this guide?",
     "delete-error": "The guide could not be deleted.",
     "delete-guide": "Delete guide",
