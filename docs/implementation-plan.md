@@ -19,7 +19,7 @@ rewrite Mealie's platform or erase its repository history.
 ## Current status
 
 - Phase 1 architecture research is complete.
-- Product Slices 1 through 8 are implemented and validated locally.
+- Product Slices 1 through 9 are implemented and validated locally.
 - The Hearth fork is checked out from Mealie `v3.24.0` at commit
   `2c04da733f88836f788234a4bf1127599fbc1294`.
 - `origin` points to `kheeseow/hearth`; `upstream` points to
@@ -45,6 +45,8 @@ rewrite Mealie's platform or erase its repository history.
   shopping-list, and nutrition entry points.
 - Shared application chrome, install metadata, and the Guide library now use a
   centralized Hearth identity and a warm, Guide-first presentation.
+- The Guide reader now has a responsive reading hierarchy and a complete,
+  browser-native print layout without introducing a second content model.
 - Phase 4 is complete. Its Guide domain, export, and backup checkpoint remains
   additive and does not alter Recipe persistence.
 - Phase 2 remains open for Guide events. Phase 3 remains open for complete
@@ -392,6 +394,46 @@ Validation completed on 2026-08-28:
 - A synthetic merge with upstream `mealie-next` at
   `2b81b6b0a3e591a017e009cad9a92b3ad7a3b837` completed without conflicts;
   the fork was 12 commits ahead and 29 commits behind at the checkpoint
+
+## Product Slice 9 — Responsive Guide reader and print layout (complete)
+
+Included:
+
+- Extract the read-only Guide presentation from the route page into one
+  Guide-domain component while leaving loading, editing, saving, and deletion
+  orchestration in the page
+- Give safety callouts full-width priority before procedural content
+- Present requirements and notes as supporting context beside steps on wide
+  screens and before steps on narrow screens
+- Turn each step into a clearly numbered reading block with tips, images,
+  captions, and sensible page-break behavior
+- Add a visible print action that uses the browser's native print workflow
+- Add print-only rules for paper margins, readable typography, flattened cards,
+  visible source URLs, restrained images, and avoided breaks inside steps and
+  safety callouts
+- Preserve the existing Guide API, schema, media endpoints, editor, and saved
+  data shape
+
+Validation completed on 2026-08-28:
+
+- Guide reader helper tests: passed
+- Frontend ESLint: passed
+- Full frontend suite: 31 files and 289 tests passed
+- Nuxt production build: passed
+- Wide browser check: the seeded washing-machine Guide presents safety first,
+  a sticky supporting column, and readable numbered steps at 1280 x 900
+- Phone-width browser check: requirements and notes move before steps and the
+  reader remains usable at 390 x 844
+- Semantic browser check: one labelled article, ordered heading levels, safety
+  before steps, and complementary requirements and notes were present
+- Print-tree check: all 5 steps, 2 figures, 2 references, 2 related Guides, and
+  the print footer remained present with page and break-control rules
+- Edit and cancel interaction check: the existing editor opened and returned to
+  the reader without changing saved data; delete permission handling is unchanged
+- No backend API, schema, database migration, or saved Guide shape changed
+- A synthetic merge with upstream `mealie-next` at
+  `2b81b6b0a3e591a017e009cad9a92b3ad7a3b837` completed without conflicts;
+  the fork was 13 commits ahead and 29 commits behind at the checkpoint
 
 ## Product outcome
 
@@ -1199,11 +1241,14 @@ Record material decisions here as they are made.
 | 2026-08-23 | Keep hidden Recipe modules tested | Product independence does not require destructive code removal |
 | 2026-08-26 | Use tags to test additional taxonomies | Avoid premature entities while allowing homes, spaces, and other dimensions to emerge from use |
 | 2026-08-28 | Persist a server-wide fresh-or-upgraded capability profile | Give new Hearth installs a Guide-first product while preserving all legacy Mealie entry points on upgrade |
+| 2026-08-28 | Print the responsive Guide reader directly | Keep one presentation model and use native browser printing instead of adding a PDF service |
 
 ## Immediate next action
 
-Begin Product Slice 9 with Phase 5's Guide presentation and print work. Improve
-the Guide reading hierarchy on narrow and wide screens, add a clean printable
-layout, and keep safety notes, requirements, steps, images, sources, and review
-state legible without adding a second presentation model. Follow with focused
-accessibility and browser checks before expanding the wider wording audit.
+Begin Product Slice 10 with Phase 5's residual fresh-install wording and
+settings audit. Inventory visible menus, setup and settings screens,
+announcements, notifications, email templates, public metadata, and English
+translations. Replace product-level wording through centralized brand values,
+while preserving Mealie where it names an import format, authentication method,
+compatibility contract, or retained upstream feature. Add focused checks that
+disabled legacy entry points do not return through overlooked shared UI.

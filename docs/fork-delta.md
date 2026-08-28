@@ -1,7 +1,7 @@
 # Hearth Fork Delta
 
 This file records the expected Hearth-owned paths and the small set of shared
-Mealie files touched by Product Slices 1 through 8. Use it when reviewing
+Mealie files touched by Product Slices 1 through 9. Use it when reviewing
 upstream merges.
 
 ## Hearth-owned paths
@@ -24,6 +24,7 @@ frontend/app/lib/app-capability-routes.ts
 frontend/app/middleware/app-capabilities.global.ts
 mealie/core/settings/branding.py
 frontend/app/lib/app-brand.ts
+frontend/app/lib/guide-reader.ts
 frontend/app/composables/use-app-brand.ts
 frontend/public/icons/hearth-mark.svg
 ```
