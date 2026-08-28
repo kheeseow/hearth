@@ -41,14 +41,14 @@ body {
   background: rgb(var(--v-theme-background)) !important;
 }
 
-:where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
-  outline: 3px solid rgb(var(--v-theme-primary));
-  outline-offset: 3px;
-}
-
 .v-btn {
   border-radius: var(--hearth-radius-control);
 }
+
+.v-field {
+  border-radius: var(--hearth-radius-control);
+}
+
 .v-card {
   border-radius: var(--hearth-radius-card);
 }
