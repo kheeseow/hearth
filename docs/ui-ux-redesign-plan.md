@@ -2,7 +2,9 @@
 
 ## Status
 
-Product Slice 12A is complete. No production UI changes have started.
+Product Slice 12B is complete as a disposable design prototype. No production
+UI changes have started. The revised direction must be selected explicitly
+before Slice 12C begins.
 
 This plan defines the redesign direction, evidence-gathering method, delivery
 sequence, and upstream-compatibility boundaries that must be agreed before UI
@@ -11,16 +13,21 @@ implementation begins.
 An interactive, disposable concept is available at
 [`docs/prototypes/hearth-ui-concept.html`](prototypes/hearth-ui-concept.html).
 It demonstrates the proposed library, reader, editor, responsive shell, light
-and dark themes, search filtering, and save feedback without importing any of
-the concept into the production application. The direction is approved in
-principle; Slice 12B must now reconcile it with the recorded audit before any
-production rollout.
+and dark themes, local search feedback, disclosed filters, and complete save
+feedback without importing any of the concept into the production application.
+The audit priorities and small design contract are recorded in the
+[Design Foundations](ui-ux-design-foundations.md).
 
 Slice 12A evidence is recorded in:
 
 - [UI/UX Audit](ui-ux-audit.md)
 - [UI/UX Journey Map](ui-ux-journey-map.md)
 - [UI/UX Assumptions and Experiments](ui-ux-assumptions.md)
+
+Slice 12B is recorded in:
+
+- [Interactive concept](prototypes/hearth-ui-concept.html)
+- [Design Foundations](ui-ux-design-foundations.md)
 
 ## Executive decision
 
@@ -491,6 +498,11 @@ No product code changes occur in 12A.
 
 Deliverable: a working, reviewable prototype and a short decision record. Do
 not begin broad rollout until one direction is explicitly selected.
+
+Completed on 2026-08-28. The revised concept was checked at 1280, 390, and 320
+pixels, in light and dark themes, with result, no-result, loading, failure,
+filter, reader, edit, save, and failed-save states. These checks establish that
+the candidate can work; they do not replace the planned household-user trials.
 
 ### Slice 12C — Library and search
 

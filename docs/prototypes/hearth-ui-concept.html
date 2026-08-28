@@ -58,6 +58,17 @@
       box-sizing: border-box;
     }
 
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     html {
       scroll-behavior: smooth;
     }
@@ -387,15 +398,17 @@
     }
 
     .library-intro {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 32px;
-      align-items: end;
-      margin-bottom: 40px;
+      margin-bottom: 24px;
+    }
+
+    .library-intro h1 {
+      max-width: none;
+      margin-bottom: 10px;
+      font-size: clamp(34px, 3.6vw, 48px);
     }
 
     .search-panel {
-      margin: 32px 0 24px;
+      margin: 24px 0 12px;
       padding: 10px;
       border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--line));
       border-radius: var(--radius-md);
@@ -431,10 +444,115 @@
       color: var(--ink-muted);
     }
 
+    .library-controls {
+      display: flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .result-summary {
+      margin: 0;
+      color: var(--ink-muted);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .filter-disclosure {
+      position: relative;
+    }
+
+    .filter-disclosure summary {
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      border-radius: 10px;
+      color: var(--primary-strong);
+      cursor: pointer;
+      font-weight: 720;
+      list-style: none;
+    }
+
+    .filter-disclosure summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .filter-disclosure summary::after {
+      content: "⌄";
+      font-size: 14px;
+    }
+
+    .filter-disclosure[open] summary::after {
+      transform: rotate(180deg);
+    }
+
+    .filter-count {
+      display: grid;
+      min-width: 20px;
+      height: 20px;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      font-size: 12px;
+    }
+
+    .filter-count[hidden] {
+      display: none;
+    }
+
+    .filter-panel {
+      position: absolute;
+      top: 48px;
+      right: 0;
+      z-index: 10;
+      width: min(520px, calc(100vw - 40px));
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface-raised);
+      box-shadow: var(--shadow-md);
+    }
+
+    .filter-panel > strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+
     .chip-row {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+    }
+
+    .active-filters {
+      display: flex;
+      min-height: 36px;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .active-filters[hidden] {
+      display: none;
+    }
+
+    .active-filter {
+      display: inline-flex;
+      min-height: 34px;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      border: 1px solid var(--accent);
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
     }
 
     .chip {
@@ -460,7 +578,7 @@
       align-items: end;
       justify-content: space-between;
       gap: 16px;
-      margin: 48px 0 20px;
+      margin: 24px 0 20px;
     }
 
     .section-heading p {
@@ -474,6 +592,10 @@
       gap: 20px;
     }
 
+    .guide-grid[hidden] {
+      display: none;
+    }
+
     .guide-card {
       position: relative;
       display: flex;
@@ -485,6 +607,10 @@
       background: var(--surface-raised);
       box-shadow: var(--shadow-sm);
       transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .guide-card[hidden] {
+      display: none;
     }
 
     .guide-card:hover {
@@ -596,6 +722,51 @@
       text-align: center;
     }
 
+    .loading-results,
+    .error-results {
+      display: none;
+      margin-bottom: 20px;
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+
+    .loading-results[aria-hidden="false"],
+    .error-results[aria-hidden="false"] {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .loading-results {
+      color: var(--ink-muted);
+    }
+
+    .error-results {
+      border-color: color-mix(in srgb, var(--danger) 38%, var(--line));
+      background: var(--danger-soft);
+    }
+
+    .error-results p {
+      margin: 0;
+    }
+
+    .state-dot {
+      width: 14px;
+      height: 14px;
+      flex: 0 0 auto;
+      border: 2px solid var(--line);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 700ms linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     .empty-results strong {
       display: block;
       margin-bottom: 8px;
@@ -661,22 +832,6 @@
     .hero-visual span {
       font-size: 76px;
       filter: drop-shadow(0 5px 10px rgb(0 0 0 / 10%));
-    }
-
-    .tag-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 22px 0 0;
-    }
-
-    .tag {
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: var(--surface-soft);
-      color: var(--ink-muted);
-      font-size: 12px;
-      font-weight: 700;
     }
 
     .safety-panel {
@@ -815,11 +970,7 @@
     }
 
     .editor-heading {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 24px;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
     }
 
     .editor-heading h1 {
@@ -828,10 +979,27 @@
       font-size: clamp(34px, 4vw, 48px);
     }
 
-    .save-cluster {
+    .editor-savebar {
+      position: sticky;
+      top: 116px;
+      z-index: 12;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 12px;
+      margin-bottom: 20px;
+      padding: 10px 12px 10px 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--surface-raised) 94%, transparent);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(12px);
+    }
+
+    .save-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .save-status {
@@ -994,6 +1162,13 @@
       font-size: 14px;
     }
 
+    .prototype-note-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
     .mobile-nav {
       position: fixed;
       inset: auto 12px 12px;
@@ -1051,22 +1226,27 @@
       .mobile-nav { display: grid; }
       .screen { min-height: calc(100vh - 96px); }
       .page { padding: 32px 18px 108px; }
-      .library-intro { display: block; margin-bottom: 32px; }
+      .library-intro { margin-bottom: 18px; }
+      .library-intro .lede { display: none; }
       h1 { font-size: clamp(34px, 10vw, 46px); }
-      .search-panel { margin-top: 24px; padding: 7px; }
+      .search-panel { margin-top: 18px; padding: 7px; }
       .search-box input { height: 48px; }
       .search-box .primary-button { min-width: 48px; padding: 0 14px; }
       .search-box .button-label { display: none; }
-      .section-heading { margin-top: 40px; align-items: start; }
+      .library-controls { align-items: center; }
+      .filter-panel { position: fixed; inset: auto 16px 86px; width: auto; }
+      .active-filters { margin-bottom: 12px; }
+      .section-heading { margin-top: 16px; align-items: start; }
       .guide-grid { grid-template-columns: 1fr; }
       .card-cover { aspect-ratio: 16 / 7; }
       .reader-toolbar { margin-bottom: 28px; }
       .reader-actions .secondary-button span { display: none; }
-      .reader-hero { display: flex; flex-direction: column-reverse; align-items: stretch; gap: 28px; }
+      .reader-hero { display: block; margin-bottom: 28px; }
       .reader-hero h1 { font-size: clamp(38px, 11vw, 50px); }
-      .hero-visual { aspect-ratio: 16 / 9; }
+      .hero-visual { display: none; }
+      .safety-panel { margin-bottom: 24px; padding: 20px; }
       .safety-grid { grid-template-columns: 1fr; }
-      .reader-layout { display: flex; flex-direction: column; }
+      .reader-layout { display: flex; flex-direction: column; gap: 28px; }
       .before-card { position: static; width: 100%; }
       .steps { width: 100%; }
       .step { grid-template-columns: 40px minmax(0, 1fr); gap: 14px; }
@@ -1074,7 +1254,7 @@
       .step h3 { margin-top: 3px; font-size: 20px; }
       .step p { font-size: 17px; }
       .editor-heading { display: block; }
-      .save-cluster { position: sticky; top: 104px; z-index: 10; justify-content: space-between; margin: 20px 0 0; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-raised); box-shadow: var(--shadow-sm); }
+      .editor-savebar { top: 104px; padding-left: 12px; }
       .editor-card { padding: 22px 18px; }
       .field-grid { grid-template-columns: 1fr; }
       .field.full { grid-column: auto; }
@@ -1161,34 +1341,55 @@
           <div class="library-intro">
             <div>
               <p class="eyebrow">Your household guidebook</p>
-              <h1 id="library-title">What do you need to do?</h1>
-              <p class="lede">Find the instructions your household already trusts—without solving the same problem twice.</p>
+              <h1 id="library-title">Find the right household guide</h1>
+              <p class="lede">Search the instructions your household already trusts.</p>
             </div>
           </div>
 
           <form class="search-panel" id="guide-search" role="search">
             <div class="search-box">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
-              <input id="search-input" type="search" placeholder="Try “washing machine”, “router”, or “oil stain”" aria-label="Search Guides">
+              <input id="search-input" type="search" placeholder="Search washing machine, router, oil stain…" aria-label="Search Guides">
               <button class="primary-button" type="submit"><span class="button-label">Search</span><span aria-hidden="true">→</span></button>
             </div>
           </form>
 
-          <div class="chip-row" aria-label="Quick filters">
-            <button class="chip active" data-filter="all">All guides</button>
-            <button class="chip" data-filter="cleaning">Cleaning</button>
-            <button class="chip" data-filter="maintenance">Maintenance</button>
-            <button class="chip" data-filter="setup">Setup</button>
-            <button class="chip" data-filter="emergency">Emergency</button>
-            <button class="chip" data-filter="troubleshooting">Troubleshooting</button>
+          <div class="library-controls">
+            <p class="result-summary" id="result-count" aria-live="polite">6 guides</p>
+            <details class="filter-disclosure" id="guide-filters">
+              <summary>Filters <span class="filter-count" id="filter-count" hidden>1</span></summary>
+              <div class="filter-panel">
+                <strong>Guide category</strong>
+                <div class="chip-row" aria-label="Filter by category">
+                  <button class="chip active" data-filter="all" type="button">All guides</button>
+                  <button class="chip" data-filter="cleaning" type="button">Cleaning</button>
+                  <button class="chip" data-filter="maintenance" type="button">Maintenance</button>
+                  <button class="chip" data-filter="setup" type="button">Setup</button>
+                  <button class="chip" data-filter="emergency" type="button">Emergency</button>
+                  <button class="chip" data-filter="troubleshooting" type="button">Troubleshooting</button>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <div class="active-filters" id="active-filters" hidden>
+            <button class="active-filter" id="clear-filter" type="button"><span id="active-filter-label">Cleaning</span> <span aria-hidden="true">×</span><span class="sr-only">Clear category filter</span></button>
+          </div>
+
+          <div class="loading-results" id="loading-results" aria-hidden="true" role="status">
+            <span>Finding matching guides…</span><span class="state-dot" aria-hidden="true"></span>
+          </div>
+
+          <div class="error-results" id="error-results" aria-hidden="true" role="alert">
+            <p><strong>Guides could not load.</strong><br>Check the connection, then try again.</p>
+            <button class="secondary-button" id="retry-search" type="button">Try again</button>
           </div>
 
           <div class="section-heading">
             <div>
-              <h2>For this home</h2>
-              <p id="result-count" aria-live="polite">6 practical guides</p>
+              <h2>Guides for this home</h2>
             </div>
-            <button class="text-button" type="button">Filters <span aria-hidden="true">⌄</span></button>
+            <button class="text-button" type="button">More <span aria-hidden="true">•••</span></button>
           </div>
 
           <div class="guide-grid" id="guide-grid">
@@ -1199,7 +1400,7 @@
                 <div class="card-kicker">Appliance care</div>
                 <h3>Monthly washing machine clean</h3>
                 <p>Prevent odors, detergent buildup, and a dirty filter with one safe routine.</p>
-                <div class="metadata"><span>◷ 55 min</span><span>○ Beginner</span><span>↻ Monthly</span></div>
+                <div class="metadata"><span>◷ 55 min</span><span>○ Beginner</span></div>
               </div>
             </article>
 
@@ -1210,7 +1411,7 @@
                 <div class="card-kicker">Technology &amp; setup</div>
                 <h3>Restart a home router safely</h3>
                 <p>Power-cycle the internet equipment without erasing its settings.</p>
-                <div class="metadata"><span>◷ 8 min</span><span>○ Beginner</span><span>↻ As needed</span></div>
+                <div class="metadata"><span>◷ 8 min</span><span>○ Beginner</span></div>
               </div>
             </article>
 
@@ -1221,7 +1422,7 @@
                 <div class="card-kicker">Emergency</div>
                 <h3>Shut off the main water</h3>
                 <p>Locate and close the correct valve quickly when a serious leak happens.</p>
-                <div class="metadata"><span>◷ 5 min</span><span>○ Beginner</span><span>↻ As needed</span></div>
+                <div class="metadata"><span>◷ 5 min</span><span>○ Beginner</span></div>
               </div>
             </article>
 
@@ -1232,7 +1433,7 @@
                 <div class="card-kicker">Laundry</div>
                 <h3>Restore Turkish cotton towels</h3>
                 <p>Wash and dry towels correctly to remove buildup and restore softness.</p>
-                <div class="metadata"><span>◷ 75 min</span><span>○ Beginner</span><span>↻ As needed</span></div>
+                <div class="metadata"><span>◷ 75 min</span><span>○ Beginner</span></div>
               </div>
             </article>
 
@@ -1243,7 +1444,7 @@
                 <div class="card-kicker">Emergency</div>
                 <h3>Prepare for a short power outage</h3>
                 <p>Keep essential lights, communications, and appliances safe during an outage.</p>
-                <div class="metadata"><span>◷ 15 min</span><span>○ Beginner</span><span>↻ As needed</span></div>
+                <div class="metadata"><span>◷ 15 min</span><span>○ Beginner</span></div>
               </div>
             </article>
 
@@ -1254,7 +1455,7 @@
                 <div class="card-kicker">Clothing care</div>
                 <h3>Handle a small cooking-oil stain</h3>
                 <p>Lift fresh oil from washable fabric before it settles into the fibres.</p>
-                <div class="metadata"><span>◷ 25 min</span><span>○ Beginner</span><span>↻ As needed</span></div>
+                <div class="metadata"><span>◷ 25 min</span><span>○ Beginner</span></div>
               </div>
             </article>
           </div>
@@ -1264,7 +1465,14 @@
             Try a shorter search or choose another category.
           </div>
 
-          <div class="prototype-note"><strong>Concept choice:</strong> the library is the home. Search leads, categories help recognition, and advanced filters move out of the first visual tier.</div>
+          <div class="prototype-note">
+            <strong>Concept choice:</strong> search leads, result feedback sits beside it, and filters stay out of the way until requested.
+            <div class="prototype-note-actions" aria-label="Prototype-only state controls">
+              <button class="secondary-button" data-preview-state="loading" type="button">Preview loading</button>
+              <button class="secondary-button" data-preview-state="error" type="button">Preview error</button>
+              <button class="text-button" data-preview-state="results" type="button">Reset results</button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1283,8 +1491,7 @@
               <p class="eyebrow">Appliance care · Cleaning</p>
               <h1 id="reader-title">Monthly washing machine clean</h1>
               <p class="lede">A safe monthly routine to prevent odors, detergent buildup, and a dirty filter.</p>
-              <div class="metadata" style="margin-top: 20px"><span>◷ 55 minutes</span><span>○ Beginner</span><span>↻ Monthly</span></div>
-              <div class="tag-row"><span class="tag">laundry</span><span class="tag">appliances</span><span class="tag">monthly</span></div>
+              <div class="metadata" style="margin-top: 20px"><span>◷ 55 minutes</span><span>○ Beginner</span><span>✓ Reviewed this month</span></div>
             </div>
             <div class="hero-visual" role="img" aria-label="Washing machine illustration"><span>◉</span></div>
           </header>
@@ -1319,7 +1526,7 @@
             </section>
           </div>
 
-          <div class="prototype-note"><strong>Concept choice:</strong> the reader prioritizes outcome, safety, preparation, then procedure. Utilities remain available without competing with the task.</div>
+          <div class="prototype-note"><strong>Concept choice:</strong> the reader keeps only outcome, duration, difficulty, and trust near the title. Safety, preparation, and the first step arrive sooner—especially on a phone.</div>
         </article>
       </section>
 
@@ -1331,8 +1538,12 @@
               <h1 id="editor-title">Monthly washing machine clean</h1>
               <p class="lede">Start with the essentials. Add supporting details only where they make the procedure safer or clearer.</p>
             </div>
-            <div class="save-cluster">
-              <span class="save-status" id="save-status" aria-live="polite">No unsaved changes</span>
+          </div>
+
+          <div class="editor-savebar">
+            <span class="save-status" id="save-status" aria-live="polite">No unsaved changes</span>
+            <div class="save-actions">
+              <button class="text-button" data-screen-target="reader">Cancel</button>
               <button class="primary-button" id="save-button" type="button">Save guide</button>
             </div>
           </div>
@@ -1344,8 +1555,16 @@
             <div class="field-grid">
               <div class="field full"><label for="guide-title">Title</label><input id="guide-title" value="Monthly washing machine clean"></div>
               <div class="field full"><label for="guide-description">What this Guide helps with</label><textarea id="guide-description">A safe monthly routine to prevent odors, detergent buildup, and a dirty filter.</textarea></div>
-              <div class="field"><label for="guide-category">Category</label><input id="guide-category" value="Appliance care"></div>
-              <div class="field"><label for="guide-frequency">Frequency</label><input id="guide-frequency" value="Monthly"></div>
+            </div>
+          </section>
+
+          <section class="editor-card" aria-labelledby="safety-preparation-title">
+            <div class="editor-card-header">
+              <div><h2 id="safety-preparation-title">Safety and preparation</h2><p>Keep warnings and what people need visible for this safety-sensitive Guide.</p></div>
+            </div>
+            <div class="field-grid">
+              <div class="field full"><label for="guide-warning">Important warning</label><textarea id="guide-warning">Unplug the machine before opening or cleaning the drain filter.</textarea></div>
+              <div class="field full"><label for="guide-requirements">What someone needs</label><textarea id="guide-requirements">Microfibre cloth, soft filter brush, and maker-recommended machine cleaner.</textarea></div>
             </div>
           </section>
 
@@ -1362,21 +1581,26 @@
           </section>
 
           <details class="editor-card">
-            <summary><span><strong>Safety and preparation</strong><br><small style="color: var(--ink-muted)">Warnings, tools, and materials</small></span></summary>
-            <div class="details-content"><div class="field"><label for="guide-warning">Important warning</label><textarea id="guide-warning">Unplug the machine before opening or cleaning the drain filter.</textarea></div></div>
-          </details>
-
-          <details class="editor-card">
             <summary><span><strong>More details</strong><br><small style="color: var(--ink-muted)">Images, tags, sources, relationships, and review date</small></span></summary>
-            <div class="details-content"><p style="color: var(--ink-muted); margin: 0">Advanced Guide fields remain fully available, but they no longer compete with the basic authoring path.</p></div>
+            <div class="details-content">
+              <div class="field-grid">
+                <div class="field"><label for="guide-category">Category</label><input id="guide-category" value="Appliance care"></div>
+                <div class="field"><label for="guide-frequency">Frequency</label><input id="guide-frequency" value="Monthly"></div>
+              </div>
+              <p style="color: var(--ink-muted); margin: 20px 0 0">Images, tags, sources, relationships, and review dates remain available here in the production editor.</p>
+            </div>
           </details>
 
-          <div style="display: flex; justify-content: space-between; gap: 12px; margin-top: 28px">
-            <button class="text-button" data-screen-target="reader">Cancel</button>
+          <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 28px">
             <button class="text-button" type="button" style="color: var(--danger)">Delete guide</button>
           </div>
 
-          <div class="prototype-note"><strong>Concept choice:</strong> authoring starts with essentials and steps. Safety is prominent but compact; specialist metadata is available without overwhelming a simple Guide.</div>
+          <div class="prototype-note">
+            <strong>Concept choice:</strong> authoring starts with recognition, safety, preparation, and steps. Classification stays available under “More details,” while save state remains visible.
+            <div class="prototype-note-actions" aria-label="Prototype-only save controls">
+              <button class="secondary-button" id="preview-save-failure" type="button">Preview failed save</button>
+            </div>
+          </div>
         </div>
       </section>
     </main>
@@ -1410,7 +1634,31 @@
     const searchInput = document.querySelector("#search-input");
     const resultCount = document.querySelector("#result-count");
     const emptyResults = document.querySelector("#empty-results");
+    const guideGrid = document.querySelector("#guide-grid");
+    const activeFilters = document.querySelector("#active-filters");
+    const activeFilterLabel = document.querySelector("#active-filter-label");
+    const filterCount = document.querySelector("#filter-count");
+    const filterDisclosure = document.querySelector("#guide-filters");
+    const loadingResults = document.querySelector("#loading-results");
+    const errorResults = document.querySelector("#error-results");
     let selectedFilter = "all";
+
+    const filterLabels = {
+      cleaning: "Cleaning",
+      maintenance: "Maintenance",
+      setup: "Setup",
+      emergency: "Emergency",
+      troubleshooting: "Troubleshooting"
+    };
+
+    function showLibraryState(state) {
+      const showsResults = state === "results";
+      guideGrid.hidden = !showsResults;
+      emptyResults.hidden = !showsResults;
+      loadingResults.setAttribute("aria-hidden", state === "loading" ? "false" : "true");
+      errorResults.setAttribute("aria-hidden", state === "error" ? "false" : "true");
+      if (showsResults) filterGuides();
+    }
 
     function filterGuides() {
       const query = searchInput.value.trim().toLowerCase();
@@ -1422,37 +1670,63 @@
         card.hidden = !show;
         if (show) visible += 1;
       });
-      resultCount.textContent = `${visible} practical ${visible === 1 ? "guide" : "guides"}`;
+      resultCount.textContent = `${visible} ${visible === 1 ? "guide" : "guides"}`;
       emptyResults.style.display = visible ? "none" : "block";
     }
 
     document.querySelector("#guide-search").addEventListener("submit", event => {
       event.preventDefault();
-      filterGuides();
+      showLibraryState("results");
     });
-    searchInput.addEventListener("input", filterGuides);
+    searchInput.addEventListener("input", () => showLibraryState("results"));
 
     document.querySelectorAll("[data-filter]").forEach(button => button.addEventListener("click", () => {
       selectedFilter = button.dataset.filter;
       document.querySelectorAll("[data-filter]").forEach(chip => chip.classList.toggle("active", chip === button));
-      filterGuides();
+      const hasFilter = selectedFilter !== "all";
+      activeFilters.hidden = !hasFilter;
+      filterCount.hidden = !hasFilter;
+      if (hasFilter) activeFilterLabel.textContent = filterLabels[selectedFilter];
+      filterDisclosure.open = false;
+      showLibraryState("results");
     }));
+
+    document.querySelector("#clear-filter").addEventListener("click", () => {
+      document.querySelector('[data-filter="all"]').click();
+    });
+
+    document.querySelectorAll("[data-preview-state]").forEach(button => button.addEventListener("click", () => {
+      showLibraryState(button.dataset.previewState);
+      document.querySelector("#guide-search").scrollIntoView({ behavior: "smooth", block: "start" });
+    }));
+
+    document.querySelector("#retry-search").addEventListener("click", () => showLibraryState("results"));
 
     const saveStatus = document.querySelector("#save-status");
     const saveButton = document.querySelector("#save-button");
     document.querySelectorAll(".editor-page input, .editor-page textarea").forEach(field => field.addEventListener("input", () => {
       saveStatus.textContent = "Unsaved changes";
+      saveStatus.style.color = "";
     }));
     saveButton.addEventListener("click", () => {
       saveButton.disabled = true;
       saveButton.textContent = "Saving…";
       saveStatus.textContent = "Saving your changes";
+      saveStatus.style.color = "";
       window.setTimeout(() => {
         saveButton.disabled = false;
         saveButton.textContent = "Saved";
         saveStatus.textContent = "All changes saved";
         window.setTimeout(() => { saveButton.textContent = "Save guide"; }, 1200);
       }, 700);
+    });
+
+    document.querySelector("#preview-save-failure").addEventListener("click", () => {
+      saveButton.disabled = false;
+      saveButton.textContent = "Try saving again";
+      saveStatus.textContent = "Save failed — your changes are still here";
+      saveStatus.style.color = "var(--danger)";
+      document.querySelector(".editor-savebar").scrollIntoView({ behavior: "smooth", block: "center" });
     });
 
     document.querySelector("#add-step").addEventListener("click", () => {

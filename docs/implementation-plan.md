@@ -1351,12 +1351,12 @@ Record material decisions here as they are made.
 | 2026-08-28 | Run a whole-product UI/UX audit after Slice 11 | Audit stable, accessible, responsive core flows before another major feature expands the interface |
 | 2026-08-28 | Keep current Guide route chunks after measuring them | The four main Guide flows are only 3.9–4.9 KB compressed; changing shared Nuxt/Vuetify loading would add upstream merge risk without a demonstrated Guide performance problem |
 | 2026-08-28 | Plan Home separately from Mealie Household | Preserve Mealie's people and permission boundary while reserving an additive, group-scoped physical-property model only when real multi-home use emerges |
+| 2026-08-28 | Keep Slice 12 foundations Guide-scoped and system-font based | Improve the core Guide experience without replacing Mealie's frontend foundations or adding a font and theme migration |
 
 ## Immediate next action
 
-Begin Slice 12B using the completed [UI/UX Audit](ui-ux-audit.md),
-[Journey Map](ui-ux-journey-map.md), and
-[Assumptions and Experiments](ui-ux-assumptions.md). Reconcile the existing
-interactive concept with the three selected priorities, record the smallest
-Guide-owned token and component decisions, and validate the hypotheses before
-production UI implementation.
+Review the revised [interactive concept](prototypes/hearth-ui-concept.html) and
+[Design Foundations](ui-ux-design-foundations.md), then explicitly select or
+reject this direction. If selected, begin Slice 12C with the Guide library and
+search only. Keep the production work Guide-owned, preserve current routes and
+the search API, and do not apply a global theme rewrite.

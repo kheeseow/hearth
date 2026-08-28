@@ -107,6 +107,28 @@ Use the lowest-cost test that can answer each question:
 Do not use preference questions such as “Which design do you like?” as the main
 evidence. Observe whether the person completes the task.
 
+## Slice 12B prototype check
+
+The revised disposable concept passed the checks it can answer without real
+participants:
+
+- The library was inspected at 1280, 390, and 320 pixels in light and dark
+  themes; a Guide result begins in the first phone view.
+- `router` leaves only the router Guide visible. A category can be disclosed,
+  applied, seen after the disclosure closes, and cleared.
+- Result count, no-result, loading, and failed-load recovery appear directly
+  below search.
+- The reader's DOM and visual order is outcome, trust, safety, preparation,
+  then steps. Decorative media is removed from the phone path.
+- The editor keeps safety visible, places classification under **More
+  details**, reports editing/saving/saved/failed states, and retains edited
+  text after a simulated failure.
+- The browser reported no console errors.
+
+This is an internal interaction and reflow check, not user evidence. H01–H08
+remain unconfirmed until the planned task sessions are observed. H09 and H10
+remain protected product constraints rather than prototype experiments.
+
 ## Current process score
 
 Lean UX process: **7/10**.
