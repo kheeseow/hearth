@@ -214,7 +214,7 @@ const route = useRoute();
 const i18n = useI18n();
 const auth = useMealieAuth();
 const brand = useAppBrand();
-const { $appInfo, $axios } = useNuxtApp();
+const { $appInfo, $axios, $globals } = useNuxtApp();
 const { loggedIn } = useLoggedInState();
 const groupSlug = computed(() => auth.user.value?.groupSlug);
 const isDemo = ref(false);
