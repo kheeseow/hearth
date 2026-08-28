@@ -57,6 +57,8 @@ rewrite Mealie's platform or erase its repository history.
   additive and does not alter Recipe persistence.
 - Phase 2 remains open for Guide events. Phase 3 is complete. Phase 5 product
   polish and capability isolation is underway.
+- QR codes are deferred to the final optional phase and do not block the first
+  complete Hearth release.
 
 ## Product Slice 1 — Minimal Guide CRUD (complete)
 
@@ -663,7 +665,7 @@ The initial product does not include:
 - Maintenance reminders
 - Full offline Guide synchronization
 - Automatic conversion of every Recipe into a Guide
-- QR codes before the core Guide experience is stable
+- QR codes; they remain a final optional enhancement after the core release
 
 ## Taxonomy strategy
 
@@ -1252,49 +1254,7 @@ Implementation sequence:
 6. Publish operator compatibility and rollback guidance.
 7. Phase-end upstream merge checkpoint.
 
-### Phase 6 — Add QR codes
-
-Goal: make every Guide accessible from a safe, durable QR code.
-
-Design rules:
-
-- QR code represents a stable URL, not stored Guide content.
-- Use immutable Guide ID in URL resolution; slug is cosmetic.
-- Generate SVG and PNG on demand.
-- Authentication is required by default.
-- Public access uses a separate, revocable, optionally expiring share token.
-- Never place bearer tokens or household secrets in QR payloads.
-- Deleted, private, expired, and revoked Guides have deliberate landing states.
-
-Tasks:
-
-- Add a domain-neutral QR renderer.
-- Add authenticated Guide QR endpoints.
-- Add Guide share-token tables and management endpoints if public QR access is
-  included.
-- Add download and print-sticker UI.
-- Test scanning, URL changes, token revocation, and unauthorized access.
-
-Exit criteria:
-
-- Printed QR remains valid after Guide title/slug changes.
-- Revocation works immediately.
-- QR output is legible at intended sticker sizes.
-- QR implementation is contained in Guide and shared utility modules rather
-  than modifying Recipe sharing behavior.
-- A phase-end upstream merge checkpoint passes.
-
-Implementation sequence:
-
-1. Stable Guide URL resolution.
-2. Domain-neutral QR rendering utility.
-3. Authenticated download endpoints and UI.
-4. Optional Guide-specific public share tokens.
-5. Sticker print layouts and scan tests.
-6. Security and revocation tests.
-7. Phase-end upstream merge checkpoint.
-
-### Phase 7 — Upgrade, compatibility, and release hardening
+### Phase 6 — Upgrade, compatibility, and release hardening
 
 Goal: prove that Hearth is a complete product and a maintainable Mealie fork.
 
@@ -1329,7 +1289,7 @@ Exit criteria:
 - Security, accessibility, performance, and mobile acceptance checks pass.
 - Release documentation identifies the exact Mealie baseline.
 
-### Phase 8 — Completion and sustainable maintenance
+### Phase 7 — Completion and sustainable maintenance
 
 Goal: release Hearth without turning the fork into an unmergeable codebase.
 
@@ -1351,9 +1311,10 @@ Tasks:
 - Continue retiring local patches when equivalent upstream features become
   available.
 
-Completion criteria:
+Core-release completion criteria:
 
-- The complete Guide product scope is available and documented.
+- The complete core Guide product scope is available and documented; QR codes
+  are not a release requirement.
 - Recipe-only functionality is absent from the default Hearth experience.
 - No destructive Recipe data migration is required for ordinary upgrades.
 - Hearth-owned code is concentrated in Guide modules and documented shallow
@@ -1362,6 +1323,55 @@ Completion criteria:
   rediscovering the fork architecture.
 - CI continuously validates Hearth behavior and retained upstream behavior.
 - The release is reproducible from the tagged source.
+
+### Phase 8 — Optional QR codes (final planned enhancement)
+
+Goal: add safe, durable Guide QR access only after the core Hearth release is
+complete and real usage shows that stickers or scan-to-open access are useful.
+
+This phase is optional. Deferring or removing it does not make the core Hearth
+release incomplete.
+
+Design rules:
+
+- QR code represents a stable URL, not stored Guide content.
+- Use immutable Guide ID in URL resolution; slug is cosmetic.
+- Generate SVG and PNG on demand.
+- Authentication is required by default.
+- Public access uses a separate, revocable, optionally expiring share token.
+- Never place bearer tokens or household secrets in QR payloads.
+- Deleted, private, expired, and revoked Guides have deliberate landing states.
+
+Tasks:
+
+- Confirm a recurring real-world need for QR access before implementation.
+- Add a domain-neutral QR renderer.
+- Add authenticated Guide QR endpoints.
+- Add Guide share-token tables and management endpoints only if public QR
+  access is separately approved.
+- Add download and print-sticker UI.
+- Test scanning, URL changes, token revocation, and unauthorized access.
+
+Exit criteria:
+
+- The usage trigger and intended sticker or scan workflow are documented.
+- Printed QR remains valid after Guide title/slug changes.
+- Revocation works immediately when public access is included.
+- QR output is legible at intended sticker sizes.
+- QR implementation is contained in Guide and shared utility modules rather
+  than modifying Recipe sharing behavior.
+- A phase-end upstream merge checkpoint passes.
+
+Implementation sequence:
+
+1. Confirm the usage trigger and access policy.
+2. Stable Guide URL resolution.
+3. Domain-neutral QR rendering utility.
+4. Authenticated download endpoints and UI.
+5. Optional Guide-specific public share tokens.
+6. Sticker print layouts and scan tests.
+7. Security and revocation tests.
+8. Phase-end upstream merge checkpoint.
 
 ## Validation strategy
 
@@ -1454,11 +1464,13 @@ Record material decisions here as they are made.
 | 2026-08-28 | Plan Home separately from Mealie Household | Preserve Mealie's people and permission boundary while reserving an additive, group-scoped physical-property model only when real multi-home use emerges |
 | 2026-08-28 | Keep Slice 12 foundations Guide-scoped and system-font based | Improve the core Guide experience without replacing Mealie's frontend foundations or adding a font and theme migration |
 | 2026-08-28 | Make Guide library state URL-addressable | Preserve search and filters across refresh and sharing without changing the Guide API or router shape |
+| 2026-08-29 | Move QR codes to the final optional phase | The core household Guide product and first release do not depend on QR access; compatibility and release readiness provide more immediate value |
 
 ## Immediate next action
 
-Review Slice 12C in the running application, then begin Slice 12D with the Guide
-reader only. Preserve the existing reader route and API, keep the work
-Guide-owned, and validate safety-first hierarchy, long-form reading, print,
-small phones, dark mode, missing images, and review state before moving to the
-editor.
+Do not begin another implementation slice until it is approved. The next
+planned slice should close the remaining foundation and release-readiness work:
+Guide event registration, operator compatibility and rollback guidance, and
+the Phase 5 upstream merge checkpoint. Phase 6 then performs the complete
+upgrade and release-hardening matrix. QR codes remain the final optional Phase
+8 enhancement and do not block the core release.
