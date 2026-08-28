@@ -1294,6 +1294,7 @@ Record material decisions here as they are made.
 | 2026-08-28 | Persist a server-wide fresh-or-upgraded capability profile | Give new Hearth installs a Guide-first product while preserving all legacy Mealie entry points on upgrade |
 | 2026-08-28 | Print the responsive Guide reader directly | Keep one presentation model and use native browser printing instead of adding a PDF service |
 | 2026-08-28 | Gate shared legacy settings instead of deleting them | Keep fresh Hearth focused while allowing upgraded installations and upstream tests to retain complete Mealie behavior |
+| 2026-08-28 | Run a whole-product UI/UX audit after Slice 11 | Audit stable, accessible, responsive core flows before another major feature expands the interface |
 
 ## Immediate next action
 
@@ -1303,3 +1304,11 @@ shared navigation with keyboard-only and phone-width browser checks; correct
 focus order, accessible names, loading and empty feedback, contrast, and layout
 overflow without redesigning Mealie's shared component system. Measure the
 Guide list and reader bundles before choosing any performance work.
+
+Follow it with Product Slice 12, a whole-product UI/UX audit before starting
+another major feature. Apply a heuristic review and cognitive walkthrough to
+first run, Guide discovery, search and filtering, creation/editing, reading,
+printing, settings, and error recovery. Score findings by severity, fix all
+task-blocking and major issues, then prioritize minor visual and interaction
+polish separately so the audit produces a focused improvement pass rather than
+an open-ended redesign.
