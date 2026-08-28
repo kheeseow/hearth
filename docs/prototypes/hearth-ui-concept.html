@@ -1384,12 +1384,12 @@
               <div class="filter-panel">
                 <strong>Guide category</strong>
                 <div class="chip-row" aria-label="Filter by category">
-                  <button class="chip active" data-filter="all" type="button">All guides</button>
-                  <button class="chip" data-filter="cleaning" type="button">Cleaning</button>
-                  <button class="chip" data-filter="maintenance" type="button">Maintenance</button>
-                  <button class="chip" data-filter="setup" type="button">Setup</button>
-                  <button class="chip" data-filter="emergency" type="button">Emergency</button>
-                  <button class="chip" data-filter="troubleshooting" type="button">Troubleshooting</button>
+                  <button class="chip active" data-filter="all" type="button" aria-pressed="true">All guides</button>
+                  <button class="chip" data-filter="cleaning" type="button" aria-pressed="false">Cleaning</button>
+                  <button class="chip" data-filter="maintenance" type="button" aria-pressed="false">Maintenance</button>
+                  <button class="chip" data-filter="setup" type="button" aria-pressed="false">Setup</button>
+                  <button class="chip" data-filter="emergency" type="button" aria-pressed="false">Emergency</button>
+                  <button class="chip" data-filter="troubleshooting" type="button" aria-pressed="false">Troubleshooting</button>
                 </div>
               </div>
             </details>
@@ -1758,7 +1758,11 @@
 
     document.querySelectorAll("[data-filter]").forEach(button => button.addEventListener("click", () => {
       selectedFilter = button.dataset.filter;
-      document.querySelectorAll("[data-filter]").forEach(chip => chip.classList.toggle("active", chip === button));
+      document.querySelectorAll("[data-filter]").forEach(chip => {
+        const isSelected = chip === button;
+        chip.classList.toggle("active", isSelected);
+        chip.setAttribute("aria-pressed", isSelected);
+      });
       const hasFilter = selectedFilter !== "all";
       activeFilters.hidden = !hasFilter;
       filterCount.hidden = !hasFilter;
