@@ -1351,10 +1351,7 @@ Record material decisions here as they are made.
 
 ## Immediate next action
 
-Begin Product Slice 12, a whole-product UI/UX audit before starting another
-major feature. Apply a heuristic review and cognitive walkthrough to first run,
-Guide discovery, search and filtering, creation/editing, reading, printing,
-settings, and error recovery. Score findings by severity, fix all task-blocking
-and major issues, then prioritize minor visual and interaction polish
-separately so the audit produces a focused improvement pass rather than an
-open-ended redesign.
+Review and approve the [UI/UX redesign plan](ui-ux-redesign-plan.md). Product
+Slice 12 has not started. Once its product model, journeys, upstream boundaries,
+sub-slice sequence, and explicit no list are accepted, begin Slice 12A with
+evidence collection only; do not jump directly to visual implementation.
