@@ -41,7 +41,7 @@
       --ink: #f6f1e7;
       --ink-muted: #b9afa2;
       --line: #443e35;
-      --primary: #dd8057;
+      --primary: #a94f31;
       --primary-strong: #f09a72;
       --primary-soft: #4a2b20;
       --accent: #8caf9b;
@@ -77,7 +77,7 @@
       margin: 0;
       background: var(--canvas);
       color: var(--ink);
-      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       font-size: 16px;
       line-height: 1.55;
       -webkit-font-smoothing: antialiased;
@@ -434,7 +434,6 @@
       flex: 1;
       height: 52px;
       border: 0;
-      outline: 0;
       background: transparent;
       color: var(--ink);
       font-size: 17px;
@@ -442,6 +441,11 @@
 
     .search-box input::placeholder {
       color: var(--ink-muted);
+    }
+
+    .search-box input:focus-visible {
+      border-radius: 8px;
+      outline-offset: 5px;
     }
 
     .library-controls {
@@ -581,6 +585,10 @@
       margin: 24px 0 20px;
     }
 
+    .section-heading[hidden] {
+      display: none;
+    }
+
     .section-heading p {
       margin-bottom: 0;
       color: var(--ink-muted);
@@ -626,6 +634,11 @@
       border: 0;
       background: transparent;
       font-size: 0;
+    }
+
+    .guide-card button:focus-visible {
+      border-radius: var(--radius-md);
+      outline-offset: -4px;
     }
 
     .card-cover {
@@ -711,6 +724,10 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
+    }
+
+    .metadata span[hidden] {
+      display: none;
     }
 
     .empty-results {
@@ -840,6 +857,11 @@
       border: 1px solid color-mix(in srgb, var(--danger) 34%, var(--line));
       border-radius: var(--radius-md);
       background: var(--danger-soft);
+    }
+
+    .safety-panel[hidden],
+    .before-card[hidden] {
+      display: none;
     }
 
     .safety-panel h2 {
@@ -1085,13 +1107,14 @@
       border-top: 1px solid var(--line);
     }
 
-    .drag-handle {
+    .step-editor-number {
       display: grid;
       width: 36px;
       height: 44px;
       place-items: center;
       color: var(--ink-muted);
-      font-size: 18px;
+      font-size: 13px;
+      font-weight: 800;
     }
 
     .step-editor textarea {
@@ -1350,12 +1373,12 @@
             <div class="search-box">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
               <input id="search-input" type="search" placeholder="Search washing machine, router, oil stain…" aria-label="Search Guides">
-              <button class="primary-button" type="submit"><span class="button-label">Search</span><span aria-hidden="true">→</span></button>
+              <button class="primary-button" type="submit" aria-label="Search guides"><span class="button-label">Search</span><span aria-hidden="true">→</span></button>
             </div>
           </form>
 
           <div class="library-controls">
-            <p class="result-summary" id="result-count" aria-live="polite">6 guides</p>
+            <p class="result-summary" id="result-count" aria-live="polite">15 guides</p>
             <details class="filter-disclosure" id="guide-filters">
               <summary>Filters <span class="filter-count" id="filter-count" hidden>1</span></summary>
               <div class="filter-panel">
@@ -1385,88 +1408,23 @@
             <button class="secondary-button" id="retry-search" type="button">Try again</button>
           </div>
 
-          <div class="section-heading">
+          <div class="empty-results" id="empty-results" role="status">
+            <strong>No matching guides</strong>
+            Try a shorter search or choose another category.
+          </div>
+
+          <div class="section-heading" id="library-results-heading">
             <div>
               <h2>Guides for this home</h2>
             </div>
             <button class="text-button" type="button">More <span aria-hidden="true">•••</span></button>
           </div>
 
-          <div class="guide-grid" id="guide-grid">
-            <article class="guide-card" data-category="cleaning" data-search="monthly washing machine clean appliance laundry odors detergent filter">
-              <button data-open-reader aria-label="Open Monthly washing machine clean"></button>
-              <div class="card-cover washer"><span class="cover-icon">◉</span><span class="review-state due">Review due</span></div>
-              <div class="card-body">
-                <div class="card-kicker">Appliance care</div>
-                <h3>Monthly washing machine clean</h3>
-                <p>Prevent odors, detergent buildup, and a dirty filter with one safe routine.</p>
-                <div class="metadata"><span>◷ 55 min</span><span>○ Beginner</span></div>
-              </div>
-            </article>
-
-            <article class="guide-card" data-category="setup" data-search="restart home router safely internet wifi network troubleshooting">
-              <button data-open-reader aria-label="Open Restart a home router safely"></button>
-              <div class="card-cover router"><span class="cover-icon">⌁</span><span class="review-state">Reviewed</span></div>
-              <div class="card-body">
-                <div class="card-kicker">Technology &amp; setup</div>
-                <h3>Restart a home router safely</h3>
-                <p>Power-cycle the internet equipment without erasing its settings.</p>
-                <div class="metadata"><span>◷ 8 min</span><span>○ Beginner</span></div>
-              </div>
-            </article>
-
-            <article class="guide-card" data-category="emergency" data-search="shut off main water emergency leak valve home">
-              <button data-open-reader aria-label="Open Shut off the main water"></button>
-              <div class="card-cover water"><span class="cover-icon">◒</span><span class="review-state">Reviewed</span></div>
-              <div class="card-body">
-                <div class="card-kicker">Emergency</div>
-                <h3>Shut off the main water</h3>
-                <p>Locate and close the correct valve quickly when a serious leak happens.</p>
-                <div class="metadata"><span>◷ 5 min</span><span>○ Beginner</span></div>
-              </div>
-            </article>
-
-            <article class="guide-card" data-category="cleaning" data-search="restore turkish cotton towels laundry wash softness">
-              <button data-open-reader aria-label="Open Restore Turkish cotton towels"></button>
-              <div class="card-cover towel"><span class="cover-icon">▤</span><span class="review-state">Reviewed</span></div>
-              <div class="card-body">
-                <div class="card-kicker">Laundry</div>
-                <h3>Restore Turkish cotton towels</h3>
-                <p>Wash and dry towels correctly to remove buildup and restore softness.</p>
-                <div class="metadata"><span>◷ 75 min</span><span>○ Beginner</span></div>
-              </div>
-            </article>
-
-            <article class="guide-card" data-category="emergency" data-search="prepare short power outage emergency electricity torch">
-              <button data-open-reader aria-label="Open Prepare for a short power outage"></button>
-              <div class="card-cover power"><span class="cover-icon">ϟ</span><span class="review-state">Reviewed</span></div>
-              <div class="card-body">
-                <div class="card-kicker">Emergency</div>
-                <h3>Prepare for a short power outage</h3>
-                <p>Keep essential lights, communications, and appliances safe during an outage.</p>
-                <div class="metadata"><span>◷ 15 min</span><span>○ Beginner</span></div>
-              </div>
-            </article>
-
-            <article class="guide-card" data-category="troubleshooting" data-search="cooking oil stain fabric clothing remove laundry">
-              <button data-open-reader aria-label="Open Handle a small cooking-oil stain"></button>
-              <div class="card-cover oil"><span class="cover-icon">◐</span><span class="review-state">Reviewed</span></div>
-              <div class="card-body">
-                <div class="card-kicker">Clothing care</div>
-                <h3>Handle a small cooking-oil stain</h3>
-                <p>Lift fresh oil from washable fabric before it settles into the fibres.</p>
-                <div class="metadata"><span>◷ 25 min</span><span>○ Beginner</span></div>
-              </div>
-            </article>
-          </div>
-
-          <div class="empty-results" id="empty-results" role="status">
-            <strong>No matching guides</strong>
-            Try a shorter search or choose another category.
-          </div>
+          <div class="guide-grid" id="guide-grid"></div>
 
           <div class="prototype-note">
             <strong>Concept choice:</strong> search leads, result feedback sits beside it, and filters stay out of the way until requested.
+            The card set mirrors all 15 seeded Guides; detailed reader interactions cover the three fixed task scenarios and the washing-machine acceptance Guide.
             <div class="prototype-note-actions" aria-label="Prototype-only state controls">
               <button class="secondary-button" data-preview-state="loading" type="button">Preview loading</button>
               <button class="secondary-button" data-preview-state="error" type="button">Preview error</button>
@@ -1482,33 +1440,33 @@
             <button class="back-link" data-screen-target="library">← All guides</button>
             <div class="reader-actions">
               <button class="secondary-button" type="button" aria-label="Print guide">⌁ <span>Print</span></button>
-              <button class="secondary-button" data-screen-target="editor">✎ <span>Edit</span></button>
+              <button class="secondary-button" data-screen-target="editor" aria-label="Edit guide">✎ <span>Edit</span></button>
             </div>
           </div>
 
           <header class="reader-hero">
             <div>
-              <p class="eyebrow">Appliance care · Cleaning</p>
+              <p class="eyebrow" id="reader-eyebrow">Appliance care · Cleaning</p>
               <h1 id="reader-title">Monthly washing machine clean</h1>
-              <p class="lede">A safe monthly routine to prevent odors, detergent buildup, and a dirty filter.</p>
-              <div class="metadata" style="margin-top: 20px"><span>◷ 55 minutes</span><span>○ Beginner</span><span>✓ Reviewed this month</span></div>
+              <p class="lede" id="reader-outcome">A safe monthly routine to prevent odors, detergent buildup, and a dirty filter.</p>
+              <div class="metadata" style="margin-top: 20px"><span id="reader-duration">◷ 55 minutes</span><span id="reader-difficulty">○ Beginner</span><span id="reader-trust">✓ Reviewed this month</span></div>
             </div>
-            <div class="hero-visual" role="img" aria-label="Washing machine illustration"><span>◉</span></div>
+            <div class="hero-visual" id="reader-visual" role="img" aria-label="Washing machine illustration"><span id="reader-icon">◉</span></div>
           </header>
 
-          <section class="safety-panel" aria-labelledby="safety-title">
+          <section class="safety-panel" id="reader-safety" aria-labelledby="safety-title">
             <h2 id="safety-title"><span aria-hidden="true">△</span> Safety first</h2>
-            <div class="safety-grid">
+            <div class="safety-grid" id="reader-warnings">
               <p><strong>Before opening the filter</strong>Unplug the machine from the wall.</p>
               <p><strong>Never combine products</strong>Do not mix bleach with vinegar or other cleaners.</p>
             </div>
           </section>
 
           <div class="reader-layout">
-            <aside class="before-card" aria-labelledby="before-title">
+            <aside class="before-card" id="reader-preparation" aria-labelledby="before-title">
               <p class="eyebrow">Preparation</p>
               <h2 id="before-title">Before you start</h2>
-              <ul class="requirement-list">
+              <ul class="requirement-list" id="reader-requirements">
                 <li><b>✓</b><span><strong style="color: var(--ink)">Microfibre cloth</strong><br>Clean and dry</span></li>
                 <li><b>✓</b><span><strong style="color: var(--ink)">Filter brush</strong><br>Soft bristles</span></li>
                 <li><b>✓</b><span><strong style="color: var(--ink)">Machine cleaner</strong><br>Maker-recommended amount</span></li>
@@ -1518,11 +1476,13 @@
             <section class="steps" aria-labelledby="steps-title">
               <p class="eyebrow">Procedure</p>
               <h2 id="steps-title">Five clear steps</h2>
-              <div class="step"><div class="step-number">1</div><div><h3>Remove and rinse the detergent drawer.</h3><p>Release the drawer according to the appliance manual, then rinse away visible detergent buildup.</p><div class="tip"><strong>Tip:</strong> Take a photo before removing it so reassembly is easier.</div></div></div>
-              <div class="step"><div class="step-number">2</div><div><h3>Wipe the door seal.</h3><p>Gently pull back accessible folds and remove lint, hair, and trapped debris with a damp cloth.</p></div></div>
-              <div class="step"><div class="step-number">3</div><div><h3>Clean the drain filter.</h3><p>Unplug the machine, protect the floor with towels, and follow the manufacturer’s filter instructions.</p></div></div>
-              <div class="step"><div class="step-number">4</div><div><h3>Run the recommended empty cycle.</h3><p>Add only the recommended amount of cleaner and select the hottest safe maintenance cycle.</p></div></div>
-              <div class="step"><div class="step-number">5</div><div><h3>Let the machine dry.</h3><p>Wipe remaining moisture and leave the door and drawer open until the inside is fully dry.</p></div></div>
+              <div id="reader-steps">
+                <div class="step"><div class="step-number">1</div><div><h3>Remove and rinse the detergent drawer.</h3><p>Release the drawer according to the appliance manual, then rinse away visible detergent buildup.</p><div class="tip"><strong>Tip:</strong> Take a photo before removing it so reassembly is easier.</div></div></div>
+                <div class="step"><div class="step-number">2</div><div><h3>Wipe the door seal.</h3><p>Gently pull back accessible folds and remove lint, hair, and trapped debris with a damp cloth.</p></div></div>
+                <div class="step"><div class="step-number">3</div><div><h3>Clean the drain filter.</h3><p>Unplug the machine, protect the floor with towels, and follow the manufacturer’s filter instructions.</p></div></div>
+                <div class="step"><div class="step-number">4</div><div><h3>Run the recommended empty cycle.</h3><p>Add only the recommended amount of cleaner and select the hottest safe maintenance cycle.</p></div></div>
+                <div class="step"><div class="step-number">5</div><div><h3>Let the machine dry.</h3><p>Wipe remaining moisture and leave the door and drawer open until the inside is fully dry.</p></div></div>
+              </div>
             </section>
           </div>
 
@@ -1541,7 +1501,7 @@
           </div>
 
           <div class="editor-savebar">
-            <span class="save-status" id="save-status" aria-live="polite">No unsaved changes</span>
+            <span class="save-status" id="save-status" aria-live="polite">Saved</span>
             <div class="save-actions">
               <button class="text-button" data-screen-target="reader">Cancel</button>
               <button class="primary-button" id="save-button" type="button">Save guide</button>
@@ -1570,13 +1530,13 @@
 
           <section class="editor-card" aria-labelledby="editor-steps-title">
             <div class="editor-card-header">
-              <div><h2 id="editor-steps-title">Steps</h2><p>Keep each step focused on one action. Drag to change the order.</p></div>
+              <div><h2 id="editor-steps-title">Steps</h2><p>Keep each step focused on one action. Add or remove steps as needed.</p></div>
               <button class="secondary-button" id="add-step" type="button">＋ Add step</button>
             </div>
             <div id="step-editors">
-              <div class="step-editor"><div class="drag-handle" aria-hidden="true">⠿</div><textarea aria-label="Step 1">Remove and rinse the detergent drawer.</textarea><button class="delete-step" aria-label="Remove step 1">×</button></div>
-              <div class="step-editor"><div class="drag-handle" aria-hidden="true">⠿</div><textarea aria-label="Step 2">Wipe the door seal and remove trapped debris.</textarea><button class="delete-step" aria-label="Remove step 2">×</button></div>
-              <div class="step-editor"><div class="drag-handle" aria-hidden="true">⠿</div><textarea aria-label="Step 3">Clean the drain filter according to the manufacturer’s instructions.</textarea><button class="delete-step" aria-label="Remove step 3">×</button></div>
+              <div class="step-editor"><div class="step-editor-number" aria-hidden="true">1</div><textarea aria-label="Step 1">Remove and rinse the detergent drawer.</textarea><button class="delete-step" aria-label="Remove step 1">×</button></div>
+              <div class="step-editor"><div class="step-editor-number" aria-hidden="true">2</div><textarea aria-label="Step 2">Wipe the door seal and remove trapped debris.</textarea><button class="delete-step" aria-label="Remove step 2">×</button></div>
+              <div class="step-editor"><div class="step-editor-number" aria-hidden="true">3</div><textarea aria-label="Step 3">Clean the drain filter according to the manufacturer’s instructions.</textarea><button class="delete-step" aria-label="Remove step 3">×</button></div>
             </div>
           </section>
 
@@ -1617,14 +1577,93 @@
     const targets = [...document.querySelectorAll("[data-screen-target]")];
     const navTargets = [...document.querySelectorAll(".nav-item[data-screen-target]")];
 
+    const guides = [
+      { id: "smart-bulb", title: "Pair a smart light bulb", outcome: "Install and connect a common Wi-Fi or Bluetooth smart bulb.", type: "Setup", category: "Technology & Setup", filter: "setup", difficulty: "Beginner", keywords: "smart home setup lighting bulb wifi bluetooth", cover: "router", icon: "◌" },
+      { id: "guest-wifi", title: "Set up a guest Wi-Fi network", outcome: "Create a separate wireless network for visitors and smart devices.", type: "Setup", category: "Technology & Setup", filter: "setup", difficulty: "Intermediate", keywords: "network privacy wifi guest visitors smart devices", cover: "router", icon: "⌁" },
+      { id: "router", title: "Restart a home router safely", outcome: "Power-cycle the internet equipment without erasing its settings.", type: "Troubleshooting", category: "Technology & Setup", filter: "troubleshooting", duration: "12 minutes", difficulty: "Beginner", keywords: "router reset restart internet wifi network power cycle", cover: "router", icon: "⌁" },
+      { id: "power-outage", title: "Prepare for a short power outage", outcome: "Keep a compact kit ready for several hours without household electricity.", type: "Emergency", category: "Safety & Emergency", filter: "emergency", difficulty: "Beginner", keywords: "safety preparedness power outage electricity emergency kit", cover: "power", icon: "ϟ" },
+      { id: "oil-fire", title: "Handle a small cooking-oil fire", outcome: "Smother a small pan fire and know when to evacuate immediately.", type: "Emergency", category: "Safety & Emergency", filter: "emergency", duration: "5 minutes", difficulty: "Beginner", keywords: "kitchen emergency cooking oil pan fire evacuate", cover: "power", icon: "△" },
+      { id: "water", title: "Shut off the main water supply", outcome: "Locate and close the household water valve during a leak or plumbing emergency.", type: "Emergency", category: "Safety & Emergency", filter: "emergency", difficulty: "Beginner", keywords: "emergency water leak plumbing valve main supply", cover: "water", icon: "◒" },
+      { id: "ac-drain", title: "Clear an air-conditioner drain line", outcome: "Address a slow condensate drain before it causes dripping or water damage.", type: "Maintenance", category: "Home Maintenance", filter: "maintenance", difficulty: "Intermediate", keywords: "drain air conditioner maintenance condensate dripping water", cover: "water", icon: "≈" },
+      { id: "drywall", title: "Patch a small hole in drywall", outcome: "Repair a clean nail or screw hole before sanding and repainting.", type: "Maintenance", category: "Home Maintenance", filter: "maintenance", difficulty: "Beginner", keywords: "drywall walls repair nail screw hole paint", cover: "towel", icon: "□" },
+      { id: "sink", title: "Unclog a sink trap", outcome: "Clear a blockage from the removable U-shaped trap beneath a sink.", type: "Troubleshooting", category: "Home Maintenance", filter: "troubleshooting", difficulty: "Intermediate", keywords: "sink drain plumbing clog trap blockage", cover: "water", icon: "∪" },
+      { id: "mattress", title: "Freshen a mattress", outcome: "Vacuum and deodorise a mattress without soaking its inner layers.", type: "Cleaning", category: "Cleaning", filter: "cleaning", difficulty: "Beginner", keywords: "bedding bedroom mattress cleaning vacuum deodorise", cover: "towel", icon: "▤" },
+      { id: "grout", title: "Clean bathroom grout", outcome: "Lift everyday soap residue and mildew marks from tiled bathroom grout.", type: "Cleaning", category: "Cleaning", filter: "cleaning", difficulty: "Beginner", keywords: "grout bathroom tiles soap mildew clean", cover: "water", icon: "▦" },
+      { id: "oil-stain", title: "Remove an oil stain from clothing", outcome: "Treat a fresh cooking-oil or grease mark before washing the garment.", type: "Care instructions", category: "Cleaning", filter: "cleaning", duration: "30 minutes", difficulty: "Beginner", keywords: "remove cooking oil stain clothing fabric grease laundry", cover: "oil", icon: "◐" },
+      { id: "kettle", title: "Descale an electric kettle", outcome: "Remove mineral scale so the kettle heats efficiently and water tastes fresh.", type: "Care instructions", category: "Appliance Care", filter: "cleaning", difficulty: "Beginner", keywords: "kettle descaling kitchen mineral scale appliance", cover: "power", icon: "∿" },
+      { id: "dishwasher", title: "Clean a dishwasher filter", outcome: "Remove trapped food and keep the dishwasher draining and cleaning properly.", type: "Cleaning", category: "Appliance Care", filter: "cleaning", difficulty: "Beginner", keywords: "monthly kitchen dishwasher filter trapped food clean", cover: "washer", icon: "◎" },
+      { id: "washer", title: "Monthly washing machine clean", outcome: "A safe monthly routine to prevent odors, detergent buildup, and a dirty filter.", type: "Cleaning", category: "Appliance Care", filter: "cleaning", duration: "55 minutes", difficulty: "Beginner", keywords: "monthly washing machine clean appliance laundry odors detergent filter", cover: "washer", icon: "◉", review: "Review needed" }
+    ];
+
+    const readerDetails = {
+      washer: {
+        warnings: [["Before opening the filter", "Unplug the machine from the wall."], ["Never combine products", "Do not mix bleach with vinegar or other cleaners."]],
+        requirements: [["Microfibre cloth", "Clean and dry"], ["Filter brush", "Soft bristles"], ["Machine cleaner", "Maker-recommended amount"]],
+        steps: [
+          ["Remove and rinse the detergent drawer.", "Release the drawer according to the appliance manual, then rinse away visible detergent buildup.", "Take a photo before removing it so reassembly is easier."],
+          ["Wipe the door seal.", "Gently pull back accessible folds and remove lint, hair, and trapped debris with a damp cloth."],
+          ["Clean the drain filter.", "Unplug the machine, protect the floor with towels, and follow the manufacturer’s filter instructions."],
+          ["Run the recommended empty cycle.", "Add only the recommended amount of cleaner and select the hottest safe maintenance cycle."],
+          ["Let the machine dry.", "Wipe remaining moisture and leave the door and drawer open until the inside is fully dry."]
+        ]
+      },
+      router: {
+        warnings: [["Keep hands dry", "Leave power adapters ventilated."], ["Do not press Reset", "The recessed Reset button can erase the router configuration."]],
+        requirements: [["Phone or laptop", "To test the connection afterward"], ["Router login details", "Only needed if the connection does not return"]],
+        steps: [
+          ["Check whether the outage affects one device or every device."],
+          ["Unplug the modem and router power cables."],
+          ["Wait 60 seconds."],
+          ["Power the modem first and wait until its connection light stabilises."],
+          ["Power the router, wait several minutes, then test Wi-Fi.", "", "If service is still down, check the provider's outage page before changing settings."]
+        ]
+      },
+      "oil-stain": {
+        warnings: [["Check the care label", "Spot-test delicate or coloured fabrics first."], ["Do not use the dryer yet", "Heat can set the stain before it is fully gone."]],
+        requirements: [["Paper towel", "For blotting"], ["Baking soda or corn starch", "Enough to cover the stain"], ["Dish soap", "Clear, grease-cutting type"], ["Soft toothbrush", "For gentle working"]],
+        steps: [
+          ["Blot excess oil with a paper towel without rubbing."],
+          ["Cover the mark with baking soda or corn starch for 10 minutes."],
+          ["Brush away the powder and work a small drop of dish soap into the stain."],
+          ["Rinse from the back of the fabric with the warmest safe water."],
+          ["Wash normally and air-dry to check the result.", "", "Repeat the treatment before drying if a shadow remains."]
+        ]
+      },
+      "oil-fire": {
+        warnings: [["Leave if the fire spreads", "Evacuate, close the door, and call emergency services."], ["Never use water", "Never pour water on burning oil or carry the burning pan."]],
+        requirements: [["Metal pan lid", "Keep one within reach while frying"], ["Class F or K extinguisher", "Optional, if trained to use it"]],
+        steps: [
+          ["Turn off the heat only if you can reach the control without leaning over flames."],
+          ["Slide a metal lid over the pan to cut off oxygen."],
+          ["Leave the lid in place until the pan is completely cool."],
+          ["Use a suitable Class F or K extinguisher only if trained and you have a clear exit."],
+          ["Evacuate and call emergency services if the fire does not go out immediately."]
+        ]
+      }
+    };
+
+    const guideGrid = document.querySelector("#guide-grid");
+    guideGrid.innerHTML = guides.map(guide => `
+      <article class="guide-card" data-category="${guide.filter}" data-search="${guide.title.toLowerCase()} ${guide.outcome.toLowerCase()} ${guide.keywords}">
+        <button data-open-reader="${guide.id}" aria-label="Open ${guide.title}"></button>
+        <div class="card-cover ${guide.cover}"><span class="cover-icon">${guide.icon}</span>${guide.review ? `<span class="review-state due">${guide.review}</span>` : ""}</div>
+        <div class="card-body">
+          <div class="card-kicker">${guide.category}</div>
+          <h3>${guide.title}</h3>
+          <p>${guide.outcome}</p>
+          <div class="metadata">${guide.duration ? `<span>◷ ${guide.duration}</span>` : ""}<span>○ ${guide.difficulty}</span></div>
+        </div>
+      </article>
+    `).join("");
+
     function showScreen(name) {
       screens.forEach(screen => screen.classList.toggle("active", screen.dataset.screen === name));
-      navTargets.forEach(item => item.classList.toggle("active", item.dataset.screenTarget === "library"));
+      const activeNav = name === "reader" ? "library" : name;
+      navTargets.forEach(item => item.classList.toggle("active", item.dataset.screenTarget === activeNav));
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     targets.forEach(target => target.addEventListener("click", () => showScreen(target.dataset.screenTarget)));
-    document.querySelectorAll("[data-open-reader]").forEach(button => button.addEventListener("click", () => showScreen("reader")));
 
     document.querySelectorAll(".theme-toggle").forEach(button => button.addEventListener("click", () => {
       document.body.classList.toggle("dark");
@@ -1634,7 +1673,7 @@
     const searchInput = document.querySelector("#search-input");
     const resultCount = document.querySelector("#result-count");
     const emptyResults = document.querySelector("#empty-results");
-    const guideGrid = document.querySelector("#guide-grid");
+    const resultsHeading = document.querySelector("#library-results-heading");
     const activeFilters = document.querySelector("#active-filters");
     const activeFilterLabel = document.querySelector("#active-filter-label");
     const filterCount = document.querySelector("#filter-count");
@@ -1655,16 +1694,21 @@
       const showsResults = state === "results";
       guideGrid.hidden = !showsResults;
       emptyResults.hidden = !showsResults;
+      emptyResults.style.display = "none";
+      resultsHeading.hidden = !showsResults;
       loadingResults.setAttribute("aria-hidden", state === "loading" ? "false" : "true");
       errorResults.setAttribute("aria-hidden", state === "error" ? "false" : "true");
+      if (state === "loading") resultCount.textContent = "Finding guides…";
+      if (state === "error") resultCount.textContent = "Guides unavailable";
       if (showsResults) filterGuides();
     }
 
     function filterGuides() {
       const query = searchInput.value.trim().toLowerCase();
+      const terms = query.split(/\s+/).filter(Boolean);
       let visible = 0;
       cards.forEach(card => {
-        const matchesQuery = !query || card.dataset.search.includes(query);
+        const matchesQuery = terms.every(term => card.dataset.search.includes(term));
         const matchesFilter = selectedFilter === "all" || card.dataset.category === selectedFilter;
         const show = matchesQuery && matchesFilter;
         card.hidden = !show;
@@ -1672,7 +1716,39 @@
       });
       resultCount.textContent = `${visible} ${visible === 1 ? "guide" : "guides"}`;
       emptyResults.style.display = visible ? "none" : "block";
+      resultsHeading.hidden = visible === 0;
+      guideGrid.hidden = visible === 0;
     }
+
+    function openReader(guide) {
+      const details = readerDetails[guide.id];
+      document.querySelector("#reader-eyebrow").textContent = `${guide.category} · ${guide.type}`;
+      document.querySelector("#reader-title").textContent = guide.title;
+      document.querySelector("#reader-outcome").textContent = guide.outcome;
+      document.querySelector("#reader-duration").textContent = guide.duration ? `◷ ${guide.duration}` : "";
+      document.querySelector("#reader-duration").hidden = !guide.duration;
+      document.querySelector("#reader-difficulty").textContent = `○ ${guide.difficulty}`;
+      document.querySelector("#reader-trust").textContent = guide.review ? `△ ${guide.review}` : "○ Not reviewed yet";
+      document.querySelector("#reader-icon").textContent = guide.icon;
+      document.querySelector("#reader-visual").setAttribute("aria-label", `${guide.title} illustration`);
+
+      const warnings = details?.warnings ?? [];
+      const requirements = details?.requirements ?? [];
+      const steps = details?.steps ?? [["Open the complete saved Guide in Hearth.", "This prototype keeps detailed procedural content to the fixed experiment scenarios."]];
+      document.querySelector("#reader-safety").hidden = warnings.length === 0;
+      document.querySelector("#reader-warnings").innerHTML = warnings.map(item => `<p><strong>${item[0]}</strong>${item[1]}</p>`).join("");
+      document.querySelector("#reader-preparation").hidden = requirements.length === 0;
+      document.querySelector("#reader-requirements").innerHTML = requirements.map(item => `<li><b>✓</b><span><strong style="color: var(--ink)">${item[0]}</strong><br>${item[1]}</span></li>`).join("");
+      document.querySelector("#steps-title").textContent = `${steps.length} clear ${steps.length === 1 ? "step" : "steps"}`;
+      document.querySelector("#reader-steps").innerHTML = steps.map((item, index) => `<div class="step"><div class="step-number">${index + 1}</div><div><h3>${item[0]}</h3>${item[1] ? `<p>${item[1]}</p>` : ""}${item[2] ? `<div class="tip"><strong>Tip:</strong> ${item[2]}</div>` : ""}</div></div>`).join("");
+      showScreen("reader");
+    }
+
+    guideGrid.addEventListener("click", event => {
+      const opener = event.target.closest("[data-open-reader]");
+      if (!opener) return;
+      openReader(guides.find(guide => guide.id === opener.dataset.openReader));
+    });
 
     document.querySelector("#guide-search").addEventListener("submit", event => {
       event.preventDefault();
@@ -1704,19 +1780,22 @@
 
     const saveStatus = document.querySelector("#save-status");
     const saveButton = document.querySelector("#save-button");
-    document.querySelectorAll(".editor-page input, .editor-page textarea").forEach(field => field.addEventListener("input", () => {
+
+    function markUnsaved() {
       saveStatus.textContent = "Unsaved changes";
       saveStatus.style.color = "";
-    }));
+    }
+
+    document.querySelector(".editor-page").addEventListener("input", markUnsaved);
     saveButton.addEventListener("click", () => {
       saveButton.disabled = true;
       saveButton.textContent = "Saving…";
-      saveStatus.textContent = "Saving your changes";
+      saveStatus.textContent = "Saving…";
       saveStatus.style.color = "";
       window.setTimeout(() => {
         saveButton.disabled = false;
         saveButton.textContent = "Saved";
-        saveStatus.textContent = "All changes saved";
+        saveStatus.textContent = "Saved";
         window.setTimeout(() => { saveButton.textContent = "Save guide"; }, 1200);
       }, 700);
     });
@@ -1734,16 +1813,21 @@
       const number = stepEditors.children.length + 1;
       const row = document.createElement("div");
       row.className = "step-editor";
-      row.innerHTML = `<div class="drag-handle" aria-hidden="true">⠿</div><textarea aria-label="Step ${number}" placeholder="Describe one clear action"></textarea><button class="delete-step" aria-label="Remove step ${number}">×</button>`;
+      row.innerHTML = `<div class="step-editor-number" aria-hidden="true">${number}</div><textarea aria-label="Step ${number}" placeholder="Describe one clear action"></textarea><button class="delete-step" aria-label="Remove step ${number}">×</button>`;
       stepEditors.append(row);
       row.querySelector("textarea").focus();
-      saveStatus.textContent = "Unsaved changes";
+      markUnsaved();
     });
 
     document.querySelector("#step-editors").addEventListener("click", event => {
       if (event.target.matches(".delete-step")) {
         event.target.closest(".step-editor").remove();
-        saveStatus.textContent = "Unsaved changes";
+        document.querySelectorAll("#step-editors .step-editor").forEach((row, index) => {
+          row.querySelector(".step-editor-number").textContent = index + 1;
+          row.querySelector("textarea").setAttribute("aria-label", `Step ${index + 1}`);
+          row.querySelector(".delete-step").setAttribute("aria-label", `Remove step ${index + 1}`);
+        });
+        markUnsaved();
       }
     });
   </script>

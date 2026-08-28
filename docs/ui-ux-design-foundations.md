@@ -33,7 +33,7 @@ preference test.
 | Corners | 10 px for controls, 16 px for cards, and 24 px only for large media. Pills are limited to short states and removable filters. |
 | Icons | Use the existing icon source in production. Pair unfamiliar icons with text; never use a lone icon for a destructive or safety action. |
 | Images | Images help recognition but are optional. They must not delay warnings or the first step on a phone. Missing images leave a complete, readable Guide. |
-| Focus | Every action uses a visible 3 px focus ring with 3 px offset. DOM order, visual order, and reading order stay aligned. |
+| Focus | Every action uses a visible 3 px focus ring. Use an outward offset where space permits and an inset ring on full-card links so overflow cannot clip it. DOM, visual, and reading order stay aligned. |
 | Motion | Use 120–180 ms for direct feedback and at most 220 ms for a screen change. Respect reduced motion; never animate safety content or hide progress behind motion. |
 | Feedback | Loading, no-result, error, editing, saving, saved, and failed states appear beside the action that caused them and use plain language. |
 

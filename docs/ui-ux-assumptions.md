@@ -112,10 +112,12 @@ evidence. Observe whether the person completes the task.
 The revised disposable concept passed the checks it can answer without real
 participants:
 
-- The library was inspected at 1280, 390, and 320 pixels in light and dark
-  themes; a Guide result begins in the first phone view.
-- `router` leaves only the router Guide visible. A category can be disclosed,
-  applied, seen after the disclosure closes, and cleared.
+- The prototype mirrors all 15 seeded Guide titles and outcomes. It was
+  inspected at 1280, 390, and 320 pixels in light and dark themes; a Guide
+  result begins in the first phone view.
+- `router reset`, `oil stain`, and `cooking oil fire` each leave the intended
+  Guide visible and open matching seeded reader content. A category can be
+  disclosed, applied, seen after the disclosure closes, and cleared.
 - Result count, no-result, loading, and failed-load recovery appear directly
   below search.
 - The reader's DOM and visual order is outcome, trust, safety, preparation,
