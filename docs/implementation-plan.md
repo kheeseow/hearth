@@ -581,8 +581,10 @@ genuinely needs separate users or permissions.
 
 Deferred taxonomy scope:
 
-- Consider first-class Properties when users need dedicated property filters,
-  defaults, or an explicit “applies everywhere” state.
+- Consider first-class Homes when users need dedicated property filters,
+  defaults, or an explicit “applies everywhere” state. The deferred model,
+  trigger, permissions, migration, and UI seams are defined in the
+  [Future Homes Plan](future-homes.md).
 - Consider Spaces when property-specific room or area browsing becomes useful.
 - Consider Assets or Equipment when Guides need to attach to individual models,
   serial numbers, service history, or manuals.
@@ -1348,6 +1350,7 @@ Record material decisions here as they are made.
 | 2026-08-28 | Gate shared legacy settings instead of deleting them | Keep fresh Hearth focused while allowing upgraded installations and upstream tests to retain complete Mealie behavior |
 | 2026-08-28 | Run a whole-product UI/UX audit after Slice 11 | Audit stable, accessible, responsive core flows before another major feature expands the interface |
 | 2026-08-28 | Keep current Guide route chunks after measuring them | The four main Guide flows are only 3.9–4.9 KB compressed; changing shared Nuxt/Vuetify loading would add upstream merge risk without a demonstrated Guide performance problem |
+| 2026-08-28 | Plan Home separately from Mealie Household | Preserve Mealie's people and permission boundary while reserving an additive, group-scoped physical-property model only when real multi-home use emerges |
 
 ## Immediate next action
 

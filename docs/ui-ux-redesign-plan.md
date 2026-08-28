@@ -211,7 +211,9 @@ Recommended hierarchy:
 
 Category, type, frequency, difficulty, tags, and future home/space dimensions
 must not all become equal top-level navigation. The current single-home model
-remains unchanged; tags continue to test additional taxonomy needs.
+remains unchanged; tags continue to test additional taxonomy needs. The shell
+may reserve a context slot for the deferred
+[Home model](future-homes.md), but it must not display a dormant selector.
 
 ### Guide reader
 
@@ -566,6 +568,8 @@ Slice 12 will not:
 - Add a dashboard between users and the Guide library
 - Add AI, OCR, QR codes, reminders, completion tracking, streaks, engagement
   notifications, or a new taxonomy
+- Add a Home table or multi-home controls before the trigger in the
+  [Future Homes Plan](future-homes.md) is met
 - Redesign Recipe, meal-plan, nutrition, shopping-list, or cookbook workflows
 - Change the Guide database, API, export, or backup model merely for layout
 - Replace Vuetify, Nuxt, Mealie authentication, routing, or state foundations
