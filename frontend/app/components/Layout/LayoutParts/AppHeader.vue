@@ -25,7 +25,7 @@
         style="cursor: pointer"
         @click="$router.push(routerLink)"
       >
-        Mealie
+        {{ brand.name }}
       </v-toolbar-title>
     </div>
     <GuideDialogSearch ref="domSearchDialog" />
@@ -95,6 +95,7 @@ defineProps({
   },
 });
 const auth = useMealieAuth();
+const brand = useAppBrand();
 const { loggedIn } = useLoggedInState();
 const route = useRoute();
 const groupSlug = computed(() => route.params.groupSlug as string || auth.user.value?.groupSlug || "");

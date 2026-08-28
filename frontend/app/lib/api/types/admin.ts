@@ -18,6 +18,7 @@ export interface AdminAboutInfo {
   oidcProviderName: string;
   tokenTime: number;
   allowedIframeHosts?: string[];
+  brand: AppBrand;
   capabilities: AppCapabilities;
   versionLatest: string;
   apiPort: number;
@@ -28,6 +29,11 @@ export interface AdminAboutInfo {
   defaultHousehold: string;
   buildId: string;
   recipeScraperVersion: string;
+}
+export interface AppBrand {
+  name: string;
+  shortName: string;
+  description: string;
 }
 export interface AppCapabilities {
   guides: boolean;
@@ -58,6 +64,7 @@ export interface AppInfo {
   oidcProviderName: string;
   tokenTime: number;
   allowedIframeHosts?: string[];
+  brand: AppBrand;
   capabilities: AppCapabilities;
 }
 export interface AppStartupInfo {

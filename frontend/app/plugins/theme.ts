@@ -18,7 +18,8 @@ export interface ThemeConfig {
 let __cachedTheme: ThemeConfig | undefined;
 
 async function fetchTheme(): Promise<ThemeConfig | undefined> {
-  const route = "/api/app/about/theme";
+  // Use a distinct cache key so upgraded browsers do not retain Mealie's theme response for a week.
+  const route = "/api/app/about/theme?profile=hearth-v1";
 
   try {
     const response = await fetch(route);
@@ -48,9 +49,9 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         light: {
           dark: false,
           colors: {
-            primary: theme?.lightPrimary ?? "#E58325",
-            accent: theme?.lightAccent ?? "#007A99",
-            secondary: theme?.lightSecondary ?? "#973542",
+            primary: theme?.lightPrimary ?? "#9A4F2E",
+            accent: theme?.lightAccent ?? "#496B5A",
+            secondary: theme?.lightSecondary ?? "#C58B2B",
             success: theme?.lightSuccess ?? "#43A047",
             info: theme?.lightInfo ?? "#1976d2",
             warning: theme?.lightWarning ?? "#FF6D00",
@@ -60,9 +61,9 @@ export default defineNuxtPlugin(async (nuxtApp) => {
         dark: {
           dark: true,
           colors: {
-            primary: theme?.darkPrimary ?? "#E58325",
-            accent: theme?.darkAccent ?? "#007A99",
-            secondary: theme?.darkSecondary ?? "#973542",
+            primary: theme?.darkPrimary ?? "#D47A50",
+            accent: theme?.darkAccent ?? "#7FA58F",
+            secondary: theme?.darkSecondary ?? "#D9A441",
             success: theme?.darkSuccess ?? "#43A047",
             info: theme?.darkInfo ?? "#1976d2",
             warning: theme?.darkWarning ?? "#FF6D00",

@@ -98,8 +98,11 @@
       "yearly": "Yearly"
     },
     "frequency": "Frequency",
+    "find-guide": "Find the guide you need",
+    "find-guide-description": "Search your shared know-how and get straight to clear, practical steps.",
     "guide": "Guide",
     "guides": "Guides",
+    "browse-library": "Browse your library",
     "image-alt-text": "Image description",
     "image-alt-text-hint": "Describe what the image shows for people who cannot see it.",
     "image-caption": "Caption",

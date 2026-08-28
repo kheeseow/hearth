@@ -37,6 +37,7 @@ class AdminAboutController(BaseAdminController):
             enable_oidc=settings.OIDC_AUTH_ENABLED,
             oidc_redirect=settings.OIDC_AUTO_REDIRECT,
             oidc_provider_name=settings.OIDC_PROVIDER_NAME,
+            brand=settings.brand.model_dump(),
             capabilities=AppCapabilitiesService(self.repos.session, settings.HEARTH_LEGACY_FEATURES).get(),
         )
 

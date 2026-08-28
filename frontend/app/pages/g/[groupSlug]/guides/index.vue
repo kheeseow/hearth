@@ -1,46 +1,70 @@
 <template>
   <v-container class="lg-container">
-    <BasePageTitle divider>
-      <template #title>
-        {{ $t("guide.guides") }}
-      </template>
-      {{ $t("guide.page-description") }}
-    </BasePageTitle>
+    <v-sheet class="guide-library-hero pa-6 pa-sm-9 mb-7" rounded="xl">
+      <div class="d-flex align-start justify-space-between ga-6 mb-7">
+        <div>
+          <div class="text-overline font-weight-bold mb-1">
+            {{ brand.name }}
+          </div>
+          <h1 class="text-h3 text-sm-h2 font-weight-bold mb-3">
+            {{ $t("guide.find-guide") }}
+          </h1>
+          <p class="text-body-1 text-sm-h6 guide-library-intro mb-0">
+            {{ $t("guide.find-guide-description") }}
+          </p>
+        </div>
+        <v-icon class="d-none d-sm-block guide-library-icon" aria-hidden="true">
+          {{ $globals.icons.primary }}
+        </v-icon>
+      </div>
 
-    <div class="d-flex flex-column flex-sm-row ga-3 my-6">
-      <v-text-field
-        v-model="search"
-        :label="$t('guide.search')"
-        :prepend-inner-icon="$globals.icons.search"
-        variant="outlined"
-        clearable
-        hide-details
-        @keyup.enter="loadGuides"
-        @click:clear="loadGuides"
-      />
-      <v-btn color="primary" size="large" :loading="loading" @click="loadGuides">
-        {{ $t("search.search") }}
-      </v-btn>
-      <v-btn
-        color="primary"
-        size="large"
-        variant="outlined"
-        :prepend-icon="$globals.icons.create"
-        :to="`/g/${groupSlug}/guides/create`"
-      >
-        {{ $t("guide.new-guide") }}
-      </v-btn>
-      <v-btn
-        color="info"
-        size="large"
-        variant="outlined"
-        :prepend-icon="$globals.icons.download"
-        :loading="exporting"
-        :disabled="!guides.length"
-        @click="exportGuides"
-      >
-        {{ $t("guide.export-guides") }}
-      </v-btn>
+      <div class="d-flex flex-column flex-sm-row ga-3">
+        <v-text-field
+          v-model="search"
+          :label="$t('guide.search')"
+          :prepend-inner-icon="$globals.icons.search"
+          variant="solo"
+          bg-color="surface"
+          clearable
+          hide-details
+          @keyup.enter="loadGuides"
+          @click:clear="loadGuides"
+        />
+        <v-btn color="primary" size="large" :loading="loading" @click="loadGuides">
+          {{ $t("search.search") }}
+        </v-btn>
+      </div>
+    </v-sheet>
+
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-sm-center ga-3 mb-5">
+      <div>
+        <h2 class="text-h5 font-weight-bold">
+          {{ $t("guide.browse-library") }}
+        </h2>
+        <p class="text-body-2 text-medium-emphasis mb-0">
+          {{ $t("guide.page-description") }}
+        </p>
+      </div>
+      <div class="d-flex flex-wrap ga-2">
+        <v-btn
+          color="primary"
+          variant="flat"
+          :prepend-icon="$globals.icons.create"
+          :to="`/g/${groupSlug}/guides/create`"
+        >
+          {{ $t("guide.new-guide") }}
+        </v-btn>
+        <v-btn
+          color="info"
+          variant="outlined"
+          :prepend-icon="$globals.icons.download"
+          :loading="exporting"
+          :disabled="!guides.length"
+          @click="exportGuides"
+        >
+          {{ $t("guide.export-guides") }}
+        </v-btn>
+      </div>
     </div>
 
     <v-row density="compact" class="mb-4">
@@ -130,6 +154,7 @@ import { alert } from "~/composables/use-toast";
 definePageMeta({ middleware: ["group-only"] });
 
 const i18n = useI18n();
+const brand = useAppBrand();
 useSeoMeta({ title: i18n.t("guide.guides") });
 
 const route = useRoute();
@@ -207,3 +232,23 @@ async function exportGuides() {
 
 onMounted(loadGuides);
 </script>
+
+<style scoped>
+.guide-library-hero {
+  background:
+    radial-gradient(circle at top right, rgb(var(--v-theme-secondary), 0.28), transparent 36%),
+    linear-gradient(135deg, rgb(var(--v-theme-primary), 0.16), rgb(var(--v-theme-accent), 0.12));
+  border: 1px solid rgb(var(--v-theme-primary), 0.2);
+}
+
+.guide-library-intro {
+  max-width: 42rem;
+  line-height: 1.55;
+}
+
+.guide-library-icon {
+  color: rgb(var(--v-theme-primary));
+  font-size: clamp(5rem, 10vw, 8rem);
+  opacity: 0.18;
+}
+</style>

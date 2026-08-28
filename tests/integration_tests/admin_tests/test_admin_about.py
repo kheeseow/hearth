@@ -26,6 +26,11 @@ def test_public_about_get_app_info(
     assert as_dict["version"] == APP_VERSION
     assert as_dict["demoStatus"] == settings.IS_DEMO
     assert as_dict["allowSignup"] == settings.ALLOW_SIGNUP
+    assert as_dict["brand"] == {
+        "name": "Hearth",
+        "shortName": "Hearth",
+        "description": "Practical, step-by-step knowledge for your home and everyday life.",
+    }
     assert as_dict["capabilities"] == {
         "guides": True,
         "legacyRecipes": False,
@@ -54,6 +59,11 @@ def test_admin_about_get_app_info(api_client: TestClient, admin_user: TestUser):
     assert as_dict["dbType"] == settings.DB_ENGINE
     # assert as_dict["dbUrl"] == settings.DB_URL_PUBLIC
     assert as_dict["defaultGroup"] == settings.DEFAULT_GROUP
+    assert as_dict["brand"] == {
+        "name": settings.brand.name,
+        "shortName": settings.brand.short_name,
+        "description": settings.brand.description,
+    }
     assert as_dict["capabilities"]["guides"] is True
 
 

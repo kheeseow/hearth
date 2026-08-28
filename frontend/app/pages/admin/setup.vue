@@ -14,7 +14,7 @@
         dark
       >
         <v-toolbar-title class="headline text-h4 text-center mx-0">
-          Mealie
+          {{ brand.name }}
         </v-toolbar-title>
       </v-toolbar>
 
@@ -325,6 +325,7 @@ definePageMeta({
 // Setup
 const i18n = useI18n();
 const auth = useMealieAuth();
+const brand = useAppBrand();
 const userApi = useUserApi();
 const adminApi = useAdminApi();
 

@@ -8,6 +8,7 @@ import pytest
 from pydantic import ValidationError
 
 from mealie.core.config import get_app_settings
+from mealie.core.settings.branding import Branding
 from mealie.core.settings.settings import AppSettings, determine_secrets
 
 
@@ -26,6 +27,16 @@ def test_non_default_settings(monkeypatch):
     assert app_settings.API_DOCS is False
 
     assert app_settings.DOCS_URL is None
+
+
+def test_hearth_branding_defaults_and_overrides(monkeypatch):
+    monkeypatch.setenv("HEARTH_BRAND_NAME", "House Book")
+
+    brand = Branding()
+
+    assert brand.name == "House Book"
+    assert brand.short_name == "Hearth"
+    assert brand.description == "Practical, step-by-step knowledge for your home and everyday life."
 
 
 def test_allowed_iframe_hosts_defaults(monkeypatch):

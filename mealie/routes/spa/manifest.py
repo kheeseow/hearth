@@ -1,106 +1,69 @@
 import json
+from typing import Any
 from urllib.parse import urlparse
 
-from fastapi import Response
+from fastapi import Depends, Response
+from sqlalchemy.orm import Session
 
 from mealie.core.config import get_app_settings
+from mealie.db.db_setup import generate_session
+from mealie.services.app_capabilities_service import AppCapabilitiesService
 
 
-def serve_manifest():
+def serve_manifest(session: Session = Depends(generate_session)):
     settings = get_app_settings()
     sub_path = urlparse(settings.BASE_URL).path or "/"
+    capabilities = AppCapabilitiesService(session, settings.HEARTH_LEGACY_FEATURES).get()
 
-    manifest = {
-        "name": "Mealie",
-        "short_name": "Mealie",
+    manifest: dict[str, Any] = {
+        "name": settings.brand.name,
+        "short_name": settings.brand.short_name,
         "id": "/",
         "start_url": sub_path,
         "scope": sub_path,
         "display": "standalone",
         "background_color": "#1E1E1E",
         "theme_color": settings.theme.light_primary,
-        "description": "Mealie is a recipe management and meal planning app",
+        "description": settings.brand.description,
         "lang": "en",
         "display_override": ["standalone", "minimal-ui", "browser", "window-controls-overlay"],
-        "categories": ["food", "lifestyle"],
+        "categories": ["lifestyle", "productivity", "utilities"],
         "prefer_related_applications": False,
         "handle_links": "preferred",
         "launch_handler": {"client_mode": ["focus-existing", "auto"]},
         "edge_side_panel": {"preferred_width": 400},
-        "share_target": {
+        "icons": [
+            {
+                "src": "/icons/hearth-mark.svg",
+                "sizes": "any",
+                "type": "image/svg+xml",
+                "purpose": "any maskable",
+            },
+        ],
+        "shortcuts": [
+            {
+                "name": "Guides",
+                "short_name": "Guides",
+                "description": "Open your guides",
+                "url": sub_path,
+                "icons": [{"src": "/icons/hearth-mark.svg", "sizes": "any", "type": "image/svg+xml"}],
+            }
+        ],
+    }
+
+    if capabilities.legacy_recipes:
+        manifest["share_target"] = {
             "action": "/r/create/url",
             "method": "GET",
             "enctype": "application/x-www-form-urlencoded",
             "params": {
-                # 'url' is the field Chrome Android populates when sharing a page URL
                 "url": "recipe_import_url",
-                # 'text' is used by apps that share URLs as plain text; mapped to a
-                # separate param so the page can fall back to it when 'url' is absent
                 "text": "recipe_import_text",
             },
-        },
-        "icons": [
-            {"src": "/icons/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-            {"src": "/icons/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
-            {
-                "src": "/icons/android-chrome-maskable-192x192.png",
-                "sizes": "192x192",
-                "type": "image/png",
-                "purpose": "maskable",
-            },
-            {
-                "src": "/icons/android-chrome-maskable-512x512.png",
-                "sizes": "512x512",
-                "type": "image/png",
-                "purpose": "maskable",
-            },
-        ],
-        "screenshots": [
-            {
-                "src": "/screenshots/home-narrow.png",
-                "sizes": "1600x2420",
-                "form_factor": "narrow",
-                "label": "Home Page",
-            },
-            {
-                "src": "/screenshots/recipe-narrow.png",
-                "sizes": "1600x2420",
-                "form_factor": "narrow",
-                "label": "Recipe Page",
-            },
-            {
-                "src": "/screenshots/editor-narrow.png",
-                "sizes": "1600x2420",
-                "form_factor": "narrow",
-                "label": "Editor Page",
-            },
-            {
-                "src": "/screenshots/parser-narrow.png",
-                "sizes": "1600x2420",
-                "form_factor": "narrow",
-                "label": "Parser Page",
-            },
-            {"src": "/screenshots/home-wide.png", "sizes": "2560x1460", "form_factor": "wide", "label": "Home Page"},
-            {
-                "src": "/screenshots/recipe-wide.png",
-                "sizes": "2560x1460",
-                "form_factor": "wide",
-                "label": "Recipe Page",
-            },
-            {
-                "src": "/screenshots/editor-wide.png",
-                "sizes": "2560x1460",
-                "form_factor": "wide",
-                "label": "Editor Page",
-            },
-            {
-                "src": "/screenshots/parser-wide.png",
-                "sizes": "2560x1460",
-                "form_factor": "wide",
-                "label": "Parser Page",
-            },
-        ],
-        "shortcuts": [
+        }
+
+    if capabilities.shopping_lists:
+        manifest["shortcuts"].append(
             {
                 "name": "Shopping Lists",
                 "short_name": "Shopping Lists",
@@ -110,7 +73,11 @@ def serve_manifest():
                     {"src": "/icons/mdiFormatListChecks-192x192.png", "sizes": "192x192"},
                     {"src": "/icons/mdiFormatListChecks-96x96.png", "sizes": "96x96"},
                 ],
-            },
+            }
+        )
+
+    if capabilities.meal_planning:
+        manifest["shortcuts"].append(
             {
                 "name": "Meal Planner",
                 "short_name": "Meal Planner",
@@ -120,9 +87,8 @@ def serve_manifest():
                     {"src": "/icons/mdiCalendarMultiselect-192x192.png", "sizes": "192x192"},
                     {"src": "/icons/mdiCalendarMultiselect-96x96.png", "sizes": "96x96"},
                 ],
-            },
-        ],
-    }
+            }
+        )
 
     return Response(
         content=json.dumps(manifest),

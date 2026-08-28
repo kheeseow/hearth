@@ -1,7 +1,7 @@
 # Hearth Fork Delta
 
 This file records the expected Hearth-owned paths and the small set of shared
-Mealie files touched by Product Slices 1 through 7. Use it when reviewing
+Mealie files touched by Product Slices 1 through 8. Use it when reviewing
 upstream merges.
 
 ## Hearth-owned paths
@@ -22,6 +22,10 @@ mealie/services/app_capabilities_service.py
 frontend/app/composables/use-app-capabilities.ts
 frontend/app/lib/app-capability-routes.ts
 frontend/app/middleware/app-capabilities.global.ts
+mealie/core/settings/branding.py
+frontend/app/lib/app-brand.ts
+frontend/app/composables/use-app-brand.ts
+frontend/public/icons/hearth-mark.svg
 ```
 
 ## Shared Mealie integration points
@@ -33,18 +37,28 @@ mealie/db/models/_all_models.py                   model registration only
 mealie/repos/repository_factory.py                repository registration only
 mealie/routes/__init__.py                         router registration only
 mealie/core/settings/directories.py               Guide media directory only
-mealie/core/settings/settings.py                  one optional Hearth compatibility override
+mealie/core/settings/settings.py                  brand and capability settings registration only
+mealie/core/settings/themes.py                    Hearth default palette only
 mealie/db/models/server/                          additive capability profile only
 mealie/schema/admin/about.py                      typed app capabilities only
 mealie/routes/app/app_about.py                    capability response only
 mealie/routes/admin/admin_about.py                capability response only
+mealie/routes/spa/manifest.py                     branded, capability-aware install metadata
 mealie/services/backups_v2/alchemy_exporter.py    Guide review-date restoration only
 frontend/app/lib/api/client-user.ts               API client registration only
 frontend/app/components/Layout/DefaultLayout.vue  capability-filtered navigation
 frontend/app/components/Layout/LayoutParts/AppSidebar.vue  capability-filtered favorites link
 frontend/app/components/Domain/Admin/Setup/EndPageContent.vue  Guide-first setup links
 frontend/app/pages/user/profile/index.vue          capability-filtered Recipe cards
-frontend/app/components/Layout/LayoutParts/AppHeader.vue  Guide header search only
+frontend/app/components/Layout/LayoutParts/AppHeader.vue  Guide search and Hearth identity only
+frontend/app/components/Layout/LayoutParts/AppFooter.vue  Hearth product identity only
+frontend/app/components/global/AppLogo.vue         Hearth product mark only
+frontend/app/pages/login.vue                       configured product name only
+frontend/app/pages/register/index.vue              configured product name only
+frontend/app/pages/admin/setup.vue                 configured product name only
+frontend/app/plugins/app-info.client.ts            configured browser metadata only
+frontend/app/plugins/theme.ts                      Hearth fallback palette only
+frontend/nuxt.config.ts                            Hearth static metadata and theme defaults only
 frontend/app/lang/messages/en-US.json             Guide strings only
 frontend/app/lib/api/types/admin.ts               generated capability output
 frontend/app/lib/api/types/response.ts            generated output

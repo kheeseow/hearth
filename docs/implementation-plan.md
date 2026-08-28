@@ -19,7 +19,7 @@ rewrite Mealie's platform or erase its repository history.
 ## Current status
 
 - Phase 1 architecture research is complete.
-- Product Slices 1 through 7 are implemented and validated locally.
+- Product Slices 1 through 8 are implemented and validated locally.
 - The Hearth fork is checked out from Mealie `v3.24.0` at commit
   `2c04da733f88836f788234a4bf1127599fbc1294`.
 - `origin` points to `kheeseow/hearth`; `upstream` points to
@@ -43,6 +43,8 @@ rewrite Mealie's platform or erase its repository history.
 - Fresh Hearth installations now present Guides as the sole product workflow,
   while upgraded Mealie installations retain their existing Recipe, meal-plan,
   shopping-list, and nutrition entry points.
+- Shared application chrome, install metadata, and the Guide library now use a
+  centralized Hearth identity and a warm, Guide-first presentation.
 - Phase 4 is complete. Its Guide domain, export, and backup checkpoint remains
   additive and does not alter Recipe persistence.
 - Phase 2 remains open for Guide events. Phase 3 remains open for complete
@@ -340,6 +342,56 @@ Validation completed on 2026-08-28:
 - A synthetic merge with upstream `mealie-next` at
   `1ff92450a32cbe7edc3a25792a88208e84099788` completed without conflicts;
   the fork was 11 commits ahead and 28 commits behind at the checkpoint
+
+## Product Slice 8 — Hearth identity and Guide-first landing (complete)
+
+Included:
+
+- A small typed brand configuration with Hearth name, short name, and product
+  description, exposed through the existing public and admin app-info responses
+- Optional `HEARTH_BRAND_NAME`, `HEARTH_BRAND_SHORT_NAME`, and
+  `HEARTH_BRAND_DESCRIPTION` operator overrides
+- Centralized frontend brand defaults and a composable used by shared product
+  chrome instead of scattering new literal names through components
+- Hearth identity on the browser title, metadata, application header, footer,
+  sign-in, registration, and first-run setup screens
+- A simple open-book Hearth mark used by application chrome and install metadata
+- A warm terracotta, sage, and ochre default palette through Mealie's existing
+  theme configuration seam; all existing theme environment overrides remain
+  valid
+- A versioned theme request that bypasses the week-long cached Mealie palette
+  immediately after an upgrade
+- A Hearth PWA manifest that removes stale Recipe screenshots and only exposes
+  Recipe import, meal-planning, and shopping-list actions when their persisted
+  capabilities are enabled
+- A prominent search-first Guide library header, followed by secondary browse,
+  filter, create, and export controls
+- No changes to Python package names, API paths, authentication identifiers,
+  data directories, database tables, or Mealie-compatible environment names
+
+This is intentionally a shallow brand layer. References that describe retained
+Mealie compatibility features, migrations, APIs, or upstream announcements are
+not rewritten. A broader wording and notification audit remains a separate
+Phase 5 task.
+
+Validation completed on 2026-08-28:
+
+- Typed public and admin brand response tests: passed
+- Fresh and legacy-enabled manifest behavior tests: passed
+- Branding environment override test: passed
+- Full backend suite: 2,664 passed and 16 skipped by existing upstream markers
+- Python lint and type check: 479 source files passed
+- Frontend ESLint: passed
+- Full frontend suite: 30 files and 286 tests passed
+- Nuxt production build and PWA generation: passed
+- Browser title and shared header both displayed Hearth
+- Browser upgrade check: the versioned theme request immediately loaded the new
+  Hearth palette instead of the previously cached Mealie colors
+- Browser Guide landing check: search was the primary action and returned only
+  matching Guide cards for a realistic `router` query
+- A synthetic merge with upstream `mealie-next` at
+  `2b81b6b0a3e591a017e009cad9a92b3ad7a3b837` completed without conflicts;
+  the fork was 12 commits ahead and 29 commits behind at the checkpoint
 
 ## Product outcome
 
@@ -1150,9 +1202,8 @@ Record material decisions here as they are made.
 
 ## Immediate next action
 
-Begin Product Slice 8 with Phase 5's branding and landing work. Centralize the
-Hearth product name, shallow theme defaults, manifest metadata, and user-facing
-identity through existing configuration seams without renaming the Python
-package, API paths, data directories, or Mealie-compatible environment
-variables. Then make Guide search the primary landing affordance while keeping
-the capability boundary from Slice 7 as the only legacy-visibility policy.
+Begin Product Slice 9 with Phase 5's Guide presentation and print work. Improve
+the Guide reading hierarchy on narrow and wide screens, add a clean printable
+layout, and keep safety notes, requirements, steps, images, sources, and review
+state legible without adding a second presentation model. Follow with focused
+accessibility and browser checks before expanding the wider wording audit.

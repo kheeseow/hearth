@@ -20,7 +20,7 @@
           dark
         >
           <v-toolbar-title class="text-h4 text-center">
-            Mealie
+            {{ brand.name }}
           </v-toolbar-title>
         </v-toolbar>
         <AppLogo />
@@ -322,6 +322,7 @@ const inputAttrs = {
 };
 
 const i18n = useI18n();
+const brand = useAppBrand();
 const isDark = useDark();
 
 function safeValidate(form: Ref<VForm | null>) {

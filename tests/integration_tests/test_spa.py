@@ -1,7 +1,11 @@
+import json
+
 import pytest
 from bs4 import BeautifulSoup
 
+from mealie.core.config import get_app_settings
 from mealie.routes import spa
+from mealie.routes.spa.manifest import serve_manifest
 from mealie.schema.recipe.recipe import Recipe, RecipeSettings
 from mealie.schema.recipe.recipe_notes import RecipeNote
 from mealie.schema.recipe.recipe_share_token import RecipeShareTokenSave
@@ -15,6 +19,37 @@ def set_spa_contents():
     """Inject a simple HTML string into the SPA module to enable metadata injection"""
 
     spa.__contents = "<!DOCTYPE html><html><head></head><body></body></html>"
+
+
+def test_manifest_uses_hearth_brand_and_fresh_capabilities(unique_user: TestUser):
+    response = serve_manifest(session=unique_user.repos.session)
+    manifest = json.loads(response.body)
+
+    assert manifest["name"] == "Hearth"
+    assert manifest["short_name"] == "Hearth"
+    assert manifest["description"] == "Practical, step-by-step knowledge for your home and everyday life."
+    assert manifest["theme_color"] == "#9A4F2E"
+    assert manifest["icons"] == [
+        {
+            "src": "/icons/hearth-mark.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable",
+        }
+    ]
+    assert [shortcut["name"] for shortcut in manifest["shortcuts"]] == ["Guides"]
+    assert "share_target" not in manifest
+
+
+def test_manifest_preserves_legacy_actions_when_enabled(unique_user: TestUser, monkeypatch: pytest.MonkeyPatch):
+    settings = get_app_settings()
+    monkeypatch.setattr(settings, "HEARTH_LEGACY_FEATURES", True)
+
+    response = serve_manifest(session=unique_user.repos.session)
+    manifest = json.loads(response.body)
+
+    assert manifest["share_target"]["action"] == "/r/create/url"
+    assert [shortcut["name"] for shortcut in manifest["shortcuts"]] == ["Guides", "Shopping Lists", "Meal Planner"]
 
 
 def set_group_is_private(unique_user: TestUser, *, is_private: bool):

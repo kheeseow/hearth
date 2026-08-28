@@ -1,4 +1,5 @@
 import { defineNuxtConfig } from "nuxt/config";
+import { defaultAppBrand } from "./app/lib/app-brand";
 
 const AUTH_TOKEN = "mealie.access_token";
 
@@ -29,25 +30,20 @@ export default defineNuxtConfig({
     baseURL: process.env.SUB_PATH || "/",
 
     head: {
-      title: "Mealie",
+      title: defaultAppBrand.name,
       meta: [
         { property: "og:type", content: "website" },
-        { property: "og:title", content: "Mealie" },
-        { property: "og:site_name", content: "Mealie" },
+        { property: "og:title", content: defaultAppBrand.name },
+        { property: "og:site_name", content: defaultAppBrand.name },
         {
           property: "og:description",
-          content: "Mealie is a recipe management app for your kitchen.",
-        },
-        {
-          property: "og:image",
-          content:
-            "https://raw.githubusercontent.com/mealie-recipes/mealie/9571816ac4eed5beacfc0abf6c03eff1427fd0eb/frontend/static/icons/android-chrome-512x512.png",
+          content: defaultAppBrand.description,
         },
         { charset: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
         {
           name: "description",
-          content: "Mealie is a recipe management app for your kitchen.",
+          content: defaultAppBrand.description,
         },
       ],
       script: [
@@ -57,10 +53,8 @@ export default defineNuxtConfig({
         },
       ],
       link: [
-        { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
-        { rel: "shortcut icon", type: "image/png", href: "/icons/icon-x64.png" },
-        { rel: "apple-touch-icon", type: "image/png", href: "/icons/apple-touch-icon.png" },
-        { rel: "mask-icon", href: "/icons/safari-pinned-tab.svg" },
+        { rel: "icon", type: "image/svg+xml", href: "/icons/hearth-mark.svg" },
+        { rel: "shortcut icon", type: "image/svg+xml", href: "/icons/hearth-mark.svg" },
         { rel: "manifest", href: "/manifest.webmanifest", crossorigin: "use-credentials" },
       ],
     },
@@ -86,9 +80,9 @@ export default defineNuxtConfig({
       useDark: Boolean(process.env.THEME_USE_DARK) || false,
       themes: {
         dark: {
-          primary: process.env.THEME_DARK_PRIMARY || "#E58325",
-          accent: process.env.THEME_DARK_ACCENT || "#007A99",
-          secondary: process.env.THEME_DARK_SECONDARY || "#973542",
+          primary: process.env.THEME_DARK_PRIMARY || "#D47A50",
+          accent: process.env.THEME_DARK_ACCENT || "#7FA58F",
+          secondary: process.env.THEME_DARK_SECONDARY || "#D9A441",
           success: process.env.THEME_DARK_SUCCESS || "#43A047",
           info: process.env.THEME_DARK_INFO || "#1976d2",
           warning: process.env.THEME_DARK_WARNING || "#FF6D00",
@@ -96,9 +90,9 @@ export default defineNuxtConfig({
           background: "#1E1E1E",
         },
         light: {
-          primary: process.env.THEME_LIGHT_PRIMARY || "#E58325",
-          accent: process.env.THEME_LIGHT_ACCENT || "#007A99",
-          secondary: process.env.THEME_LIGHT_SECONDARY || "#973542",
+          primary: process.env.THEME_LIGHT_PRIMARY || "#9A4F2E",
+          accent: process.env.THEME_LIGHT_ACCENT || "#496B5A",
+          secondary: process.env.THEME_LIGHT_SECONDARY || "#C58B2B",
           success: process.env.THEME_LIGHT_SUCCESS || "#43A047",
           info: process.env.THEME_LIGHT_INFO || "#1976d2",
           warning: process.env.THEME_LIGHT_WARNING || "#FF6D00",
@@ -232,7 +226,7 @@ export default defineNuxtConfig({
       installPrompt: true,
       periodicSyncForUpdates: 120,
     },
-    includeAssets: ["favicon.ico", "apple-touch-icon.png", "safari-pinned-tab.svg"],
+    includeAssets: ["icons/hearth-mark.svg"],
     manifest: false, // This is served via the backend, see mealie/routes/spa/manifest.py
   },
 

@@ -49,7 +49,7 @@
         dark
       >
         <v-toolbar-title class="text-h4 text-center">
-          Mealie
+          {{ brand.name }}
         </v-toolbar-title>
       </v-toolbar>
       <AppLogo :size="100" />
@@ -229,6 +229,7 @@ const router = useRouter();
 const route = useRoute();
 const i18n = useI18n();
 const auth = useMealieAuth();
+const brand = useAppBrand();
 const { $appInfo, $axios } = useNuxtApp();
 const { loggedIn } = useLoggedInState();
 const groupSlug = computed(() => auth.user.value?.groupSlug);

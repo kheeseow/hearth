@@ -110,7 +110,6 @@ import {
   mdiShapeOutline,
   mdiShareVariant,
   mdiSilverwareForkKnife,
-  mdiSilverwareVariant,
   mdiSlotMachine,
   mdiSortAlphabeticalAscending,
   mdiSortAlphabeticalDescending,
@@ -144,7 +143,7 @@ import {
 
 export const icons = {
   // Primary
-  primary: mdiSilverwareVariant,
+  primary: mdiBookOpenPageVariant,
 
   wrench: mdiWrench,
   chart: mdiChartLine,
