@@ -196,7 +196,8 @@
       text-align: left;
     }
 
-    .nav-item:hover {
+    .nav-item:hover,
+    .nav-item:focus-visible {
       background: var(--surface-soft);
       color: var(--ink);
     }
@@ -216,11 +217,14 @@
       margin-top: auto;
     }
 
+    .rail-bottom > .nav-stack {
+      padding-bottom: 16px;
+    }
+
     .profile-chip {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-top: 12px;
       padding: 12px;
       border-top: 1px solid var(--line);
       color: var(--ink-muted);
