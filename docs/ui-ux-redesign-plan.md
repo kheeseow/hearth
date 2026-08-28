@@ -8,6 +8,12 @@ This plan defines the redesign direction, evidence-gathering method, delivery
 sequence, and upstream-compatibility boundaries that must be agreed before UI
 implementation begins.
 
+An interactive, disposable concept is available at
+[`docs/prototypes/hearth-ui-concept.html`](prototypes/hearth-ui-concept.html).
+It demonstrates the proposed library, reader, editor, responsive shell, light
+and dark themes, search filtering, and save feedback without importing any of
+the concept into the production application. Visual approval remains pending.
+
 ## Executive decision
 
 Hearth should become **visually distinctive and behaviorally purpose-built,

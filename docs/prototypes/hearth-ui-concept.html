@@ -1,0 +1,1477 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hearth UI concept</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --canvas: #f6f2ea;
+      --surface: #fffdf8;
+      --surface-raised: #ffffff;
+      --surface-soft: #eee8dc;
+      --ink: #26211c;
+      --ink-muted: #6e655b;
+      --line: #ddd5c8;
+      --primary: #9b4c2e;
+      --primary-strong: #75351f;
+      --primary-soft: #f2ddd3;
+      --accent: #486b59;
+      --accent-soft: #dce9e1;
+      --warning: #8a5c00;
+      --warning-soft: #fff1cc;
+      --danger: #9f302a;
+      --danger-soft: #f8dedb;
+      --shadow-sm: 0 1px 2px rgb(49 37 26 / 8%), 0 3px 10px rgb(49 37 26 / 5%);
+      --shadow-md: 0 10px 30px rgb(49 37 26 / 10%), 0 2px 8px rgb(49 37 26 / 6%);
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --rail-width: 236px;
+      --top-height: 72px;
+    }
+
+    body.dark {
+      color-scheme: dark;
+      --canvas: #181714;
+      --surface: #211f1b;
+      --surface-raised: #292620;
+      --surface-soft: #312d26;
+      --ink: #f6f1e7;
+      --ink-muted: #b9afa2;
+      --line: #443e35;
+      --primary: #dd8057;
+      --primary-strong: #f09a72;
+      --primary-soft: #4a2b20;
+      --accent: #8caf9b;
+      --accent-soft: #273b31;
+      --warning: #e0b24f;
+      --warning-soft: #413419;
+      --danger: #f08a82;
+      --danger-soft: #482522;
+      --shadow-sm: 0 1px 2px rgb(0 0 0 / 28%), 0 3px 10px rgb(0 0 0 / 18%);
+      --shadow-md: 0 12px 34px rgb(0 0 0 / 34%), 0 2px 8px rgb(0 0 0 / 24%);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input,
+    textarea {
+      color: inherit;
+      font: inherit;
+    }
+
+    button,
+    [role="button"] {
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    summary:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .concept-banner {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      padding: 6px 16px;
+      background: var(--ink);
+      color: var(--canvas);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      text-transform: uppercase;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      padding-top: 32px;
+    }
+
+    .side-rail {
+      position: fixed;
+      inset: 32px auto 0 0;
+      z-index: 20;
+      display: flex;
+      width: var(--rail-width);
+      flex-direction: column;
+      padding: 24px 16px;
+      border-right: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 48px;
+      padding: 0 8px;
+      color: var(--ink);
+      font-size: 20px;
+      font-weight: 760;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 12px 12px 16px 16px;
+      background: var(--primary);
+      color: white;
+      box-shadow: inset 0 -2px 0 rgb(0 0 0 / 12%);
+    }
+
+    .brand-mark svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .nav-label {
+      margin: 32px 12px 8px;
+      color: var(--ink-muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .nav-stack {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      min-height: 48px;
+      align-items: center;
+      gap: 12px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--ink-muted);
+      font-weight: 650;
+      text-align: left;
+    }
+
+    .nav-item:hover {
+      background: var(--surface-soft);
+      color: var(--ink);
+    }
+
+    .nav-item.active {
+      background: var(--primary-soft);
+      color: var(--primary-strong);
+    }
+
+    .nav-item svg {
+      width: 21px;
+      height: 21px;
+      flex: 0 0 auto;
+    }
+
+    .rail-bottom {
+      margin-top: auto;
+    }
+
+    .profile-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border-top: 1px solid var(--line);
+      color: var(--ink-muted);
+      font-size: 14px;
+    }
+
+    .avatar {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .mobile-bar,
+    .mobile-nav {
+      display: none;
+    }
+
+    .main {
+      min-width: 0;
+      margin-left: var(--rail-width);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 32px;
+      z-index: 15;
+      display: flex;
+      height: var(--top-height);
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 clamp(24px, 5vw, 72px);
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--canvas) 92%, transparent);
+      backdrop-filter: blur(16px);
+    }
+
+    .topbar-context {
+      color: var(--ink-muted);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-button,
+    .secondary-button,
+    .primary-button,
+    .text-button {
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 12px;
+      font-weight: 720;
+      white-space: nowrap;
+      transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+    }
+
+    .icon-button:active,
+    .secondary-button:active,
+    .primary-button:active,
+    .text-button:active {
+      transform: translateY(1px);
+    }
+
+    .icon-button {
+      width: 44px;
+      padding: 0;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink-muted);
+    }
+
+    .secondary-button {
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+    }
+
+    .primary-button {
+      padding: 0 18px;
+      border: 1px solid var(--primary);
+      background: var(--primary);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .text-button {
+      padding: 0 8px;
+      border: 0;
+      background: transparent;
+      color: var(--primary-strong);
+    }
+
+    .screen {
+      display: none;
+      min-height: calc(100vh - 104px);
+      animation: screen-in 220ms ease both;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes screen-in {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: clamp(32px, 6vw, 72px) clamp(20px, 5vw, 64px) 96px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--primary-strong);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 17ch;
+      margin-bottom: 16px;
+      font-size: clamp(36px, 4.2vw, 58px);
+      font-weight: 770;
+      letter-spacing: -0.045em;
+      line-height: 1.04;
+      text-wrap: balance;
+    }
+
+    h2 {
+      margin-bottom: 8px;
+      font-size: clamp(24px, 2.4vw, 32px);
+      font-weight: 740;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      font-size: 19px;
+      font-weight: 720;
+      letter-spacing: -0.015em;
+      line-height: 1.25;
+    }
+
+    .lede {
+      max-width: 60ch;
+      margin-bottom: 0;
+      color: var(--ink-muted);
+      font-size: clamp(17px, 1.5vw, 19px);
+      line-height: 1.65;
+    }
+
+    .library-intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 32px;
+      align-items: end;
+      margin-bottom: 40px;
+    }
+
+    .search-panel {
+      margin: 32px 0 24px;
+      padding: 10px;
+      border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--line));
+      border-radius: var(--radius-md);
+      background: var(--surface-raised);
+      box-shadow: var(--shadow-md);
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .search-box svg {
+      width: 24px;
+      height: 24px;
+      margin-left: 8px;
+      color: var(--ink-muted);
+    }
+
+    .search-box input {
+      min-width: 0;
+      flex: 1;
+      height: 52px;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 17px;
+    }
+
+    .search-box input::placeholder {
+      color: var(--ink-muted);
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      min-height: 36px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--ink-muted);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .chip:hover,
+    .chip.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 48px 0 20px;
+    }
+
+    .section-heading p {
+      margin-bottom: 0;
+      color: var(--ink-muted);
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .guide-card {
+      position: relative;
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface-raised);
+      box-shadow: var(--shadow-sm);
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .guide-card:hover {
+      transform: translateY(-3px);
+      border-color: color-mix(in srgb, var(--primary) 40%, var(--line));
+      box-shadow: var(--shadow-md);
+    }
+
+    .guide-card button {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      border: 0;
+      background: transparent;
+      font-size: 0;
+    }
+
+    .card-cover {
+      display: flex;
+      aspect-ratio: 16 / 8;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 16px;
+      color: #2b241f;
+    }
+
+    .card-cover.washer { background: linear-gradient(145deg, #ddd3c3, #b9c8bf); }
+    .card-cover.router { background: linear-gradient(145deg, #d6d8cf, #c5b29d); }
+    .card-cover.power { background: linear-gradient(145deg, #decba9, #d9ad70); }
+    .card-cover.towel { background: linear-gradient(145deg, #e2d1c4, #c79882); }
+    .card-cover.water { background: linear-gradient(145deg, #cbdad7, #8fb5b1); }
+    .card-cover.oil { background: linear-gradient(145deg, #dbd0b3, #bc9d63); }
+
+    .cover-icon {
+      display: grid;
+      width: 54px;
+      height: 54px;
+      place-items: center;
+      border: 1px solid rgb(43 36 31 / 16%);
+      border-radius: 18px;
+      background: rgb(255 255 255 / 55%);
+      font-size: 28px;
+      backdrop-filter: blur(6px);
+    }
+
+    .review-state {
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgb(255 255 255 / 62%);
+      font-size: 11px;
+      font-weight: 760;
+      backdrop-filter: blur(6px);
+    }
+
+    .review-state.due {
+      background: #fff0c7;
+      color: #704700;
+    }
+
+    .card-body {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .card-kicker {
+      margin-bottom: 8px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .card-body p {
+      display: -webkit-box;
+      margin: 0 0 18px;
+      overflow: hidden;
+      color: var(--ink-muted);
+      font-size: 14px;
+      line-height: 1.55;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    .metadata {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      margin-top: auto;
+      color: var(--ink-muted);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .metadata span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .empty-results {
+      display: none;
+      padding: 64px 24px;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius-md);
+      color: var(--ink-muted);
+      text-align: center;
+    }
+
+    .empty-results strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--ink);
+      font-size: 20px;
+    }
+
+    .reader-page {
+      width: min(1120px, 100%);
+    }
+
+    .reader-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      gap: 8px;
+      border: 0;
+      background: transparent;
+      color: var(--primary-strong);
+      font-weight: 720;
+    }
+
+    .reader-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .reader-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 48px;
+      align-items: center;
+      margin-bottom: 48px;
+    }
+
+    .reader-hero h1 {
+      max-width: 15ch;
+      font-size: clamp(40px, 5vw, 64px);
+    }
+
+    .hero-visual {
+      position: relative;
+      display: grid;
+      aspect-ratio: 4 / 3;
+      place-items: center;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      background:
+        radial-gradient(circle at 75% 24%, rgb(255 255 255 / 60%) 0 12%, transparent 13%),
+        linear-gradient(145deg, #ddd3c3, #b9c8bf);
+      color: #4c5d53;
+      box-shadow: var(--shadow-md);
+    }
+
+    .hero-visual span {
+      font-size: 76px;
+      filter: drop-shadow(0 5px 10px rgb(0 0 0 / 10%));
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 22px 0 0;
+    }
+
+    .tag {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: var(--ink-muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .safety-panel {
+      margin-bottom: 40px;
+      padding: 24px;
+      border: 1px solid color-mix(in srgb, var(--danger) 34%, var(--line));
+      border-radius: var(--radius-md);
+      background: var(--danger-soft);
+    }
+
+    .safety-panel h2 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--danger);
+      font-size: 23px;
+    }
+
+    .safety-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 32px;
+      margin-top: 18px;
+    }
+
+    .safety-grid p {
+      margin: 0;
+      color: var(--ink);
+    }
+
+    .safety-grid strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--danger);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .reader-layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 48px;
+      align-items: start;
+    }
+
+    .before-card {
+      position: sticky;
+      top: 128px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .before-card h2 {
+      font-size: 21px;
+    }
+
+    .requirement-list {
+      display: grid;
+      gap: 12px;
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .requirement-list li {
+      display: flex;
+      gap: 10px;
+      color: var(--ink-muted);
+      font-size: 14px;
+    }
+
+    .requirement-list b {
+      color: var(--accent);
+    }
+
+    .steps h2 {
+      margin-bottom: 24px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr);
+      gap: 18px;
+      padding: 0 0 32px;
+    }
+
+    .step + .step {
+      padding-top: 32px;
+      border-top: 1px solid var(--line);
+    }
+
+    .step-number {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, var(--primary) 50%, var(--line));
+      border-radius: 50%;
+      background: var(--primary-soft);
+      color: var(--primary-strong);
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .step h3 {
+      max-width: 48ch;
+      margin-top: 5px;
+      font-size: 21px;
+      line-height: 1.35;
+    }
+
+    .step p {
+      max-width: 65ch;
+      margin-bottom: 0;
+      color: var(--ink-muted);
+      font-size: 17px;
+      line-height: 1.65;
+    }
+
+    .tip {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      background: var(--accent-soft);
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .editor-page {
+      width: min(980px, 100%);
+    }
+
+    .editor-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .editor-heading h1 {
+      max-width: none;
+      margin-bottom: 8px;
+      font-size: clamp(34px, 4vw, 48px);
+    }
+
+    .save-cluster {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .save-status {
+      color: var(--ink-muted);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .editor-card {
+      margin-bottom: 20px;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface-raised);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .editor-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .editor-card-header p {
+      max-width: 58ch;
+      margin: 0;
+      color: var(--ink-muted);
+      font-size: 14px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      color: var(--ink-muted);
+      font-size: 13px;
+      font-weight: 720;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--ink);
+    }
+
+    .field input {
+      height: 48px;
+      padding: 0 14px;
+    }
+
+    .field textarea {
+      min-height: 92px;
+      padding: 12px 14px;
+      resize: vertical;
+    }
+
+    .step-editor {
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+      padding: 16px 0;
+    }
+
+    .step-editor + .step-editor {
+      border-top: 1px solid var(--line);
+    }
+
+    .drag-handle {
+      display: grid;
+      width: 36px;
+      height: 44px;
+      place-items: center;
+      color: var(--ink-muted);
+      font-size: 18px;
+    }
+
+    .step-editor textarea {
+      width: 100%;
+      min-height: 76px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      resize: vertical;
+    }
+
+    .delete-step {
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--ink-muted);
+      font-size: 18px;
+    }
+
+    .delete-step:hover {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    details.editor-card {
+      padding: 0;
+    }
+
+    details.editor-card summary {
+      display: flex;
+      min-height: 78px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 28px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    details.editor-card summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.editor-card summary::after {
+      content: "+";
+      color: var(--primary-strong);
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    details[open].editor-card summary::after {
+      content: "−";
+    }
+
+    .details-content {
+      padding: 0 28px 28px;
+    }
+
+    .prototype-note {
+      margin-top: 32px;
+      padding: 18px 20px;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius-sm);
+      color: var(--ink-muted);
+      font-size: 14px;
+    }
+
+    .mobile-nav {
+      position: fixed;
+      inset: auto 12px 12px;
+      z-index: 30;
+      grid-template-columns: repeat(3, 1fr);
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--surface-raised) 92%, transparent);
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(18px);
+    }
+
+    .mobile-nav .nav-item {
+      min-height: 52px;
+      justify-content: center;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+
+    .mobile-nav .nav-item svg {
+      width: 19px;
+    }
+
+    @media (max-width: 980px) {
+      :root { --rail-width: 210px; }
+      .guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .reader-hero { grid-template-columns: minmax(0, 1fr) 290px; gap: 32px; }
+      .reader-layout { grid-template-columns: 240px minmax(0, 1fr); gap: 32px; }
+    }
+
+    @media (max-width: 760px) {
+      .side-rail,
+      .topbar {
+        display: none;
+      }
+
+      .app-shell { padding-top: 32px; }
+      .main { margin-left: 0; }
+      .mobile-bar {
+        position: sticky;
+        top: 32px;
+        z-index: 20;
+        display: flex;
+        min-height: 64px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        border-bottom: 1px solid var(--line);
+        background: color-mix(in srgb, var(--canvas) 92%, transparent);
+        backdrop-filter: blur(16px);
+      }
+      .mobile-bar .brand { padding: 0; font-size: 18px; }
+      .mobile-bar .brand-mark { width: 34px; height: 34px; }
+      .mobile-nav { display: grid; }
+      .screen { min-height: calc(100vh - 96px); }
+      .page { padding: 32px 18px 108px; }
+      .library-intro { display: block; margin-bottom: 32px; }
+      h1 { font-size: clamp(34px, 10vw, 46px); }
+      .search-panel { margin-top: 24px; padding: 7px; }
+      .search-box input { height: 48px; }
+      .search-box .primary-button { min-width: 48px; padding: 0 14px; }
+      .search-box .button-label { display: none; }
+      .section-heading { margin-top: 40px; align-items: start; }
+      .guide-grid { grid-template-columns: 1fr; }
+      .card-cover { aspect-ratio: 16 / 7; }
+      .reader-toolbar { margin-bottom: 28px; }
+      .reader-actions .secondary-button span { display: none; }
+      .reader-hero { display: flex; flex-direction: column-reverse; align-items: stretch; gap: 28px; }
+      .reader-hero h1 { font-size: clamp(38px, 11vw, 50px); }
+      .hero-visual { aspect-ratio: 16 / 9; }
+      .safety-grid { grid-template-columns: 1fr; }
+      .reader-layout { display: flex; flex-direction: column; }
+      .before-card { position: static; width: 100%; }
+      .steps { width: 100%; }
+      .step { grid-template-columns: 40px minmax(0, 1fr); gap: 14px; }
+      .step-number { width: 38px; height: 38px; }
+      .step h3 { margin-top: 3px; font-size: 20px; }
+      .step p { font-size: 17px; }
+      .editor-heading { display: block; }
+      .save-cluster { position: sticky; top: 104px; z-index: 10; justify-content: space-between; margin: 20px 0 0; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-raised); box-shadow: var(--shadow-sm); }
+      .editor-card { padding: 22px 18px; }
+      .field-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      .step-editor { grid-template-columns: 30px minmax(0, 1fr); }
+      .delete-step { grid-column: 2; justify-self: end; margin-top: -6px; }
+      details.editor-card summary { padding: 0 18px; }
+      .details-content { padding: 0 18px 22px; }
+    }
+
+    @media (max-width: 380px) {
+      .concept-banner { font-size: 10px; }
+      .mobile-nav .nav-item { gap: 6px; font-size: 11px; }
+      .section-heading { display: block; }
+      .section-heading .text-button { margin-top: 8px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="concept-banner">Concept preview · No Hearth data is changed</div>
+  <div class="app-shell">
+    <aside class="side-rail" aria-label="Concept navigation">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3.5 5.5c3.2 0 5.7.8 8.5 2.8v11c-2.8-2-5.3-2.8-8.5-2.8z"/><path d="M20.5 5.5c-3.2 0-5.7.8-8.5 2.8v11c2.8-2 5.3-2.8 8.5-2.8z"/></svg>
+        </span>
+        Hearth
+      </div>
+
+      <div class="nav-label">Your household</div>
+      <nav class="nav-stack">
+        <button class="nav-item active" data-screen-target="library">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5.5c3.2 0 5.6.7 8 2.5v11c-2.4-1.8-4.8-2.5-8-2.5z"/><path d="M20 5.5c-3.2 0-5.6.7-8 2.5v11c2.4-1.8 4.8-2.5 8-2.5z"/></svg>
+          Guides
+        </button>
+        <button class="nav-item" data-screen-target="editor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+          New guide
+        </button>
+      </nav>
+
+      <div class="rail-bottom">
+        <nav class="nav-stack">
+          <button class="nav-item" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1z"/></svg>
+            Settings
+          </button>
+        </nav>
+        <div class="profile-chip">
+          <span class="avatar">A</span>
+          <span><strong style="color: var(--ink)">Andrew</strong><br>Home household</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="mobile-bar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3.5 5.5c3.2 0 5.7.8 8.5 2.8v11c-2.8-2-5.3-2.8-8.5-2.8z"/><path d="M20.5 5.5c-3.2 0-5.7.8-8.5 2.8v11c2.8-2 5.3-2.8 8.5-2.8z"/></svg>
+          </span>
+          Hearth
+        </div>
+        <button class="icon-button theme-toggle" aria-label="Toggle theme">◐</button>
+      </header>
+
+      <header class="topbar">
+        <div class="topbar-context">Home household</div>
+        <div class="topbar-actions">
+          <button class="icon-button theme-toggle" aria-label="Toggle theme">◐</button>
+          <button class="secondary-button" data-screen-target="editor">＋ New guide</button>
+        </div>
+      </header>
+
+      <section class="screen active" data-screen="library" aria-labelledby="library-title">
+        <div class="page">
+          <div class="library-intro">
+            <div>
+              <p class="eyebrow">Your household guidebook</p>
+              <h1 id="library-title">What do you need to do?</h1>
+              <p class="lede">Find the instructions your household already trusts—without solving the same problem twice.</p>
+            </div>
+          </div>
+
+          <form class="search-panel" id="guide-search" role="search">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+              <input id="search-input" type="search" placeholder="Try “washing machine”, “router”, or “oil stain”" aria-label="Search Guides">
+              <button class="primary-button" type="submit"><span class="button-label">Search</span><span aria-hidden="true">→</span></button>
+            </div>
+          </form>
+
+          <div class="chip-row" aria-label="Quick filters">
+            <button class="chip active" data-filter="all">All guides</button>
+            <button class="chip" data-filter="cleaning">Cleaning</button>
+            <button class="chip" data-filter="maintenance">Maintenance</button>
+            <button class="chip" data-filter="setup">Setup</button>
+            <button class="chip" data-filter="emergency">Emergency</button>
+            <button class="chip" data-filter="troubleshooting">Troubleshooting</button>
+          </div>
+
+          <div class="section-heading">
+            <div>
+              <h2>For this home</h2>
+              <p id="result-count" aria-live="polite">6 practical guides</p>
+            </div>
+            <button class="text-button" type="button">Filters <span aria-hidden="true">⌄</span></button>
+          </div>
+
+          <div class="guide-grid" id="guide-grid">
+            <article class="guide-card" data-category="cleaning" data-search="monthly washing machine clean appliance laundry odors detergent filter">
+              <button data-open-reader aria-label="Open Monthly washing machine clean"></button>
+              <div class="card-cover washer"><span class="cover-icon">◉</span><span class="review-state due">Review due</span></div>
+              <div class="card-body">
+                <div class="card-kicker">Appliance care</div>
+                <h3>Monthly washing machine clean</h3>
+                <p>Prevent odors, detergent buildup, and a dirty filter with one safe routine.</p>
+                <div class="metadata"><span>◷ 55 min</span><span>○ Beginner</span><span>↻ Monthly</span></div>
+              </div>
+            </article>
+
+            <article class="guide-card" data-category="setup" data-search="restart home router safely internet wifi network troubleshooting">
+              <button data-open-reader aria-label="Open Restart a home router safely"></button>
+              <div class="card-cover router"><span class="cover-icon">⌁</span><span class="review-state">Reviewed</span></div>
+              <div class="card-body">
+                <div class="card-kicker">Technology &amp; setup</div>
+                <h3>Restart a home router safely</h3>
+                <p>Power-cycle the internet equipment without erasing its settings.</p>
+                <div class="metadata"><span>◷ 8 min</span><span>○ Beginner</span><span>↻ As needed</span></div>
+              </div>
+            </article>
+
+            <article class="guide-card" data-category="emergency" data-search="shut off main water emergency leak valve home">
+              <button data-open-reader aria-label="Open Shut off the main water"></button>
+              <div class="card-cover water"><span class="cover-icon">◒</span><span class="review-state">Reviewed</span></div>
+              <div class="card-body">
+                <div class="card-kicker">Emergency</div>
+                <h3>Shut off the main water</h3>
+                <p>Locate and close the correct valve quickly when a serious leak happens.</p>
+                <div class="metadata"><span>◷ 5 min</span><span>○ Beginner</span><span>↻ As needed</span></div>
+              </div>
+            </article>
+
+            <article class="guide-card" data-category="cleaning" data-search="restore turkish cotton towels laundry wash softness">
+              <button data-open-reader aria-label="Open Restore Turkish cotton towels"></button>
+              <div class="card-cover towel"><span class="cover-icon">▤</span><span class="review-state">Reviewed</span></div>
+              <div class="card-body">
+                <div class="card-kicker">Laundry</div>
+                <h3>Restore Turkish cotton towels</h3>
+                <p>Wash and dry towels correctly to remove buildup and restore softness.</p>
+                <div class="metadata"><span>◷ 75 min</span><span>○ Beginner</span><span>↻ As needed</span></div>
+              </div>
+            </article>
+
+            <article class="guide-card" data-category="emergency" data-search="prepare short power outage emergency electricity torch">
+              <button data-open-reader aria-label="Open Prepare for a short power outage"></button>
+              <div class="card-cover power"><span class="cover-icon">ϟ</span><span class="review-state">Reviewed</span></div>
+              <div class="card-body">
+                <div class="card-kicker">Emergency</div>
+                <h3>Prepare for a short power outage</h3>
+                <p>Keep essential lights, communications, and appliances safe during an outage.</p>
+                <div class="metadata"><span>◷ 15 min</span><span>○ Beginner</span><span>↻ As needed</span></div>
+              </div>
+            </article>
+
+            <article class="guide-card" data-category="troubleshooting" data-search="cooking oil stain fabric clothing remove laundry">
+              <button data-open-reader aria-label="Open Handle a small cooking-oil stain"></button>
+              <div class="card-cover oil"><span class="cover-icon">◐</span><span class="review-state">Reviewed</span></div>
+              <div class="card-body">
+                <div class="card-kicker">Clothing care</div>
+                <h3>Handle a small cooking-oil stain</h3>
+                <p>Lift fresh oil from washable fabric before it settles into the fibres.</p>
+                <div class="metadata"><span>◷ 25 min</span><span>○ Beginner</span><span>↻ As needed</span></div>
+              </div>
+            </article>
+          </div>
+
+          <div class="empty-results" id="empty-results" role="status">
+            <strong>No matching guides</strong>
+            Try a shorter search or choose another category.
+          </div>
+
+          <div class="prototype-note"><strong>Concept choice:</strong> the library is the home. Search leads, categories help recognition, and advanced filters move out of the first visual tier.</div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="reader" aria-labelledby="reader-title">
+        <article class="page reader-page">
+          <div class="reader-toolbar">
+            <button class="back-link" data-screen-target="library">← All guides</button>
+            <div class="reader-actions">
+              <button class="secondary-button" type="button" aria-label="Print guide">⌁ <span>Print</span></button>
+              <button class="secondary-button" data-screen-target="editor">✎ <span>Edit</span></button>
+            </div>
+          </div>
+
+          <header class="reader-hero">
+            <div>
+              <p class="eyebrow">Appliance care · Cleaning</p>
+              <h1 id="reader-title">Monthly washing machine clean</h1>
+              <p class="lede">A safe monthly routine to prevent odors, detergent buildup, and a dirty filter.</p>
+              <div class="metadata" style="margin-top: 20px"><span>◷ 55 minutes</span><span>○ Beginner</span><span>↻ Monthly</span></div>
+              <div class="tag-row"><span class="tag">laundry</span><span class="tag">appliances</span><span class="tag">monthly</span></div>
+            </div>
+            <div class="hero-visual" role="img" aria-label="Washing machine illustration"><span>◉</span></div>
+          </header>
+
+          <section class="safety-panel" aria-labelledby="safety-title">
+            <h2 id="safety-title"><span aria-hidden="true">△</span> Safety first</h2>
+            <div class="safety-grid">
+              <p><strong>Before opening the filter</strong>Unplug the machine from the wall.</p>
+              <p><strong>Never combine products</strong>Do not mix bleach with vinegar or other cleaners.</p>
+            </div>
+          </section>
+
+          <div class="reader-layout">
+            <aside class="before-card" aria-labelledby="before-title">
+              <p class="eyebrow">Preparation</p>
+              <h2 id="before-title">Before you start</h2>
+              <ul class="requirement-list">
+                <li><b>✓</b><span><strong style="color: var(--ink)">Microfibre cloth</strong><br>Clean and dry</span></li>
+                <li><b>✓</b><span><strong style="color: var(--ink)">Filter brush</strong><br>Soft bristles</span></li>
+                <li><b>✓</b><span><strong style="color: var(--ink)">Machine cleaner</strong><br>Maker-recommended amount</span></li>
+              </ul>
+            </aside>
+
+            <section class="steps" aria-labelledby="steps-title">
+              <p class="eyebrow">Procedure</p>
+              <h2 id="steps-title">Five clear steps</h2>
+              <div class="step"><div class="step-number">1</div><div><h3>Remove and rinse the detergent drawer.</h3><p>Release the drawer according to the appliance manual, then rinse away visible detergent buildup.</p><div class="tip"><strong>Tip:</strong> Take a photo before removing it so reassembly is easier.</div></div></div>
+              <div class="step"><div class="step-number">2</div><div><h3>Wipe the door seal.</h3><p>Gently pull back accessible folds and remove lint, hair, and trapped debris with a damp cloth.</p></div></div>
+              <div class="step"><div class="step-number">3</div><div><h3>Clean the drain filter.</h3><p>Unplug the machine, protect the floor with towels, and follow the manufacturer’s filter instructions.</p></div></div>
+              <div class="step"><div class="step-number">4</div><div><h3>Run the recommended empty cycle.</h3><p>Add only the recommended amount of cleaner and select the hottest safe maintenance cycle.</p></div></div>
+              <div class="step"><div class="step-number">5</div><div><h3>Let the machine dry.</h3><p>Wipe remaining moisture and leave the door and drawer open until the inside is fully dry.</p></div></div>
+            </section>
+          </div>
+
+          <div class="prototype-note"><strong>Concept choice:</strong> the reader prioritizes outcome, safety, preparation, then procedure. Utilities remain available without competing with the task.</div>
+        </article>
+      </section>
+
+      <section class="screen" data-screen="editor" aria-labelledby="editor-title">
+        <div class="page editor-page">
+          <div class="editor-heading">
+            <div>
+              <p class="eyebrow">Editing guide</p>
+              <h1 id="editor-title">Monthly washing machine clean</h1>
+              <p class="lede">Start with the essentials. Add supporting details only where they make the procedure safer or clearer.</p>
+            </div>
+            <div class="save-cluster">
+              <span class="save-status" id="save-status" aria-live="polite">No unsaved changes</span>
+              <button class="primary-button" id="save-button" type="button">Save guide</button>
+            </div>
+          </div>
+
+          <section class="editor-card" aria-labelledby="essential-title">
+            <div class="editor-card-header">
+              <div><h2 id="essential-title">Essentials</h2><p>The information someone needs to recognize and trust this Guide.</p></div>
+            </div>
+            <div class="field-grid">
+              <div class="field full"><label for="guide-title">Title</label><input id="guide-title" value="Monthly washing machine clean"></div>
+              <div class="field full"><label for="guide-description">What this Guide helps with</label><textarea id="guide-description">A safe monthly routine to prevent odors, detergent buildup, and a dirty filter.</textarea></div>
+              <div class="field"><label for="guide-category">Category</label><input id="guide-category" value="Appliance care"></div>
+              <div class="field"><label for="guide-frequency">Frequency</label><input id="guide-frequency" value="Monthly"></div>
+            </div>
+          </section>
+
+          <section class="editor-card" aria-labelledby="editor-steps-title">
+            <div class="editor-card-header">
+              <div><h2 id="editor-steps-title">Steps</h2><p>Keep each step focused on one action. Drag to change the order.</p></div>
+              <button class="secondary-button" id="add-step" type="button">＋ Add step</button>
+            </div>
+            <div id="step-editors">
+              <div class="step-editor"><div class="drag-handle" aria-hidden="true">⠿</div><textarea aria-label="Step 1">Remove and rinse the detergent drawer.</textarea><button class="delete-step" aria-label="Remove step 1">×</button></div>
+              <div class="step-editor"><div class="drag-handle" aria-hidden="true">⠿</div><textarea aria-label="Step 2">Wipe the door seal and remove trapped debris.</textarea><button class="delete-step" aria-label="Remove step 2">×</button></div>
+              <div class="step-editor"><div class="drag-handle" aria-hidden="true">⠿</div><textarea aria-label="Step 3">Clean the drain filter according to the manufacturer’s instructions.</textarea><button class="delete-step" aria-label="Remove step 3">×</button></div>
+            </div>
+          </section>
+
+          <details class="editor-card">
+            <summary><span><strong>Safety and preparation</strong><br><small style="color: var(--ink-muted)">Warnings, tools, and materials</small></span></summary>
+            <div class="details-content"><div class="field"><label for="guide-warning">Important warning</label><textarea id="guide-warning">Unplug the machine before opening or cleaning the drain filter.</textarea></div></div>
+          </details>
+
+          <details class="editor-card">
+            <summary><span><strong>More details</strong><br><small style="color: var(--ink-muted)">Images, tags, sources, relationships, and review date</small></span></summary>
+            <div class="details-content"><p style="color: var(--ink-muted); margin: 0">Advanced Guide fields remain fully available, but they no longer compete with the basic authoring path.</p></div>
+          </details>
+
+          <div style="display: flex; justify-content: space-between; gap: 12px; margin-top: 28px">
+            <button class="text-button" data-screen-target="reader">Cancel</button>
+            <button class="text-button" type="button" style="color: var(--danger)">Delete guide</button>
+          </div>
+
+          <div class="prototype-note"><strong>Concept choice:</strong> authoring starts with essentials and steps. Safety is prominent but compact; specialist metadata is available without overwhelming a simple Guide.</div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="mobile-nav" aria-label="Mobile concept navigation">
+      <button class="nav-item active" data-screen-target="library">▤ Guides</button>
+      <button class="nav-item" data-screen-target="editor">＋ New</button>
+      <button class="nav-item" type="button">⚙ Settings</button>
+    </nav>
+  </div>
+
+  <script>
+    const screens = [...document.querySelectorAll("[data-screen]")];
+    const targets = [...document.querySelectorAll("[data-screen-target]")];
+    const navTargets = [...document.querySelectorAll(".nav-item[data-screen-target]")];
+
+    function showScreen(name) {
+      screens.forEach(screen => screen.classList.toggle("active", screen.dataset.screen === name));
+      navTargets.forEach(item => item.classList.toggle("active", item.dataset.screenTarget === "library"));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    targets.forEach(target => target.addEventListener("click", () => showScreen(target.dataset.screenTarget)));
+    document.querySelectorAll("[data-open-reader]").forEach(button => button.addEventListener("click", () => showScreen("reader")));
+
+    document.querySelectorAll(".theme-toggle").forEach(button => button.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+    }));
+
+    const cards = [...document.querySelectorAll(".guide-card")];
+    const searchInput = document.querySelector("#search-input");
+    const resultCount = document.querySelector("#result-count");
+    const emptyResults = document.querySelector("#empty-results");
+    let selectedFilter = "all";
+
+    function filterGuides() {
+      const query = searchInput.value.trim().toLowerCase();
+      let visible = 0;
+      cards.forEach(card => {
+        const matchesQuery = !query || card.dataset.search.includes(query);
+        const matchesFilter = selectedFilter === "all" || card.dataset.category === selectedFilter;
+        const show = matchesQuery && matchesFilter;
+        card.hidden = !show;
+        if (show) visible += 1;
+      });
+      resultCount.textContent = `${visible} practical ${visible === 1 ? "guide" : "guides"}`;
+      emptyResults.style.display = visible ? "none" : "block";
+    }
+
+    document.querySelector("#guide-search").addEventListener("submit", event => {
+      event.preventDefault();
+      filterGuides();
+    });
+    searchInput.addEventListener("input", filterGuides);
+
+    document.querySelectorAll("[data-filter]").forEach(button => button.addEventListener("click", () => {
+      selectedFilter = button.dataset.filter;
+      document.querySelectorAll("[data-filter]").forEach(chip => chip.classList.toggle("active", chip === button));
+      filterGuides();
+    }));
+
+    const saveStatus = document.querySelector("#save-status");
+    const saveButton = document.querySelector("#save-button");
+    document.querySelectorAll(".editor-page input, .editor-page textarea").forEach(field => field.addEventListener("input", () => {
+      saveStatus.textContent = "Unsaved changes";
+    }));
+    saveButton.addEventListener("click", () => {
+      saveButton.disabled = true;
+      saveButton.textContent = "Saving…";
+      saveStatus.textContent = "Saving your changes";
+      window.setTimeout(() => {
+        saveButton.disabled = false;
+        saveButton.textContent = "Saved";
+        saveStatus.textContent = "All changes saved";
+        window.setTimeout(() => { saveButton.textContent = "Save guide"; }, 1200);
+      }, 700);
+    });
+
+    document.querySelector("#add-step").addEventListener("click", () => {
+      const stepEditors = document.querySelector("#step-editors");
+      const number = stepEditors.children.length + 1;
+      const row = document.createElement("div");
+      row.className = "step-editor";
+      row.innerHTML = `<div class="drag-handle" aria-hidden="true">⠿</div><textarea aria-label="Step ${number}" placeholder="Describe one clear action"></textarea><button class="delete-step" aria-label="Remove step ${number}">×</button>`;
+      stepEditors.append(row);
+      row.querySelector("textarea").focus();
+      saveStatus.textContent = "Unsaved changes";
+    });
+
+    document.querySelector("#step-editors").addEventListener("click", event => {
+      if (event.target.matches(".delete-step")) {
+        event.target.closest(".step-editor").remove();
+        saveStatus.textContent = "Unsaved changes";
+      }
+    });
+  </script>
+</body>
+</html>
