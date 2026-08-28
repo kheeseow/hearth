@@ -48,7 +48,7 @@
       >
         <v-text-field
           readonly
-          class="mt-1"
+          hide-details
           rounded
           variant="solo-filled"
           density="compact"
