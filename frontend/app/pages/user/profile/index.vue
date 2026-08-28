@@ -129,7 +129,7 @@
       </div>
       <v-row tag="section">
         <v-col
-          v-if="user.canManageHousehold"
+          v-if="user.canManageHousehold && capabilities.legacyRecipes"
           cols="12"
           sm="12"
           md="6"
@@ -176,7 +176,7 @@
             {{ $t('profile.members-description') }}
           </UserProfileLinkCard>
         </v-col>
-        <AdvancedOnly>
+        <AdvancedOnly v-if="capabilities.mealPlanning">
           <v-col
             v-if="user.advanced"
             cols="12"
@@ -194,7 +194,7 @@
             </UserProfileLinkCard>
           </v-col>
         </AdvancedOnly>
-        <AdvancedOnly>
+        <AdvancedOnly v-if="capabilities.legacyRecipes">
           <v-col
             cols="12"
             sm="12"
@@ -239,7 +239,7 @@
           </UserProfileLinkCard>
         </v-col>
         <v-col
-          v-if="user.canOrganize"
+          v-if="user.canOrganize && capabilities.legacyRecipes"
           cols="12"
           sm="12"
           md="6"
@@ -254,7 +254,7 @@
             {{ $t('profile.manage-data-description') }}
           </UserProfileLinkCard>
         </v-col>
-        <AdvancedOnly>
+        <AdvancedOnly v-if="capabilities.legacyRecipes">
           <v-col
             cols="12"
             sm="12"

@@ -87,25 +87,25 @@
     },
     "emails": {
         "password": {
-            "subject": "Mealie Forgot Password",
+            "subject": "Hearth Forgot Password",
             "header_text": "Forgot Password",
             "message_top": "You have requested to reset your password.",
             "message_bottom": "Please click the button above to reset your password.",
             "button_text": "Reset Password"
         },
         "invitation": {
-            "subject": "Invitation to join Mealie",
+            "subject": "Invitation to join Hearth",
             "header_text": "You're Invited!",
-            "message_top": "You have been invited to join Mealie.",
+            "message_top": "You have been invited to join Hearth.",
             "message_bottom": "Please click the button above to accept the invitation.",
             "button_text": "Accept Invitation"
         },
         "test": {
-            "subject": "Mealie Test Email",
+            "subject": "Hearth Test Email",
             "header_text": "Test Email",
             "message_top": "This is a test email.",
             "message_bottom": "Please click the button above to test the email.",
-            "button_text": "Open Mealie"
+            "button_text": "Open Hearth"
         }
     }
 }

@@ -140,7 +140,9 @@
               <span> {{ $t("user-registration.group-details") }}</span>
             </v-card-title>
             <v-card-text>
-              {{ $t("user-registration.group-details-description") }}
+              {{ capabilities.legacyRecipes
+                ? $t("user-registration.group-details-description")
+                : $t("user-registration.group-details-guides-description") }}
             </v-card-text>
             <v-divider />
             <v-card-text>
@@ -160,19 +162,21 @@
                   <v-checkbox
                     v-model="groupDetails.groupPrivate.value"
                     hide-details
-                    :label="$t('group.settings.keep-my-recipes-private')"
+                    :label="$t('group.settings.keep-my-group-private')"
                   />
                   <p class="text-caption mt-1">
-                    {{ $t("group.settings.keep-my-recipes-private-description") }}
+                    {{ $t("group.settings.keep-my-group-private-description") }}
                   </p>
-                  <v-checkbox
-                    v-model="groupDetails.groupSeed.value"
-                    hide-details
-                    :label="$t('data-pages.seed-data')"
-                  />
-                  <p class="text-caption mt-1">
-                    {{ $t("user-registration.use-seed-data-description") }}
-                  </p>
+                  <template v-if="capabilities.legacyRecipes">
+                    <v-checkbox
+                      v-model="groupDetails.groupSeed.value"
+                      hide-details
+                      :label="$t('data-pages.seed-data')"
+                    />
+                    <p class="text-caption mt-1">
+                      {{ $t("user-registration.use-seed-data-description") }}
+                    </p>
+                  </template>
                 </div>
               </v-form>
             </v-card-text>
@@ -323,6 +327,7 @@ const inputAttrs = {
 
 const i18n = useI18n();
 const brand = useAppBrand();
+const capabilities = useAppCapabilities();
 const isDark = useDark();
 
 function safeValidate(form: Ref<VForm | null>) {
@@ -446,13 +451,13 @@ const confirmationData = computed(() => {
       value: groupName.value,
     },
     {
-      display: state.ctx.type === RegistrationType.CreateGroup,
+      display: state.ctx.type === RegistrationType.CreateGroup && capabilities.value.legacyRecipes,
       text: i18n.t("data-pages.seed-data"),
       value: groupSeed.value ? i18n.t("general.yes") : i18n.t("general.no"),
     },
     {
       display: state.ctx.type === RegistrationType.CreateGroup,
-      text: i18n.t("group.settings.keep-my-recipes-private"),
+      text: i18n.t("group.settings.keep-my-group-private"),
       value: groupPrivate.value ? i18n.t("general.yes") : i18n.t("general.no"),
     },
     {
@@ -493,7 +498,7 @@ async function submitRegistration() {
   if (state.ctx.type === RegistrationType.CreateGroup) {
     payload.group = groupName.value;
     payload.private = groupPrivate.value;
-    payload.seedData = groupSeed.value;
+    payload.seedData = capabilities.value.legacyRecipes && groupSeed.value;
   }
   else {
     payload.groupToken = token.value;

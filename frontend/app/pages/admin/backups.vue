@@ -145,7 +145,7 @@
         </div>
       </section>
     </section>
-    <v-container class="mt-4 d-flex justify-center text-center">
+    <v-container v-if="capabilities.legacyRecipes" class="mt-4 d-flex justify-center text-center">
       <nuxt-link class="text-primary" :to="`/group/migrations`"> {{ $t('recipe.looking-for-migrations') }} </nuxt-link>
     </v-container>
   </v-container>
@@ -161,6 +161,7 @@ definePageMeta({
 });
 
 const i18n = useI18n();
+const capabilities = useAppCapabilities();
 
 const adminApi = useAdminApi();
 const selected = ref("");

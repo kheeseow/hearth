@@ -36,16 +36,18 @@
             :color="getStepperColor(currentPage, Pages.USER_INFO)"
             :title="$t('user-registration.account-details')"
           />
-          <v-divider />
+          <v-divider v-if="capabilities.legacyRecipes" />
           <v-stepper-item
+            v-if="capabilities.legacyRecipes"
             :value="Pages.PAGE_2"
             :icon="$globals.icons.cog"
             :complete="currentPage > Pages.PAGE_2"
             :color="getStepperColor(currentPage, Pages.PAGE_2)"
             :title="$t('settings.site-settings')"
           />
-          <v-divider />
+          <v-divider v-if="capabilities.legacyRecipes" />
           <v-stepper-item
+            v-if="capabilities.legacyRecipes"
             :value="Pages.AI_PROVIDERS"
             :icon="$globals.icons.robot"
             :complete="currentPage > Pages.AI_PROVIDERS"
@@ -55,7 +57,7 @@
           <v-divider />
           <v-stepper-item
             :value="Pages.CONFIRM"
-            :icon="$globals.icons.chefHat"
+            :icon="$globals.icons.book"
             :complete="currentPage > Pages.CONFIRM"
             :color="getStepperColor(currentPage, Pages.CONFIRM)"
             :title="$t('admin.maintenance.summary-title')"
@@ -82,10 +84,10 @@
             <v-container class="mb-12">
               <AppLogo />
               <v-card-title class="text-headline-medium my-5 justify-center text-center text-break text-pre-wrap">
-                {{ $t('admin.setup.welcome-to-mealie-get-started') }}
+                {{ $t('admin.setup.welcome-to-product-get-started', { product: brand.name }) }}
               </v-card-title>
               <p class="text-body-1 text-center">
-                {{ $t('admin.setup.previous-mealie-instance') }}
+                {{ $t('admin.setup.previous-installation') }}
               </p>
               <v-btn
                 to="backups"
@@ -166,7 +168,7 @@
           </v-stepper-window-item>
 
           <!-- COMMON SETTINGS -->
-          <v-stepper-window-item :value="Pages.PAGE_2">
+          <v-stepper-window-item v-if="capabilities.legacyRecipes" :value="Pages.PAGE_2">
             <v-container max-width="880">
               <v-card-title class="headline pa-0">
                 {{ $t('admin.setup.common-settings-for-new-sites') }}
@@ -195,7 +197,7 @@
           </v-stepper-window-item>
 
           <!-- AI PROVIDERS -->
-          <v-stepper-window-item :value="Pages.AI_PROVIDERS">
+          <v-stepper-window-item v-if="capabilities.legacyRecipes" :value="Pages.AI_PROVIDERS">
             <v-container max-width="880">
               <v-card-title class="headline pa-0">
                 {{ $t('group.ai-provider-settings.ai-providers') }}
@@ -326,6 +328,7 @@ definePageMeta({
 const i18n = useI18n();
 const auth = useMealieAuth();
 const brand = useAppBrand();
+const capabilities = useAppCapabilities();
 const userApi = useUserApi();
 const adminApi = useAdminApi();
 
@@ -427,12 +430,12 @@ const confirmationData = computed(() => {
       value: accountDetails.advancedOptions.value ? i18n.t("general.yes") : i18n.t("general.no"),
     },
     {
-      display: true,
+      display: capabilities.value.legacyRecipes,
       text: i18n.t("group.enable-public-access"),
       value: commonSettings.value.makeGroupRecipesPublic ? i18n.t("general.yes") : i18n.t("general.no"),
     },
     {
-      display: true,
+      display: capabilities.value.legacyRecipes,
       text: i18n.t("user-registration.use-seed-data"),
       value: commonSettings.value.useSeedData ? i18n.t("general.yes") : i18n.t("general.no"),
     },
@@ -460,17 +463,37 @@ async function updateUser() {
     alert.error(i18n.t("events.something-went-wrong"));
   }
   else {
-    auth.refresh();
+    auth.getSession();
   }
 }
 
 async function updatePassword() {
+  // Read before updateUser can change it: the account is still identified by its current email at
+  // the point we have to sign back in.
+  const currentEmail = auth.user.value!.email;
+  const newPassword = credentials.password1.value;
+
   const { response } = await userApi.users.changePassword({
     currentPassword: "MyPassword",
-    newPassword: credentials.password1.value,
+    newPassword,
   });
 
   if (!response || response.status !== 200) {
+    alert.error(i18n.t("events.something-went-wrong"));
+    return;
+  }
+
+  // Changing the password invalidates this session, and setup has several authenticated steps left,
+  // so sign straight back in rather than letting the rest of the wizard 401.
+  const formData = new FormData();
+  formData.append("username", currentEmail);
+  formData.append("password", newPassword);
+  formData.append("remember_me", "true");
+
+  try {
+    await auth.signIn(formData);
+  }
+  catch {
     alert.error(i18n.t("events.something-went-wrong"));
   }
 }
@@ -562,6 +585,10 @@ async function seedData() {
 }
 
 async function submitCommonSettings() {
+  if (!capabilities.value.legacyRecipes) {
+    return;
+  }
+
   const tasks = [
     updateGroup(),
     updateHousehold(),
@@ -572,8 +599,11 @@ async function submitCommonSettings() {
 }
 
 async function submitAll() {
+  // Not part of the parallel batch: changing the password invalidates the session and establishes a
+  // new one, and any request landing in that window would 401 and bounce the admin out of setup.
+  await submitRegistration();
+
   const tasks = [
-    submitRegistration(),
     submitCommonSettings(),
     groupActions.updateAIProviderSettings(),
   ];
@@ -590,7 +620,7 @@ async function handleSubmit(page: number) {
   switch (page) {
     case Pages.USER_INFO:
       if (await accountDetails.validate()) {
-        currentPage.value += 1;
+        currentPage.value = capabilities.value.legacyRecipes ? Pages.PAGE_2 : Pages.CONFIRM;
       }
       break;
     case Pages.CONFIRM:
@@ -608,6 +638,10 @@ async function handleSubmit(page: number) {
 // Stepper Navigation Handlers
 function onPrev() {
   if (isSubmitting.value) return;
+  if (!capabilities.value.legacyRecipes && currentPage.value === Pages.CONFIRM) {
+    currentPage.value = Pages.USER_INFO;
+    return;
+  }
   if (currentPage.value > Pages.LANDING) currentPage.value -= 1;
 }
 

@@ -19,7 +19,7 @@ rewrite Mealie's platform or erase its repository history.
 ## Current status
 
 - Phase 1 architecture research is complete.
-- Product Slices 1 through 9 are implemented and validated locally.
+- Product Slices 1 through 10 are implemented and validated locally.
 - The Hearth fork is checked out from Mealie `v3.24.0` at commit
   `2c04da733f88836f788234a4bf1127599fbc1294`.
 - `origin` points to `kheeseow/hearth`; `upstream` points to
@@ -47,6 +47,9 @@ rewrite Mealie's platform or erase its repository history.
   centralized Hearth identity and a warm, Guide-first presentation.
 - The Guide reader now has a responsive reading hierarchy and a complete,
   browser-native print layout without introducing a second content model.
+- Fresh-install setup and shared settings now expose only Hearth-relevant
+  choices, while upgraded installations retain their full Mealie-compatible
+  settings, notification tools, data management, and administration routes.
 - Phase 4 is complete. Its Guide domain, export, and backup checkpoint remains
   additive and does not alter Recipe persistence.
 - Phase 2 remains open for Guide events. Phase 3 remains open for complete
@@ -434,6 +437,54 @@ Validation completed on 2026-08-28:
 - A synthetic merge with upstream `mealie-next` at
   `2b81b6b0a3e591a017e009cad9a92b3ad7a3b837` completed without conflicts;
   the fork was 13 commits ahead and 29 commits behind at the checkpoint
+
+## Product Slice 10 — Fresh-mode wording and settings isolation (complete)
+
+Included:
+
+- A Guide-first default landing fallback that ignores stored Recipe, meal-plan,
+  or shopping-list preferences when those capabilities are disabled
+- A four-step fresh-install setup flow that omits Recipe privacy, seed-data, and
+  AI-provider configuration while retaining the complete upgraded flow
+- Capability-aware profile, group, household, notifier, webhook, migration,
+  data-management, administrator-debug, maintenance, backup, and statistics UI
+- Direct-route guards for legacy-only shared settings so hidden links cannot be
+  recovered by typing their URLs
+- Hearth-branded OpenAPI metadata, SMTP sender default, English email subjects,
+  and a text-based email header without the remote Mealie banner asset
+- Hearth source and explicit Mealie-upstream attribution on sign-in and in
+  transactional email footers
+- Generic fresh-facing account, backup, language, setup, and administration
+  wording; Mealie remains named where it identifies upstream compatibility,
+  authentication, imports, or retained Recipe behavior
+- No backend legacy API removal, package rename, database migration, or changes
+  to persisted Guide data
+
+Validation completed on 2026-08-28:
+
+- Capability route and default-activity tests: passed
+- Email rendering, branding configuration, and OpenAPI metadata tests: passed
+- Frontend ESLint: passed
+- Full frontend suite: 32 files and 297 tests passed
+- Nuxt production build and PWA generation: passed
+- Python lint and type check: 479 source files passed
+- Full backend suite: 2,664 passed and 16 skipped by existing upstream markers
+- Fresh browser check: primary navigation contained Guides and Settings only;
+  profile/settings contained no Recipe-era cards; site statistics omitted
+  Recipe counts; administrator debug navigation was absent
+- Fresh setup browser check: Start, Account Details, Summary, and Setup Complete
+  were the only steps; valid account details advanced directly to Summary
+- Fresh direct-route browser check: data management, migrations, household
+  preferences, notifiers, webhooks, and administrator Recipe debugging returned
+  safely to the user profile
+- Upgraded browser check: Recipe statistics, Cookbooks, household settings,
+  notifiers, data management, migrations, full setup, and direct legacy routes
+  all remained available
+- The local development capability profile was restored to upgraded mode after
+  testing; seeded Guides and application data were not changed
+- A synthetic merge with upstream `mealie-next` at
+  `2b81b6b0a3e591a017e009cad9a92b3ad7a3b837` completed without conflicts;
+  the fork was 14 commits ahead and 29 commits behind at the checkpoint
 
 ## Product outcome
 
@@ -1242,13 +1293,13 @@ Record material decisions here as they are made.
 | 2026-08-26 | Use tags to test additional taxonomies | Avoid premature entities while allowing homes, spaces, and other dimensions to emerge from use |
 | 2026-08-28 | Persist a server-wide fresh-or-upgraded capability profile | Give new Hearth installs a Guide-first product while preserving all legacy Mealie entry points on upgrade |
 | 2026-08-28 | Print the responsive Guide reader directly | Keep one presentation model and use native browser printing instead of adding a PDF service |
+| 2026-08-28 | Gate shared legacy settings instead of deleting them | Keep fresh Hearth focused while allowing upgraded installations and upstream tests to retain complete Mealie behavior |
 
 ## Immediate next action
 
-Begin Product Slice 10 with Phase 5's residual fresh-install wording and
-settings audit. Inventory visible menus, setup and settings screens,
-announcements, notifications, email templates, public metadata, and English
-translations. Replace product-level wording through centralized brand values,
-while preserving Mealie where it names an import format, authentication method,
-compatibility contract, or retained upstream feature. Add focused checks that
-disabled legacy entry points do not return through overlooked shared UI.
+Begin Product Slice 11 with Phase 5's accessibility, performance, and
+responsive pass. Audit the Guide library, create/edit flow, reader, setup, and
+shared navigation with keyboard-only and phone-width browser checks; correct
+focus order, accessible names, loading and empty feedback, contrast, and layout
+overflow without redesigning Mealie's shared component system. Measure the
+Guide list and reader bundles before choosing any performance work.

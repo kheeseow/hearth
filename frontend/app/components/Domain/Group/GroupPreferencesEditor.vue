@@ -14,12 +14,13 @@
           {{ $t("group.private-group-description") }}
         </p>
         <DocLink
+          v-if="capabilities.legacyRecipes"
           class="mt-2"
           link="/documentation/getting-started/faq/#how-do-private-groups-and-recipes-work"
         />
       </div>
     </div>
-    <div class="mb-6">
+    <div v-if="capabilities.legacyRecipes" class="mb-6">
       <v-checkbox
         v-model="local.showAnnouncements"
         hide-details
@@ -40,6 +41,7 @@
 import type { ReadGroupPreferences } from "~/lib/api/types/user";
 
 const preferences = defineModel<ReadGroupPreferences>({ required: true });
+const capabilities = useAppCapabilities();
 const local = reactive({ ...preferences.value });
 watch(local, (newVal) => { preferences.value = { ...newVal }; });
 watch(preferences, (newVal) => { if (newVal) Object.assign(local, newVal); });

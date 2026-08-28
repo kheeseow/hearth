@@ -33,7 +33,7 @@
       </v-form>
     </div>
 
-    <div>
+    <div v-if="capabilities.legacyRecipes">
       <v-form ref="refGroupAISettingsForm" @submit.prevent="handleAISettingsSubmit">
         <v-card variant="outlined" style="border-color: lightgray;">
           <v-card-text>
@@ -71,6 +71,7 @@ definePageMeta({
 
 const { group, actions: groupActions } = useGroupSelf();
 const i18n = useI18n();
+const capabilities = useAppCapabilities();
 
 useSeoMeta({
   title: i18n.t("group.group"),

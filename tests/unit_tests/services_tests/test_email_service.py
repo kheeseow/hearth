@@ -6,7 +6,7 @@ from mealie.services.email.email_senders import ABCEmailSender
 
 FAKE_ADDRESS = "my_secret_email@example.com"
 
-SUBJECTS = {"Mealie Forgot Password", "Invitation to join Mealie", "Mealie Test Email"}
+SUBJECTS = {"Hearth Forgot Password", "Invitation to join Hearth", "Hearth Test Email"}
 
 
 class TestEmailSender(ABCEmailSender):
@@ -20,6 +20,7 @@ class TestEmailSender(ABCEmailSender):
         # check html is rendered:
         assert "{{" not in html
         assert "}}" not in html
+        assert "Hearth" in html
 
         return True
 
@@ -28,7 +29,7 @@ def patch_env(monkeypatch):
     monkeypatch.setenv("SMTP_HOST", "email.mealie.io")
     monkeypatch.setenv("SMTP_PORT", "587")
     monkeypatch.setenv("SMTP_AUTH_STRATEGY", "TLS")
-    monkeypatch.setenv("SMTP_FROM_NAME", "Mealie")
+    monkeypatch.setenv("SMTP_FROM_NAME", "Hearth")
     monkeypatch.setenv("SMTP_FROM_EMAIL", "mealie@mealie.io")
     monkeypatch.setenv("SMTP_USER", "mealie@mealie.io")
     monkeypatch.setenv("SMTP_PASSWORD", "mealie-password")

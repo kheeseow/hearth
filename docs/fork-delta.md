@@ -1,7 +1,7 @@
 # Hearth Fork Delta
 
 This file records the expected Hearth-owned paths and the small set of shared
-Mealie files touched by Product Slices 1 through 9. Use it when reviewing
+Mealie files touched by Product Slices 1 through 10. Use it when reviewing
 upstream merges.
 
 ## Hearth-owned paths
@@ -22,6 +22,7 @@ mealie/services/app_capabilities_service.py
 frontend/app/composables/use-app-capabilities.ts
 frontend/app/lib/app-capability-routes.ts
 frontend/app/middleware/app-capabilities.global.ts
+frontend/app/composables/use-default-activity.ts
 mealie/core/settings/branding.py
 frontend/app/lib/app-brand.ts
 frontend/app/lib/guide-reader.ts
@@ -39,6 +40,7 @@ mealie/repos/repository_factory.py                repository registration only
 mealie/routes/__init__.py                         router registration only
 mealie/core/settings/directories.py               Guide media directory only
 mealie/core/settings/settings.py                  brand and capability settings registration only
+mealie/app.py                                     branded API metadata only
 mealie/core/settings/themes.py                    Hearth default palette only
 mealie/db/models/server/                          additive capability profile only
 mealie/schema/admin/about.py                      typed app capabilities only
@@ -50,7 +52,17 @@ frontend/app/lib/api/client-user.ts               API client registration only
 frontend/app/components/Layout/DefaultLayout.vue  capability-filtered navigation
 frontend/app/components/Layout/LayoutParts/AppSidebar.vue  capability-filtered favorites link
 frontend/app/components/Domain/Admin/Setup/EndPageContent.vue  Guide-first setup links
+frontend/app/pages/admin/setup.vue                 capability-aware first-run steps
+frontend/app/layouts/admin.vue                     capability-filtered Recipe debug links
+frontend/app/pages/admin/site-settings.vue         capability-filtered Recipe statistics
+frontend/app/pages/admin/maintenance/index.vue     capability-filtered Recipe maintenance
+frontend/app/pages/admin/backups.vue               capability-filtered Recipe migration link
+frontend/app/pages/group/index.vue                 capability-filtered Recipe AI settings
+frontend/app/components/Domain/Group/GroupPreferencesEditor.vue  capability-filtered announcements
+frontend/app/components/Domain/Household/HouseholdPreferencesEditor.vue  capability-filtered legacy preferences
 frontend/app/pages/user/profile/index.vue          capability-filtered Recipe cards
+frontend/app/pages/user/profile/edit.vue           Guide-first landing preference
+frontend/app/composables/use-groups.ts             capability guard for Recipe AI preferences
 frontend/app/components/Layout/LayoutParts/AppHeader.vue  Guide search and Hearth identity only
 frontend/app/components/Layout/LayoutParts/AppFooter.vue  Hearth product identity only
 frontend/app/components/global/AppLogo.vue         Hearth product mark only
@@ -60,7 +72,10 @@ frontend/app/pages/admin/setup.vue                 configured product name only
 frontend/app/plugins/app-info.client.ts            configured browser metadata only
 frontend/app/plugins/theme.ts                      Hearth fallback palette only
 frontend/nuxt.config.ts                            Hearth static metadata and theme defaults only
-frontend/app/lang/messages/en-US.json             Guide strings only
+frontend/app/lang/messages/en-US.json             Guide and Hearth product strings only
+mealie/lang/messages/en-US.json                    Hearth email wording only
+mealie/services/email/email_service.py             centralized email brand rendering only
+mealie/services/email/templates/default.html       Hearth email header and attribution only
 frontend/app/lib/api/types/admin.ts               generated capability output
 frontend/app/lib/api/types/response.ts            generated output
 tests/utils/api_routes/__init__.py                 generated output

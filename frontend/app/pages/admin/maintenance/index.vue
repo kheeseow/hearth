@@ -6,7 +6,7 @@
       :icon="$globals.icons.folderOutline"
     >
       <div class="py-2">
-        <template v-for="(value, key, idx) in storageDetails" :key="`item-${key}`">
+        <template v-for="(value, key, idx) in visibleStorageDetails" :key="`item-${key}`">
           <v-list-item>
             <v-list-item-title>
               <div>{{ storageDetailsText(key) }}</div>
@@ -113,6 +113,7 @@ const state = reactive({
 
 const adminApi = useAdminApi();
 const i18n = useI18n();
+const capabilities = useAppCapabilities();
 
 // Set page title
 useSeoMeta({
@@ -174,6 +175,9 @@ function storageDetailsText(key: string) {
 }
 
 const storageDetails = ref<MaintenanceStorageDetails | null>(null);
+const visibleStorageDetails = computed(() => Object.fromEntries(
+  Object.entries(storageDetails.value ?? {}).filter(([key]) => capabilities.value.legacyRecipes || key !== "recipesDirSize"),
+));
 
 async function openDetails() {
   state.storageDetailsLoading = true;
@@ -209,23 +213,26 @@ async function handleCleanTemp() {
   state.actionLoading = false;
 }
 
-const actions = [
+const actions = computed(() => [
   {
+    legacyOnly: true,
     name: i18n.t("admin.maintenance.action-clean-directories-name"),
     handler: handleCleanDirectories,
     subtitle: i18n.t("admin.maintenance.action-clean-directories-description"),
   },
   {
+    legacyOnly: false,
     name: i18n.t("admin.maintenance.action-clean-temporary-files-name"),
     handler: handleCleanTemp,
     subtitle: i18n.t("admin.maintenance.action-clean-temporary-files-description"),
   },
   {
+    legacyOnly: false,
     name: i18n.t("admin.maintenance.action-clean-images-name"),
     handler: handleCleanImages,
     subtitle: i18n.t("admin.maintenance.action-clean-images-description"),
   },
-];
+].filter(action => capabilities.value.legacyRecipes || !action.legacyOnly));
 </script>
 
 <style scoped>

@@ -27,5 +27,21 @@ export function getCapabilityRedirect(path: string, capabilities: AppCapabilitie
     return "/user/profile";
   }
 
+  if (!capabilities.legacyRecipes && (path.startsWith("/group/data") || path.startsWith("/group/migrations"))) {
+    return "/user/profile";
+  }
+
+  if (!capabilities.legacyRecipes && (path.startsWith("/household/notifiers") || path.startsWith("/admin/debug"))) {
+    return "/user/profile";
+  }
+
+  if (!capabilities.mealPlanning && path.startsWith("/household/webhooks")) {
+    return "/user/profile";
+  }
+
+  if (!capabilities.legacyRecipes && /^\/household\/?$/.test(path)) {
+    return "/user/profile";
+  }
+
   return undefined;
 }

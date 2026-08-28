@@ -7,10 +7,10 @@
         <p class="text-subtitle-2 my-0 py-0">
           {{ $t("household.private-household-description") }}
         </p>
-        <DocLink class="mt-2" link="/documentation/getting-started/faq/#how-do-private-groups-and-recipes-work" />
+        <DocLink v-if="capabilities.legacyRecipes" class="mt-2" link="/documentation/getting-started/faq/#how-do-private-groups-and-recipes-work" />
       </div>
     </div>
-    <div class="mb-6">
+    <div v-if="capabilities.legacyRecipes" class="mb-6">
       <v-checkbox v-model="local.lockRecipeEditsFromOtherHouseholds" hide-details density="compact" :label="$t('household.lock-recipe-edits-from-other-households')" color="primary" />
       <div class="ml-8">
         <p class="text-subtitle-2 my-0 py-0">
@@ -18,7 +18,7 @@
         </p>
       </div>
     </div>
-    <div class="mb-6">
+    <div v-if="capabilities.legacyRecipes" class="mb-6">
       <v-checkbox
         v-model="local.showAnnouncements"
         hide-details
@@ -33,6 +33,7 @@
       </div>
     </div>
     <v-select
+      v-if="capabilities.mealPlanning"
       v-model="local.firstDayOfWeek"
       :prepend-icon="$globals.icons.calendarWeekBegin"
       :items="allDays"
@@ -43,17 +44,19 @@
       flat
     />
 
-    <BaseCardSectionTitle class="mt-5" :title="$t('household.household-recipe-preferences')">
-      {{ $t("household.default-recipe-preferences-description") }}
-    </BaseCardSectionTitle>
-    <div class="preference-container">
-      <div v-for="p in recipePreferences" :key="p.key">
-        <v-checkbox v-model="local[p.key]" hide-details density="compact" :label="p.label" color="primary" />
-        <p class="ml-8 text-subtitle-2 my-0 py-0">
-          {{ p.description }}
-        </p>
+    <template v-if="capabilities.legacyRecipes">
+      <BaseCardSectionTitle class="mt-5" :title="$t('household.household-recipe-preferences')">
+        {{ $t("household.default-recipe-preferences-description") }}
+      </BaseCardSectionTitle>
+      <div class="preference-container">
+        <div v-for="p in recipePreferences" :key="p.key">
+          <v-checkbox v-model="local[p.key]" hide-details density="compact" :label="p.label" color="primary" />
+          <p class="ml-8 text-subtitle-2 my-0 py-0">
+            {{ p.description }}
+          </p>
+        </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -66,6 +69,7 @@ watch(local, (newVal) => { preferences.value = { ...newVal }; });
 watch(preferences, (newVal) => { if (newVal) Object.assign(local, newVal); });
 
 const i18n = useI18n();
+const capabilities = useAppCapabilities();
 
 type Preference = {
   key: keyof ReadHouseholdPreferences;

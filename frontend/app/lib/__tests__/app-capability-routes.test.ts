@@ -19,6 +19,12 @@ describe("app capability routes", () => {
     ["/household/mealplan/planner/view", "/"],
     ["/shopping-lists/123", "/"],
     ["/user/123/favorites", "/user/profile"],
+    ["/group/data/foods", "/user/profile"],
+    ["/group/migrations", "/user/profile"],
+    ["/household/notifiers", "/user/profile"],
+    ["/household/webhooks", "/user/profile"],
+    ["/household", "/user/profile"],
+    ["/admin/debug/parser", "/user/profile"],
   ])("redirects %s when its capability is disabled", (path, redirect) => {
     expect(getCapabilityRedirect(path, freshHearth)).toBe(redirect);
   });
@@ -38,5 +44,9 @@ describe("app capability routes", () => {
 
     expect(getCapabilityRedirect("/g/home", upgradedMealie)).toBeUndefined();
     expect(getCapabilityRedirect("/shopping-lists", upgradedMealie)).toBeUndefined();
+    expect(getCapabilityRedirect("/group/data/foods", upgradedMealie)).toBeUndefined();
+    expect(getCapabilityRedirect("/household/notifiers", upgradedMealie)).toBeUndefined();
+    expect(getCapabilityRedirect("/household", upgradedMealie)).toBeUndefined();
+    expect(getCapabilityRedirect("/admin/debug/parser", upgradedMealie)).toBeUndefined();
   });
 });

@@ -102,6 +102,7 @@ const sections = ref([
 ]);
 
 if (!capabilities.value.legacyRecipes) {
+  sections.value[0].title = i18n.t("settings.backup-and-exports");
   sections.value[0].links = sections.value[0].links.slice(0, 1);
   sections.value[1] = {
     title: i18n.t("guide.create-guides"),

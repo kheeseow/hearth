@@ -12,6 +12,7 @@ export function resetGroupSelf() {
 export const useGroupSelf = function () {
   const api = useUserApi();
   const auth = useMealieAuth();
+  const capabilities = useAppCapabilities();
   async function refreshGroupSelf() {
     if (!auth.user.value) {
       groupSelfRef.value = null;
@@ -48,6 +49,10 @@ export const useGroupSelf = function () {
       return data || undefined;
     },
     async updateAIProviderSettings() {
+      if (!capabilities.value.legacyRecipes) {
+        return;
+      }
+
       if (!groupSelfRef.value) {
         await refreshGroupSelf();
       }

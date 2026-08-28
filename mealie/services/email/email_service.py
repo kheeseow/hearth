@@ -16,6 +16,7 @@ logger = get_logger()
 
 
 class EmailTemplate(BaseModel):
+    brand_name: str
     subject: str
     header_text: str
     message_top: str
@@ -44,9 +45,14 @@ class EmailService(BaseService):
 
         return self.sender.send(email_to, data.subject, data.render_html(self.default_template))
 
+    def brand_text(self, key: str) -> str:
+        translated = self.translator.t(key)
+        return translated.replace("Mealie", self.settings.brand.name).replace("Hearth", self.settings.brand.name)
+
     def send_forgot_password(self, address: str, reset_password_url: str) -> bool:
         forgot_password = EmailTemplate(
-            subject=self.translator.t("emails.password.subject"),
+            brand_name=self.settings.brand.name,
+            subject=self.brand_text("emails.password.subject"),
             header_text=self.translator.t("emails.password.header_text"),
             message_top=self.translator.t("emails.password.message_top"),
             message_bottom=self.translator.t("emails.password.message_bottom"),
@@ -57,9 +63,10 @@ class EmailService(BaseService):
 
     def send_invitation(self, address: str, invitation_url: str) -> bool:
         invitation = EmailTemplate(
-            subject=self.translator.t("emails.invitation.subject"),
+            brand_name=self.settings.brand.name,
+            subject=self.brand_text("emails.invitation.subject"),
             header_text=self.translator.t("emails.invitation.header_text"),
-            message_top=self.translator.t("emails.invitation.message_top"),
+            message_top=self.brand_text("emails.invitation.message_top"),
             message_bottom=self.translator.t("emails.invitation.message_bottom"),
             button_link=invitation_url,
             button_text=self.translator.t("emails.invitation.button_text"),
@@ -68,11 +75,12 @@ class EmailService(BaseService):
 
     def send_test_email(self, address: str) -> bool:
         test_email = EmailTemplate(
-            subject=self.translator.t("emails.test.subject"),
+            brand_name=self.settings.brand.name,
+            subject=self.brand_text("emails.test.subject"),
             header_text=self.translator.t("emails.test.header_text"),
             message_top=self.translator.t("emails.test.message_top"),
             message_bottom=self.translator.t("emails.test.message_bottom"),
             button_link=self.settings.BASE_URL,
-            button_text=self.translator.t("emails.test.button_text"),
+            button_text=self.brand_text("emails.test.button_text"),
         )
         return self.send_email(address, test_email)

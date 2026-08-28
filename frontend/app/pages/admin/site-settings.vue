@@ -43,7 +43,7 @@
             color="gray"
             secondary
             target="_blank"
-            href="https://github.com/mealie-recipes/mealie/issues/new/choose"
+            href="https://github.com/kheeseow/hearth/issues"
           >
             <template #icon>
               {{ $globals.icons.github }}
@@ -169,7 +169,7 @@
         style="gap: 0.8rem"
       >
         <StatsCards
-          v-for="(value, key) in adminStats"
+          v-for="(value, key) in visibleAdminStats"
           :key="`${key}-${value}`"
           :min-width="$vuetify.display.xs ? '100%' : '158'"
           :icon="getAdminStatsIcon(key)"
@@ -289,6 +289,7 @@ onMounted(() => {
 
 const { $globals } = useNuxtApp();
 const i18n = useI18n();
+const capabilities = useAppCapabilities();
 
 const state = reactive({
   loading: false,
@@ -364,6 +365,10 @@ const adminStatsTo = computed<{ [key: string]: string }>(() => {
 function getAdminStatsTo(key: string) {
   return adminStatsTo.value[key] ?? undefined;
 }
+
+const visibleAdminStats = computed(() => Object.fromEntries(
+  Object.entries(adminStats.value).filter(([key]) => capabilities.value.legacyRecipes || !key.toLowerCase().includes("recipe")),
+));
 
 onMounted(async () => {
   const { data } = await adminApi.about.checkApp();
@@ -581,7 +586,9 @@ function getAppInfo() {
           value: data.recipeScraperVersion,
         },
       ];
-      return prettyInfo;
+      return capabilities.value.legacyRecipes
+        ? prettyInfo
+        : prettyInfo.filter(item => item.slot !== "recipe-scraper");
     }
     return data;
   });

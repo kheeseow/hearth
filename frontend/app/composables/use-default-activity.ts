@@ -1,5 +1,6 @@
 import type { Activity, I18n, TranslationResult } from "~/lib/api/types/activity";
 import { ActivityKey } from "~/lib/api/types/activity";
+import type { AppCapabilities } from "~/lib/api/types/admin";
 
 export const DEFAULT_ACTIVITY = "/g/home" as const;
 
@@ -27,37 +28,46 @@ const selectableActivities: ActivityRegistry = {
   },
 };
 
-function getDefaultActivityRoute(activityKey?: ActivityKey, groupSlug?: string): string {
-  if (!activityKey) {
-    return DEFAULT_ACTIVITY;
-  }
-  const route = selectableActivities[activityKey]?.route ?? (() => DEFAULT_ACTIVITY);
-  return route(groupSlug);
-}
-
-function getDefaultActivityLabels(i18n: I18n): TranslationResult[] {
-  return Object.values(selectableActivities).map(
-    ({ label }) => label(i18n),
-  );
-}
-
-function getActivityKey(i18n: I18n, target: TranslationResult = ""): ActivityKey | undefined {
-  return Object.values(selectableActivities)
-    .find(({ label }) => label(i18n) === target)?.key;
-}
-
-function getActivityLabel(i18n: I18n, target?: ActivityKey): TranslationResult {
-  return Object.values(selectableActivities)
-    .find(({ key }) => key === target)
-    ?.label(i18n) ?? "";
+export function getAvailableActivities(capabilities: AppCapabilities): Activity[] {
+  return Object.values(selectableActivities).filter(({ key }) => {
+    if (key === ActivityKey.RECIPES) return capabilities.legacyRecipes;
+    if (key === ActivityKey.MEALPLANNER) return capabilities.mealPlanning;
+    if (key === ActivityKey.SHOPPING_LIST) return capabilities.shoppingLists;
+    return false;
+  });
 }
 
 export default function useDefaultActivity() {
+  const capabilities = useAppCapabilities();
+  const availableActivities = computed(() => getAvailableActivities(capabilities.value));
+  const fallbackActivity = computed(() => availableActivities.value[0]);
+
+  function getDefaultActivityRoute(activityKey?: ActivityKey, groupSlug?: string): string {
+    const activity = availableActivities.value.find(({ key }) => key === activityKey) ?? fallbackActivity.value;
+    if (activity) return activity.route(groupSlug);
+    if (capabilities.value.guides && groupSlug) return `/g/${groupSlug}/guides`;
+    return DEFAULT_ACTIVITY;
+  }
+
+  function getDefaultActivityLabels(i18n: I18n): TranslationResult[] {
+    return availableActivities.value.map(({ label }) => label(i18n));
+  }
+
+  function getActivityKey(i18n: I18n, target: TranslationResult = ""): ActivityKey | undefined {
+    return availableActivities.value.find(({ label }) => label(i18n) === target)?.key;
+  }
+
+  function getActivityLabel(i18n: I18n, target?: ActivityKey): TranslationResult {
+    const activity = availableActivities.value.find(({ key }) => key === target) ?? fallbackActivity.value;
+    return activity?.label(i18n) ?? "";
+  }
+
   return {
-    selectableActivities,
+    availableActivities,
     getDefaultActivityRoute,
     getDefaultActivityLabels,
     getActivityKey,
     getActivityLabel,
+    fallbackActivity,
   };
 }

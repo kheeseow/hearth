@@ -174,23 +174,7 @@
 
       <v-card-text class="d-flex justify-center flex-column flex-sm-row">
         <div
-          v-for="link in [
-            {
-              text: $t('about.sponsor'),
-              icon: $globals.icons.heart,
-              href: 'https://github.com/sponsors/hay-kot',
-            },
-            {
-              text: $t('about.github'),
-              icon: $globals.icons.github,
-              href: 'https://github.com/mealie-recipes/mealie',
-            },
-            {
-              text: $t('about.docs'),
-              icon: $globals.icons.folderOutline,
-              href: 'https://docs.mealie.io/',
-            },
-          ]"
+          v-for="link in productLinks"
           :key="link.text"
           class="text-center"
         >
@@ -237,6 +221,19 @@ const isDemo = ref(false);
 const isFirstLogin = ref(false);
 const activityPreferences = useUserActivityPreferences();
 const { getDefaultActivityRoute } = useDefaultActivity();
+
+const productLinks = [
+  {
+    text: i18n.t("about.hearth-source"),
+    icon: $globals.icons.github,
+    href: "https://github.com/kheeseow/hearth",
+  },
+  {
+    text: i18n.t("about.built-on-mealie"),
+    icon: $globals.icons.heart,
+    href: "https://github.com/mealie-recipes/mealie",
+  },
+];
 
 // Survives the page reload that happens during OIDC redirect
 const pendingShareRedirect = useSessionStorage<string | null>("pwa_share_redirect", null);

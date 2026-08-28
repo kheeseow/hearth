@@ -174,6 +174,7 @@
       <v-card variant="outlined" style="border-color: lightgrey;">
         <v-card-text>
           <v-combobox
+            v-if="availableActivities.length"
             v-model="selectedDefaultActivity"
             :label="$t('user.default-activity')"
             :items="activityOptions"
@@ -183,7 +184,17 @@
             validate-on="blur"
             persistent-hint
           />
+          <v-text-field
+            v-else
+            :model-value="$t('guide.guides')"
+            :label="$t('user.default-activity')"
+            :hint="$t('user.default-activity-hint')"
+            persistent-hint
+            readonly
+            variant="underlined"
+          />
           <v-checkbox
+            v-if="capabilities.legacyRecipes"
             v-model="userCopy.showAnnouncements"
             hide-details
             :label="$t('announcements.show-announcements-from-mealie')"
@@ -234,7 +245,8 @@ import type { UserBase } from "~/lib/api/types/user";
 
 const i18n = useI18n();
 const auth = useMealieAuth();
-const { getDefaultActivityLabels, getActivityLabel, getActivityKey } = useDefaultActivity();
+const capabilities = useAppCapabilities();
+const { availableActivities, getDefaultActivityLabels, getActivityLabel, getActivityKey, fallbackActivity } = useDefaultActivity();
 const user = computed(() => auth.user.value);
 
 useSeoMeta({
@@ -245,7 +257,9 @@ const activityPreferences = useUserActivityPreferences();
 const activityOptions = getDefaultActivityLabels(i18n);
 const selectedDefaultActivity = ref(getActivityLabel(i18n, activityPreferences.value.defaultActivity));
 watch(selectedDefaultActivity, () => {
-  activityPreferences.value.defaultActivity = getActivityKey(i18n, selectedDefaultActivity.value) ?? ActivityKey.RECIPES;
+  activityPreferences.value.defaultActivity = getActivityKey(i18n, selectedDefaultActivity.value)
+    ?? fallbackActivity.value?.key
+    ?? ActivityKey.RECIPES;
 });
 
 const userCopy = ref({ ...user.value });

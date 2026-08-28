@@ -285,7 +285,7 @@ class AppSettings(AppLoggingSettings):
 
     SMTP_HOST: str | None = None
     SMTP_PORT: str | None = "587"
-    SMTP_FROM_NAME: str | None = "Mealie"
+    SMTP_FROM_NAME: str | None = "Hearth"
     SMTP_FROM_EMAIL: str | None = None
     SMTP_USER: MaskedNoneString = None
     SMTP_PASSWORD: MaskedNoneString = None

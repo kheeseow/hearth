@@ -39,6 +39,7 @@ import { useGlobalI18n } from "~/composables/use-global-i18n";
 const i18n = useGlobalI18n();
 const display = useDisplay();
 const { $globals } = useNuxtApp();
+const capabilities = useAppCapabilities();
 
 const sidebar = ref<boolean>(false);
 onMounted(() => {
@@ -85,7 +86,7 @@ const topLinks: SidebarLinks = [
   },
 ];
 
-const developerLinks: SidebarLinks = [
+const developerLinks = computed<SidebarLinks>(() => [
   {
     icon: $globals.icons.wrench,
     to: "/admin/maintenance",
@@ -93,6 +94,7 @@ const developerLinks: SidebarLinks = [
     restricted: true,
   },
   {
+    enabled: capabilities.value.legacyRecipes,
     icon: $globals.icons.robot,
     title: i18n.t("recipe.debug"),
     restricted: true,
@@ -111,5 +113,5 @@ const developerLinks: SidebarLinks = [
       },
     ],
   },
-];
+].filter(link => link.enabled !== false));
 </script>
