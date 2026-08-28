@@ -1354,7 +1354,9 @@ Record material decisions here as they are made.
 
 ## Immediate next action
 
-Review and approve the [UI/UX redesign plan](ui-ux-redesign-plan.md). Product
-Slice 12 has not started. Once its product model, journeys, upstream boundaries,
-sub-slice sequence, and explicit no list are accepted, begin Slice 12A with
-evidence collection only; do not jump directly to visual implementation.
+Begin Slice 12B using the completed [UI/UX Audit](ui-ux-audit.md),
+[Journey Map](ui-ux-journey-map.md), and
+[Assumptions and Experiments](ui-ux-assumptions.md). Reconcile the existing
+interactive concept with the three selected priorities, record the smallest
+Guide-owned token and component decisions, and validate the hypotheses before
+production UI implementation.

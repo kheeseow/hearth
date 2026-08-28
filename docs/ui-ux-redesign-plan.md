@@ -2,7 +2,7 @@
 
 ## Status
 
-Planning only. Product Slice 12 has not started.
+Product Slice 12A is complete. No production UI changes have started.
 
 This plan defines the redesign direction, evidence-gathering method, delivery
 sequence, and upstream-compatibility boundaries that must be agreed before UI
@@ -12,7 +12,15 @@ An interactive, disposable concept is available at
 [`docs/prototypes/hearth-ui-concept.html`](prototypes/hearth-ui-concept.html).
 It demonstrates the proposed library, reader, editor, responsive shell, light
 and dark themes, search filtering, and save feedback without importing any of
-the concept into the production application. Visual approval remains pending.
+the concept into the production application. The direction is approved in
+principle; Slice 12B must now reconcile it with the recorded audit before any
+production rollout.
+
+Slice 12A evidence is recorded in:
+
+- [UI/UX Audit](ui-ux-audit.md)
+- [UI/UX Journey Map](ui-ux-journey-map.md)
+- [UI/UX Assumptions and Experiments](ui-ux-assumptions.md)
 
 ## Executive decision
 
