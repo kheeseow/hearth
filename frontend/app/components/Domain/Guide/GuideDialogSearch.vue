@@ -2,7 +2,7 @@
   <v-dialog
     v-model="dialog"
     max-width="988px"
-    content-class="top-dialog"
+    content-class="guide-search-dialog"
     :scrollable="false"
     :aria-label="$t('guide.search')"
   >
@@ -114,5 +114,11 @@ defineExpose({ open, close });
 .guide-search-results {
   max-height: 700px;
   overflow-y: auto;
+}
+
+:global(.guide-search-dialog) {
+  position: fixed;
+  top: 32px;
+  max-height: calc(100dvh - 80px);
 }
 </style>

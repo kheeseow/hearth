@@ -38,8 +38,9 @@
     <!-- Navigation Menu -->
     <div v-if="menu" class="hearth-app-header-actions">
       <v-responsive
-        v-if="!xs && !isGuideLibrary"
+        v-if="lgAndUp && !isGuideLibrary"
         max-width="250"
+        class="hearth-app-header-search"
         role="search"
         @click="activateSearch"
         @keydown.enter.prevent="activateSearch"
@@ -132,7 +133,7 @@ const brand = useAppBrand();
 const { loggedIn } = useLoggedInState();
 const route = useRoute();
 const groupSlug = computed(() => route.params.groupSlug as string || auth.user.value?.groupSlug || "");
-const { xs, smAndUp } = useDisplay();
+const { xs, smAndUp, lgAndUp } = useDisplay();
 const toggleDark = useToggleDarkMode();
 
 const routerLink = computed(() => groupSlug.value ? `/g/${groupSlug.value}` : "/");
@@ -191,6 +192,11 @@ async function logout() {
   flex-shrink: 0;
   align-items: center;
   gap: 8px;
+}
+
+.hearth-app-header-search {
+  width: 250px;
+  flex: 0 0 250px;
 }
 
 .hearth-header-context {
