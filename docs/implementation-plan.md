@@ -538,6 +538,60 @@ Validation completed on 2026-08-28:
   `2b81b6b0a3e591a017e009cad9a92b3ad7a3b837` completed without conflicts;
   the fork was 17 commits ahead and 29 commits behind at the checkpoint
 
+## Product Slice 12C — Guide library and search (complete)
+
+Included:
+
+- Replaced the large promotional Guide hero with a compact, search-first
+  library heading and one dominant search form
+- Kept result count, loading, failure, retry, and no-result recovery directly
+  beside the search that caused them
+- Moved type, difficulty, frequency, category, and tag filters behind one
+  progressively disclosed control
+- Added an active-filter count, visible removable filter values, and a clear
+  recovery path without making filters permanent navigation
+- Serialized valid search and filter state into the existing Guide URL so a
+  result set survives refresh, back/forward navigation, and sharing; invalid
+  select values are removed while unrelated URL state is preserved
+- Kept advanced choices as drafts until Done is selected, and prevented a
+  slower earlier request from replacing a newer result set
+- Simplified Guide cards to recognition media, title, outcome, classification,
+  at most two task details, and review state
+- Reduced the existing header Guide search to its compact shortcut on the
+  library page, while retaining the full global search affordance everywhere
+  else
+- Preserved the Guide API, generated types, saved data, current routes, seeded
+  content, and upgraded Mealie navigation
+
+Validation completed on 2026-08-28:
+
+- Frontend ESLint: passed
+- Full frontend suite: 34 files and 305 tests passed
+- New URL, filter-state, and request-ordering tests: 6 passed, including
+  malformed-query recovery and an out-of-order response
+- Nuxt production build and PWA generation: passed
+- Browser search check: `router reset` produced the correct router Guide first
+  and wrote the search to the URL
+- Browser no-result check: a no-match query displayed the local empty state;
+  Clear filters restored all 15 seeded Guides and the clean library URL
+- Browser filter check: `type=cleaning` restored four matching Guides, exposed
+  one active filter with a specific accessible remove label, and clearing it
+  restored all Guides
+- Browser filter-draft check: closing the panel discarded unapplied type and
+  difficulty choices; selecting Done committed the choice and updated the URL
+- Browser malformed-link check: invalid type and difficulty values were
+  removed while an unrelated query value was retained
+- Responsive browser check: the library reflowed at 1280, 390, and 320 pixels;
+  the first Guide began in the first phone screen and no control was clipped
+- Light and dark browser checks passed for search, cards, filters, active
+  states, and no-result recovery
+- Only one shared Mealie UI file was touched: the header condition that chooses
+  the existing compact or full Guide-search trigger. All other production logic
+  remains Guide-owned
+- A synthetic merge with upstream `mealie-next` at
+  `2b81b6b0a3e591a017e009cad9a92b3ad7a3b837` completed without conflicts;
+  the fork was 28 commits ahead and 29 commits behind at the checkpoint
+
 ## Product outcome
 
 A user should be able to open Hearth on a phone, search using ordinary words,
@@ -1352,11 +1406,12 @@ Record material decisions here as they are made.
 | 2026-08-28 | Keep current Guide route chunks after measuring them | The four main Guide flows are only 3.9–4.9 KB compressed; changing shared Nuxt/Vuetify loading would add upstream merge risk without a demonstrated Guide performance problem |
 | 2026-08-28 | Plan Home separately from Mealie Household | Preserve Mealie's people and permission boundary while reserving an additive, group-scoped physical-property model only when real multi-home use emerges |
 | 2026-08-28 | Keep Slice 12 foundations Guide-scoped and system-font based | Improve the core Guide experience without replacing Mealie's frontend foundations or adding a font and theme migration |
+| 2026-08-28 | Make Guide library state URL-addressable | Preserve search and filters across refresh and sharing without changing the Guide API or router shape |
 
 ## Immediate next action
 
-Review the revised [interactive concept](prototypes/hearth-ui-concept.html) and
-[Design Foundations](ui-ux-design-foundations.md), then explicitly select or
-reject this direction. If selected, begin Slice 12C with the Guide library and
-search only. Keep the production work Guide-owned, preserve current routes and
-the search API, and do not apply a global theme rewrite.
+Review Slice 12C in the running application, then begin Slice 12D with the Guide
+reader only. Preserve the existing reader route and API, keep the work
+Guide-owned, and validate safety-first hierarchy, long-form reading, print,
+small phones, dark mode, missing images, and review state before moving to the
+editor.

@@ -513,6 +513,12 @@ the candidate can work; they do not replace the planned household-user trials.
 - Preserve stable URLs, current search API, seeded data, and upgraded profile
   navigation
 
+Completed on 2026-08-28. Production now uses the selected search-first
+hierarchy, a compact global-search shortcut on the library, disclosed filters,
+visible removable active values, URL-addressable search state, local recovery,
+and simplified recognition-first cards. The Guide API, route paths, generated
+types, seeded data, and upgraded navigation remain unchanged.
+
 ### Slice 12D — Reader
 
 - Apply the preparation-first reading hierarchy

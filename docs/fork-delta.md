@@ -1,7 +1,7 @@
 # Hearth Fork Delta
 
 This file records the expected Hearth-owned paths and the small set of shared
-Mealie files touched by Product Slices 1 through 11. Use it when reviewing
+Mealie files touched by Product Slices 1 through 12C. Use it when reviewing
 upstream merges.
 
 ## Hearth-owned paths

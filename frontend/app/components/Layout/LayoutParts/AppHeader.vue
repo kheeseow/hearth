@@ -34,7 +34,7 @@
     <!-- Navigation Menu -->
     <template v-if="menu">
       <v-responsive
-        v-if="!xs"
+        v-if="!xs && !isGuideLibrary"
         max-width="250"
         role="search"
         @click="activateSearch"
@@ -107,6 +107,7 @@ const groupSlug = computed(() => route.params.groupSlug as string || auth.user.v
 const { xs, smAndUp } = useDisplay();
 
 const routerLink = computed(() => groupSlug.value ? `/g/${groupSlug.value}` : "/");
+const isGuideLibrary = computed(() => /^\/g\/[^/]+\/guides\/?$/.test(route.path));
 const domSearchDialog = ref<InstanceType<typeof GuideDialogSearch> | null>(null);
 
 function activateSearch() {
