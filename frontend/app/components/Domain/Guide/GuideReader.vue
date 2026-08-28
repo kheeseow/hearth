@@ -490,7 +490,9 @@ function printGuide() { window.print(); }
   gap: 16px;
 }
 .guide-related-grid h3 {
+  margin: 0 0 8px;
   font-size: 18px;
+  line-height: 1.35;
 }
 .guide-delete-action {
   display: flex;

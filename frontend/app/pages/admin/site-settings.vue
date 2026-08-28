@@ -165,8 +165,7 @@
         :title="$t('settings.site-statistics')"
       />
       <div
-        class="d-flex flex-wrap justify-center align-center"
-        style="gap: 0.8rem"
+        class="d-flex flex-wrap justify-center align-center ga-4"
       >
         <StatsCards
           v-for="(value, key) in visibleAdminStats"

@@ -36,7 +36,7 @@
     <v-spacer />
 
     <!-- Navigation Menu -->
-    <template v-if="menu">
+    <div v-if="menu" class="hearth-app-header-actions">
       <v-responsive
         v-if="!xs && !isGuideLibrary"
         max-width="250"
@@ -105,7 +105,7 @@
         </v-icon>
         {{ $t("user.login") }}
       </v-btn>
-    </template>
+    </div>
   </v-app-bar>
 </template>
 
@@ -183,6 +183,14 @@ async function logout() {
   border-bottom: 1px solid rgb(var(--v-theme-outline));
   color: rgb(var(--v-theme-on-surface));
   box-shadow: none !important;
+}
+
+.hearth-app-header-actions {
+  display: flex;
+  min-width: 0;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
 }
 
 .hearth-header-context {

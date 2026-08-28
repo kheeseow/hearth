@@ -106,13 +106,7 @@ const isToday = (date: Date) => {
 </script>
 
 <style scoped>
-/*
-  RecipeCardMobile lays out a fixed-width thumbnail + a favorite/rating/menu action row
-  side-by-side. Below ~320px the action row no longer fits and the "..." menu button gets
-  clipped by the card's overflow:hidden. Enforcing a min-width here makes the day columns
-  wrap to fewer per row instead of shrinking past that point.
-*/
 .col-borders {
-  min-width: 340px;
+  min-width: min(340px, 100%);
 }
 </style>

@@ -31,6 +31,11 @@ export default defineNuxtConfig({
 
     head: {
       title: defaultAppBrand.name,
+      style: [
+        {
+          textContent: "@layer vuetify-core, vuetify-components, vuetify-overrides, vuetify-utilities, vuetify-final;",
+        },
+      ],
       meta: [
         { property: "og:type", content: "website" },
         { property: "og:title", content: defaultAppBrand.name },

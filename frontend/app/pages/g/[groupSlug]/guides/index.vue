@@ -592,6 +592,7 @@ watch(
 }
 
 .guide-filter-panel {
+  box-sizing: border-box;
   position: absolute;
   top: 52px;
   right: 0;
@@ -642,6 +643,17 @@ watch(
   }
 
   .guide-search-form :deep(.v-btn) {
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .guide-library-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .guide-filter-disclosure {
     width: 100%;
   }
 }

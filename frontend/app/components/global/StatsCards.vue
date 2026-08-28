@@ -18,8 +18,8 @@
           {{ activeIcon }}
         </v-icon>
       </v-avatar>
-      <div>
-        <v-card-title class="text-subtitle-1 pt-2 pb-2">
+      <div class="stats-card-content">
+        <v-card-title class="stats-card-title text-subtitle-1 pt-2 pb-2">
           <slot name="title" />
         </v-card-title>
         <v-card-subtitle class="pb-2">
@@ -53,4 +53,14 @@ const activeIcon = computed(() => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.stats-card-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.stats-card-title {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+</style>
