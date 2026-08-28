@@ -2,29 +2,10 @@
   <v-navigation-drawer id="app-navigation" v-model="modelValue" class="d-flex flex-column d-print-none position-fixed" touchless>
     <AnnouncementDialog v-model="showAnnouncementsDialog" />
     <LanguageDialog v-model="state.languageDialog" />
-    <!-- User Profile -->
-    <template v-if="loggedIn && sessionUser">
-      <v-list-item lines="two" :to="userProfileLink" exact>
-        <div class="d-flex align-center ga-2">
-          <UserAvatar list :user-id="sessionUser.id" :tooltip="false" />
-
-          <div class="d-flex flex-column justify-start">
-            <v-list-item-title class="pr-2 pl-1">
-              {{ sessionUser.fullName }}
-            </v-list-item-title>
-            <v-list-item-subtitle class="opacity-100">
-              <v-btn v-if="isOwnGroup && capabilities.legacyRecipes" class="px-2 pa-0" variant="text" :to="userFavoritesLink" size="small">
-                <v-icon start size="small">
-                  {{ $globals.icons.heart }}
-                </v-icon>
-                {{ $t("user.favorite-recipes") }}
-              </v-btn>
-            </v-list-item-subtitle>
-          </div>
-        </div>
-      </v-list-item>
-      <v-divider />
-    </template>
+    <NuxtLink :to="homeLink" class="hearth-sidebar-brand" :aria-label="$t('general.product-home', { product: brand.name })">
+      <v-icon size="32" color="primary" aria-hidden="true">{{ $globals.icons.primary }}</v-icon>
+      <span>{{ brand.name }}</span>
+    </NuxtLink>
 
     <slot />
 
@@ -117,7 +98,14 @@
 
     <!-- Bottom Navigation Links -->
     <template #append>
-      <v-list v-model:selected="state.bottomSelected" nav density="comfortable">
+      <v-list v-model:selected="state.bottomSelected" nav density="comfortable" class="hearth-sidebar-footer">
+        <v-list-item
+          v-if="loggedIn && sessionUser && capabilities.legacyRecipes"
+          :to="`/user/${sessionUser.id}/favorites`"
+          :prepend-icon="$globals.icons.heart"
+          :title="$t('user.favorite-recipes')"
+          exact
+        />
         <v-list-item
           v-if="loggedIn && capabilities.legacyRecipes && announcementsEnabled"
           :title="$t('announcements.announcements')"
@@ -150,6 +138,14 @@
             <v-list-item v-if="isAdmin" :prepend-icon="$globals.icons.wrench" :title="$t('settings.admin-settings')" to="/admin/site-settings" />
           </v-list>
         </v-menu>
+        <v-divider v-if="loggedIn && sessionUser" class="my-2" />
+        <v-list-item v-if="loggedIn && sessionUser" lines="two" :to="userProfileLink" exact class="hearth-profile-link">
+          <template #prepend>
+            <UserAvatar list :user-id="sessionUser.id" :tooltip="false" />
+          </template>
+          <v-list-item-title>{{ sessionUser.fullName }}</v-list-item-title>
+          <v-list-item-subtitle>{{ sessionUser.household }}</v-list-item-subtitle>
+        </v-list-item>
       </v-list>
     </template>
   </v-navigation-drawer>
@@ -182,14 +178,15 @@ const props = defineProps({
 const modelValue = defineModel<boolean>({ default: false });
 
 const auth = useMealieAuth();
+const brand = useAppBrand();
 const sessionUser = computed(() => auth.user.value);
 const { loggedIn, isOwnGroup } = useLoggedInState();
 const capabilities = useAppCapabilities();
 const isAdmin = computed(() => auth.user.value?.admin);
 const canManage = computed(() => auth.user.value?.canManage);
 
-const userFavoritesLink = computed(() => auth.user.value ? `/user/${auth.user.value.id}/favorites` : undefined);
 const userProfileLink = computed(() => auth.user.value ? "/user/profile" : undefined);
+const homeLink = computed(() => auth.user.value?.groupSlug ? `/g/${auth.user.value.groupSlug}` : "/");
 
 const toggleDark = useToggleDarkMode();
 
@@ -221,6 +218,35 @@ watch(
 </script>
 
 <style scoped>
+.hearth-sidebar-brand {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  color: rgb(var(--v-theme-on-surface));
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+}
+
+:deep(.v-list--nav) {
+  padding-inline: 12px;
+}
+:deep(.v-list--nav .v-list-item) {
+  min-height: 48px;
+  margin-block: 4px;
+  border-radius: 12px;
+}
+
+.hearth-sidebar-footer {
+  padding-bottom: 12px;
+}
+.hearth-profile-link {
+  margin-top: 8px !important;
+}
+
 @media print {
   .no-print {
     display: none;

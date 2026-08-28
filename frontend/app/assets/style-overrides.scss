@@ -5,3 +5,79 @@
 .v-tab {
   text-transform: none !important;
 }
+
+:root {
+  --hearth-space-1: 4px;
+  --hearth-space-2: 8px;
+  --hearth-space-3: 12px;
+  --hearth-space-4: 16px;
+  --hearth-space-5: 20px;
+  --hearth-space-6: 24px;
+  --hearth-space-8: 32px;
+  --hearth-space-12: 48px;
+  --hearth-radius-control: 10px;
+  --hearth-radius-card: 16px;
+  --hearth-radius-media: 24px;
+}
+
+html {
+  color-scheme: light dark;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+body {
+  color: rgb(var(--v-theme-on-surface));
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.v-application {
+  background: rgb(var(--v-theme-background)) !important;
+}
+
+:where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 3px solid rgb(var(--v-theme-primary));
+  outline-offset: 3px;
+}
+
+.v-btn {
+  border-radius: var(--hearth-radius-control);
+}
+.v-card {
+  border-radius: var(--hearth-radius-card);
+}
+
+.v-navigation-drawer {
+  border-right-color: rgb(var(--v-theme-outline)) !important;
+  background: rgb(var(--v-theme-surface)) !important;
+}
+
+.v-overlay__content > .v-list,
+.v-menu > .v-overlay__content > .v-list {
+  padding: 8px;
+  border: 1px solid rgb(var(--v-theme-outline));
+  border-radius: 14px;
+}
+
+.v-overlay__content .v-list-item {
+  min-height: 44px;
+  margin-block: 3px;
+  border-radius: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

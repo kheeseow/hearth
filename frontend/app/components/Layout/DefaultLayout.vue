@@ -3,7 +3,7 @@
     <AppSkipLink />
     <TheSnackbar />
 
-    <AppHeader>
+    <AppHeader :context-label="householdName" :new-guide-link="isOwnGroup ? newGuideLink : ''">
       <v-btn
         icon
         :aria-label="$t('general.menu')"
@@ -20,7 +20,18 @@
       :top-link="topLinks"
       :secondary-links="cookbookLinks || []"
     >
+      <v-btn
+        v-if="isOwnGroup && capabilities.guides && !capabilities.legacyRecipes"
+        class="hearth-new-guide-button"
+        color="primary"
+        variant="flat"
+        :to="newGuideLink"
+        :prepend-icon="$globals.icons.createAlt"
+      >
+        {{ $t("guide.new-guide") }}
+      </v-btn>
       <v-menu
+        v-if="capabilities.legacyRecipes"
         offset-y
         nudge-bottom="5"
         close-delay="50"
@@ -31,7 +42,7 @@
             v-if="isOwnGroup && createLinks.length"
             rounded
             size="large"
-            class="ml-2 mt-3"
+            class="hearth-legacy-create-button"
             v-bind="props"
             variant="elevated"
             elevation="2"
@@ -87,13 +98,32 @@
         </v-list>
       </v-menu>
     </AppSidebar>
-    <v-main id="main-content" tabindex="-1" class="pt-12">
+    <v-main id="main-content" tabindex="-1" class="hearth-main pt-12">
       <v-scroll-x-transition>
         <div>
           <NuxtPage />
         </div>
       </v-scroll-x-transition>
     </v-main>
+    <nav
+      v-if="display.smAndDown.value && !sidebar"
+      class="hearth-mobile-nav d-print-none"
+      :class="{ 'hearth-mobile-nav--two': !isOwnGroup }"
+      :aria-label="$t('general.navigation')"
+    >
+      <NuxtLink :to="`/g/${groupSlug}/guides`">
+        <v-icon aria-hidden="true">{{ $globals.icons.book }}</v-icon>
+        <span>{{ $t("guide.guides") }}</span>
+      </NuxtLink>
+      <NuxtLink v-if="isOwnGroup" :to="newGuideLink" class="hearth-mobile-nav-primary">
+        <v-icon aria-hidden="true">{{ $globals.icons.createAlt }}</v-icon>
+        <span>{{ $t("general.create") }}</span>
+      </NuxtLink>
+      <NuxtLink to="/user/profile">
+        <v-icon aria-hidden="true">{{ $globals.icons.user }}</v-icon>
+        <span>{{ $t("general.settings") }}</span>
+      </NuxtLink>
+    </nav>
   </v-app>
 </template>
 
@@ -116,6 +146,8 @@ const capabilities = useAppCapabilities();
 
 const route = useRoute();
 const groupSlug = computed(() => route.params.groupSlug as string || auth.user.value?.groupSlug || "");
+const householdName = computed(() => auth.user.value?.household || "");
+const newGuideLink = computed(() => `/g/${groupSlug.value}/guides/create`);
 
 const cookbookPreferences = useCookbookPreferences();
 const ownCookbookStore = computed(() => isOwnGroup.value ? useCookbookStore(i18n) : null);
@@ -309,3 +341,64 @@ const topLinks = computed<SideBarLink[]>(() => ([
   },
 ] satisfies CapabilitySideBarLink[]).filter(link => link.enabled));
 </script>
+
+<style scoped>
+.hearth-new-guide-button {
+  width: calc(100% - 32px);
+  min-height: 48px;
+  margin: 8px 16px 12px;
+  border-radius: 12px;
+}
+
+.hearth-legacy-create-button {
+  margin: 12px 16px 16px;
+}
+
+.hearth-mobile-nav {
+  display: none;
+}
+
+@media (max-width: 959px) {
+  .hearth-main {
+    padding-bottom: 84px;
+  }
+  .hearth-mobile-nav {
+    position: fixed;
+    z-index: 2020;
+    right: 12px;
+    bottom: 10px;
+    left: 12px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 6px;
+    border: 1px solid rgb(var(--v-theme-outline));
+    border-radius: 18px;
+    background: rgb(var(--v-theme-surface));
+    box-shadow: 0 14px 36px rgb(38 33 28 / 18%);
+  }
+
+  .hearth-mobile-nav a {
+    display: flex;
+    min-height: 52px;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 12px;
+    color: rgb(var(--v-theme-on-surface-variant));
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .hearth-mobile-nav--two {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hearth-mobile-nav-primary {
+    color: rgb(var(--v-theme-primary)) !important;
+  }
+  .hearth-mobile-nav .router-link-exact-active {
+    background: rgb(var(--v-theme-primary), 0.12);
+  }
+}
+</style>

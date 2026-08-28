@@ -133,13 +133,32 @@ remain protected product constraints rather than prototype experiments.
 
 ## Current process score
 
-Lean UX process: **7/10**.
+Lean UX process after the Slice 12 engineering checkpoint: **8/10**.
 
 The project now has declared assumptions, testable hypotheses, pre-committed
 thresholds, a low-cost interactive concept, outcome measures, and a staged
 discovery/delivery plan. It is not yet 10/10 because independent user sessions
 have not run and no hypothesis has yet been invalidated. Those are evidence
 gaps, not reasons to add more documentation.
+
+## Slice 12 implementation checkpoint
+
+The production implementation now matches the interaction hypotheses closely
+enough for real trials:
+
+- H02, H03, H04, H05, H07, and H08 passed internal functional, semantic,
+  responsive, dark/light, contrast, failure-state, payload, and Firefox checks.
+- H06's editor preserves required safety and procedure fields in the primary
+  path and keeps all optional metadata discoverable under **More details**.
+- H09 remains protected: the upgraded profile retains every familiar Mealie
+  navigation route while receiving only presentation-level shell changes.
+- H01 and the outcome thresholds for H02–H07 remain unconfirmed because no
+  independent household participant has been observed.
+
+Do not convert these internal passes into user-evidence claims. Run the five
+sessions in the experiment order before broad rollout and record timings,
+wrong turns, missed warnings, save confidence, and whether any hypothesis is
+invalidated.
 
 ## Decision rules
 

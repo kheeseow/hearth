@@ -2,9 +2,11 @@
 
 ## Status
 
-Product Slice 12B is complete as a disposable design prototype. No production
-UI changes have started. The revised direction must be selected explicitly
-before Slice 12C begins.
+Product Slice 12 production implementation is complete through 12H. The
+library, reader, authoring, first-run, shared-shell, detail, and engineering
+validation work now runs in the application. The engineering verdict is ready;
+the broad-rollout verdict remains gated by the independent household-user
+trials that cannot be completed inside the repository.
 
 This plan defines the redesign direction, evidence-gathering method, delivery
 sequence, and upstream-compatibility boundaries that must be agreed before UI
@@ -527,6 +529,12 @@ types, seeded data, and upgraded navigation remain unchanged.
 - Validate interruption, zoom, small phones, long content, missing images, and
   stale review states
 
+Completed on 2026-08-28. The reader now presents outcome and trust first,
+followed by safety, preparation, requirements, notes, and a calm divided-step
+procedure. Sources, related Guides, classification, tags, review state, cover
+fallbacks, step images, destructive actions, phone reflow, and print continuity
+remain available without crowding the task path.
+
 ### Slice 12E — Authoring
 
 - Separate basic authoring from advanced metadata through progressive
@@ -536,12 +544,25 @@ types, seeded data, and upgraded navigation remain unchanged.
   and destructive-action placement
 - Preserve the complete current Guide contract and ordering behavior
 
+Completed on 2026-08-28. Essentials, safety/preparation, and steps form the
+primary path. Classification, timing, upkeep, sources, relations, and tags are
+inside one semantic **More details** disclosure. A sticky status area reports
+unchanged, unsaved, saving, and failed states; invalid drafts cannot save, and
+the existing media, ordering, cancel, delete, and failure-preservation behavior
+is retained.
+
 ### Slice 12F — First run and shared shell
 
 - Make first run explain Hearth through one useful action rather than a tour
 - Refine the fresh-profile navigation and settings hierarchy
 - Apply the selected safe token layer to shared chrome
 - Verify upgraded Mealie navigation remains complete and recognizable
+
+Completed on 2026-08-28. Fresh setup ends with **New guide** as its first and
+dominant useful action. Shared chrome uses the Hearth surface, spacing, focus,
+and color roles while retaining Mealie's drawer, app bar, authentication,
+routing, state, and all upgraded navigation. Household context, New guide,
+theme, search, settings, and profile actions are consistently placed.
 
 ### Slice 12G — Whole-product detail pass
 
@@ -551,6 +572,12 @@ types, seeded data, and upgraded navigation remain unchanged.
 - Align copy, feedback timing, focus, touch targets, and responsive behavior
 - Keep severity 1 cosmetic ideas in a separate backlog unless they complete a
   system already being changed
+
+Completed on 2026-08-28. The two baseline severity 3 findings and all
+redesign-related severity 2 findings are resolved. The pass aligned local
+feedback, 44-pixel phone targets, focus rings, hover gaps, menus, reduced
+motion, missing media, stale review, dark surfaces, small screens, and setup.
+No inherited Recipe or administration workflow was redesigned.
 
 ### Slice 12H — Validation and checkpoint
 
@@ -563,6 +590,18 @@ types, seeded data, and upgraded navigation remain unchanged.
 - Run the upstream synthetic merge and update `docs/fork-delta.md`
 - Issue a binary ship/not-done verdict and record all remaining severity 1–2
   items separately
+
+Engineering validation completed on 2026-08-28: frontend lint and 311 tests,
+Nuxt production/PWA generation, fourteen relevant backend tests, in-app browser
+and Firefox, 320-pixel reflow, real Firefox 200% zoom, light/dark themes,
+semantics, contrast, save feedback, and upgraded navigation passed. The final
+synthetic upstream merge result and fork count are recorded in
+[Fork Delta](fork-delta.md).
+
+**Binary verdict:** the implementation is **SHIP-READY FOR CONTROLLED
+HOUSEHOLD TRIALS** and **NOT DONE FOR BROAD ROLLOUT** until the five independent
+household-user sessions meet the pre-committed thresholds. This is an external
+evidence gate, not unfinished product code.
 
 ## Definition of done
 

@@ -592,6 +592,53 @@ Validation completed on 2026-08-28:
   `2b81b6b0a3e591a017e009cad9a92b3ad7a3b837` completed without conflicts;
   the fork was 28 commits ahead and 29 commits behind at the checkpoint
 
+## Product Slice 12D–12H — Complete Guide experience (implementation complete)
+
+Included:
+
+- Rebuilt the Guide reader around outcome, trust, safety, preparation, and
+  procedure, with secondary knowledge moved below the active task
+- Rebuilt authoring around essentials, safety/preparation, and steps, with one
+  semantic disclosure for classification, upkeep, relations, and references
+- Added explicit unchanged, unsaved, saving, and failed editor states without
+  changing the Guide API, schema, media, or ordering contract
+- Applied the approved warm-neutral system-font foundation to the shared shell,
+  including household context, focused creation, theme/search actions, spaced
+  navigation states, profile placement, and a three-action phone navigation
+- Kept the complete upgraded Mealie navigation and routes while making fresh
+  Hearth setup and navigation Guide-first
+- Added the reduced-motion, focus, contrast, dark-theme, phone, print, missing
+  media, stale review, failure-recovery, and semantic detail pass
+
+Validation completed on 2026-08-28:
+
+- Frontend ESLint and all 35 frontend test files / 311 tests passed
+- Guide editor helper tests passed and cover save-state precedence, dirty
+  detection, discard confirmation, duplicate saves, and in-flight navigation
+- Nuxt static production build and PWA generation passed without a new font or
+  dependency; Guide reader and editor CSS remained route-scoped
+- Fourteen relevant backend Guide CRUD and capability-profile tests passed
+- Desktop and 320-pixel library, reader, and editor checks passed in light and
+  dark themes, with no document overflow
+- Firefox loaded the library, reader, and editor without the earlier
+  `$globals` failure; the editor remained usable at a real 200% Firefox zoom
+  and the browser was restored to 100% afterwards
+- Semantic inspection found one main region, named navigation, one H1 per task,
+  ordered H2/H3 content, no unnamed buttons or links, and meaningful Guide
+  media alternatives
+- Light/dark body, muted, and primary text pairs all measured at or above 5.12:1
+- Upgraded Recipes, Recipe Finder, Guides, Meal Planner, Shopping Lists,
+  Timeline, Cookbooks, Organizers, announcements, settings, and profile links
+  remained present
+- The final upstream merge and fork counts are recorded in
+  [`fork-delta.md`](fork-delta.md)
+
+Rollout gate:
+
+- Engineering is complete and suitable for controlled trials
+- Broad rollout remains blocked only by the five independent household-user
+  sessions and thresholds in [`ui-ux-assumptions.md`](ui-ux-assumptions.md)
+
 ## Product outcome
 
 A user should be able to open Hearth on a phone, search using ordinary words,

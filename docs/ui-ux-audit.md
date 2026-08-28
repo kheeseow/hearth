@@ -2,9 +2,10 @@
 
 ## Status
 
-Product Slice 12A is complete. This is an evidence baseline, not a visual
-specification. No production UI, API, or database code changed during this
-slice.
+Product Slice 12A established the baseline. Product Slice 12 implementation
+and the engineering validation checkpoint were completed on 2026-08-28. The
+only remaining evidence gate is the independent household-user trial described
+at the end of this document.
 
 The audit was run against the working Hearth application on 2026-08-28 using
 the 15 seeded Guides. It covered the fresh Hearth profile and the upgraded
@@ -168,3 +169,70 @@ The in-app browser supported exact 320- and 390-pixel viewport checks but did
 not expose a reliable browser-zoom control. A true 200% browser-zoom run was
 therefore not counted as passed. Repeat it manually in Firefox and Chromium
 before production rollout; a narrow viewport is not a substitute for zoom.
+
+## Slice 12 final checkpoint
+
+The production UI now uses the approved search-first library, preparation-first
+reader, basic-first editor, focused shell, and guide-first fresh setup. The
+upgraded capability profile still exposes every retained Mealie route.
+
+| Finding | Resolution |
+|---|---|
+| A01, A09 | Load, result, empty, and recovery feedback now sits directly beside search. |
+| A02, A08 | Essentials, safety/preparation, and steps form the primary editor path; advanced metadata is disclosed on request and the save state remains visible. |
+| A03–A06 | The library uses one dominant search, disclosed filters, URL-restored state, and recognition-first cards. |
+| A07 | The reader leads with outcome and trust, then safety, preparation, and procedure; secondary metadata is below the task. |
+| A10 | Export remains available but is visually secondary. |
+| A11 | Fresh navigation is Guide-focused; upgraded navigation remains complete and recognizable. |
+| A12 | A small warm-neutral token layer now aligns the Guide surfaces and shared shell without replacing Vuetify or adding a custom font. |
+
+There are no open severity 3 or 4 findings. Remaining severity 1–2 work is
+limited to later evidence-led refinements, such as deciding whether upgraded
+users want a more compact legacy navigation and replacing mismatched seeded
+demo cover images.
+
+### Final diagnostic scores
+
+| Lens | Score | Evidence |
+|---|---:|---|
+| Product focus | 9/10 | The library is home, search is dominant, reader and editor each have one clear purpose, and fresh first run points to one useful action. |
+| Discoverability and mental model | 9/10 | Household context, active navigation, search feedback, preparation order, and progressive disclosure match the household-manual model. |
+| Usability | 9/10 | No major findings remain; recovery, validation, save state, destructive actions, and complete upgraded routes remain available. |
+| Visual system | 9/10 | Spacing, warm surfaces, rust action color, green trust state, red safety state, radii, focus, and restrained depth form one small system. |
+| Typography | 9/10 | System fonts, responsive headings, readable measures, restrained metadata, and print hierarchy passed real-content checks. |
+| Microinteractions | 9/10 | Search, filters, save status, failure preservation, hover spacing, theme switching, and reduced motion give local and honest feedback. |
+| Lean UX process | 8/10 | Assumptions, thresholds, prototype, implementation, and repeatable checks exist; independent user observations remain outstanding. |
+
+### Final engineering evidence
+
+- Full frontend lint and all 311 frontend tests passed.
+- The Nuxt static production build and PWA generation passed.
+- Fourteen relevant backend Guide and capability tests passed.
+- Library, reader, and editor passed in the in-app browser and Firefox; the
+  earlier Firefox `$globals` failure was reproduced during development and
+  removed before the checkpoint.
+- The editor passed a real Firefox 200% zoom check and restored to 100%
+  afterwards. The 320-pixel library, reader, and editor reflowed without
+  document overflow.
+- Light and dark themes, stale review data, safety callouts, requirements,
+  step images, text-only states, progressive disclosure, unsaved feedback,
+  and semantic heading/control names were checked with seeded content.
+- Measured text contrast ratios are 14.28:1 for light body, 5.12:1 for light
+  muted text, 5.33:1 for light primary, 15.92:1 for dark body, 8.29:1 for dark
+  muted text, and 5.72:1 for dark primary.
+- No dependency, custom font, route, API, database, generated type, or legacy
+  workflow was added or changed for the redesign.
+- The final system-font build reduced shared entry CSS from 201.55 KB to
+  192.46 KB and the PWA precache from 13,562.94 KiB to 13,554.19 KiB compared
+  with the accidental Inter-fetch build; no font download remained.
+- A synthetic merge with `upstream/mealie-next` at
+  `2b81b6b0a3e591a017e009cad9a92b3ad7a3b837` produced a merged tree without
+  conflicts; Hearth was 29 commits ahead and 29 commits behind.
+
+### Remaining evidence gate
+
+The engineering work is ship-ready, but the formal Slice 12 definition of done
+still requires five independent household users to run the timed tasks in
+[UI/UX Assumptions](ui-ux-assumptions.md). Until those trials meet the recorded
+90% find-and-open threshold and 4-of-5 authoring threshold, the evidence verdict
+is **NOT DONE FOR BROAD ROLLOUT** even though no implementation blocker remains.

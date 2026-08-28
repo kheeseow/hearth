@@ -2,9 +2,10 @@
 
 ## Status
 
-Slice 12B candidate. These rules apply to Guide screens only. The revised
-[interactive concept](prototypes/hearth-ui-concept.html) is the review source;
-production rollout waits for explicit selection of this direction.
+Approved Slice 12 production foundation. The revised
+[interactive concept](prototypes/hearth-ui-concept.html) remains the design
+reference, and the production Guide library, reader, editor, and shared shell
+now apply this direction.
 
 ## What the prototype decides
 
@@ -55,19 +56,20 @@ These are behavioral contracts, not a new component library:
 
 ## Upstream boundary
 
-Production work should stay inside Guide pages, Guide components, and Guide
-composables. A compact global Guide-search trigger may use one documented
-header seam. This foundation does not change Vuetify, Nuxt, shared Mealie theme
-internals, the Guide API, generated types, routing, or upgraded navigation.
+Most product-specific work stays inside Guide pages, Guide components, and
+Guide composables. The approved shared-shell boundary also includes the app
+header, sidebar, mobile navigation, theme tokens, and a thin global style
+override. It does not change Vuetify or Nuxt internals, the Guide API,
+generated types, route paths, or upgraded Mealie capabilities.
 
 ## Evidence still required
 
-The candidate's key text/background pairs measure from 4.76:1 to 15.92:1 in
+The production UI's key text/background pairs measure from 4.76:1 to 15.92:1 in
 both themes, meeting the WCAG AA target for normal text. Browser checks also
-covered 1280-, 390-, and 320-pixel widths and reported no console errors.
+covered 1280-, 390-, and 320-pixel widths, Firefox at 200% zoom, and reported
+no console errors.
 
-The concept can prove reflow, visibility, interaction states, and theme
-behavior. It cannot prove that real household users finish faster. H01–H08 in
+Engineering checks can prove reflow, visibility, interaction states, and theme
+behavior. They cannot prove that real household users finish faster. H01–H08 in
 the [assumptions register](ui-ux-assumptions.md) remain hypotheses until the
-planned task trials are observed. Global styling must not be adopted on the
-prototype alone.
+planned household-user task trials are observed.

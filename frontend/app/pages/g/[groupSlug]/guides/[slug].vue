@@ -1,6 +1,7 @@
 <template>
   <v-container class="guide-container">
     <v-btn
+      v-if="loading || error || editing"
       class="d-print-none"
       variant="text"
       :prepend-icon="$globals.icons.backArrow"
@@ -21,10 +22,14 @@
         </v-btn>
       </template>
     </v-alert>
-    <v-card v-else-if="guide && editing" class="mt-3 pa-4 pa-sm-5">
-      <h1 class="text-h5 mb-4">
-        {{ $t("guide.edit-guide") }}
-      </h1>
+    <div v-else-if="guide && editing" class="guide-edit-page">
+      <header class="guide-editor-header">
+        <p>{{ $t("guide.essentials") }}</p>
+        <h1>
+          {{ $t("guide.edit-guide") }}
+        </h1>
+        <span>{{ guide.title }}</span>
+      </header>
       <GuideEditor
         v-model="draft"
         :guide="guide"
@@ -33,9 +38,10 @@
         show-cancel
         @save="save"
         @cancel="cancelEdit"
+        @dirty-change="hasUnsavedChanges = $event"
         @guide-updated="updateGuideFromMedia"
       />
-    </v-card>
+    </div>
     <GuideReader
       v-else-if="guide"
       class="mt-3"
@@ -64,6 +70,7 @@ import { useUserApi } from "~/composables/api";
 import GuideEditor, { type GuideDraft } from "~/components/Domain/Guide/GuideEditor.vue";
 import GuideReader from "~/components/Domain/Guide/GuideReader.vue";
 import type { GuideRead } from "~/lib/api/types/guide";
+import { guideDiscardCanProceed, guideNavigationCanProceed, guideSaveCanStart } from "~/lib/guide-editor";
 
 definePageMeta({ middleware: ["group-only"] });
 
@@ -99,6 +106,8 @@ const editing = ref(false);
 const deleteDialog = ref(false);
 const error = ref("");
 const saveError = ref("");
+const hasUnsavedChanges = ref(false);
+const { activateNavigationWarning, deactivateNavigationWarning } = useNavigationWarning();
 const canEdit = computed(() => guide.value?.householdId === auth.user.value?.householdId);
 
 useSeoMeta({ title: computed(() => guide.value?.title || i18n.t("guide.guide")) });
@@ -153,25 +162,35 @@ async function loadGuide() {
 }
 
 function cancelEdit() {
+  if (saving.value || !confirmDiscard()) return;
+  hasUnsavedChanges.value = false;
   setDraft();
   editing.value = false;
   saveError.value = "";
 }
 
 async function save() {
-  if (!guide.value) return;
+  if (!guide.value || !guideSaveCanStart(saving.value)) return;
   saving.value = true;
   saveError.value = "";
-  const { data } = await api.guides.updateOne(guide.value.slug, draft.value);
-  if (data) {
-    guide.value = data;
-    setDraft();
-    editing.value = false;
+  try {
+    const { data } = await api.guides.updateOne(guide.value.slug, draft.value);
+    if (data) {
+      hasUnsavedChanges.value = false;
+      guide.value = data;
+      setDraft();
+      editing.value = false;
+    }
+    else {
+      saveError.value = i18n.t("guide.save-error");
+    }
   }
-  else {
+  catch {
     saveError.value = i18n.t("guide.save-error");
   }
-  saving.value = false;
+  finally {
+    saving.value = false;
+  }
 }
 
 function updateGuideFromMedia(updated: GuideRead) {
@@ -189,12 +208,55 @@ async function remove() {
   }
 }
 
-onMounted(loadGuide);
+function confirmDiscard() {
+  return guideDiscardCanProceed(
+    hasUnsavedChanges.value,
+    () => window.confirm(i18n.t("general.discard-changes-description")),
+  );
+}
+
+watch(hasUnsavedChanges, dirty => dirty ? activateNavigationWarning() : deactivateNavigationWarning());
+onBeforeRouteLeave(() => guideNavigationCanProceed({
+  dirty: hasUnsavedChanges.value,
+  saving: saving.value,
+  internal: false,
+  confirmDiscard: () => window.confirm(i18n.t("general.discard-changes-description")),
+}));
+onMounted(() => {
+  loadGuide();
+});
+onBeforeUnmount(deactivateNavigationWarning);
 </script>
 
 <style scoped>
 .guide-container {
   max-width: 1160px;
+}
+
+.guide-edit-page {
+  padding: 12px 0 96px;
+}
+.guide-editor-header {
+  max-width: 920px;
+  margin: 20px auto 32px;
+}
+.guide-editor-header p {
+  margin: 0 0 8px;
+  color: rgb(var(--v-theme-primary));
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.guide-editor-header h1 {
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+}
+.guide-editor-header span {
+  display: block;
+  margin-top: 12px;
+  color: rgb(var(--v-theme-on-surface-variant));
 }
 
 @media print {
@@ -206,6 +268,9 @@ onMounted(loadGuide);
 
 @media (max-width: 599px) {
   .guide-container {
+    padding-inline: 0;
+  }
+  .guide-edit-page {
     padding-inline: 12px;
   }
 }

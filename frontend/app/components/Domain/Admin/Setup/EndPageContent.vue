@@ -1,14 +1,15 @@
 <template>
   <v-container max-width="880" class="end-page-content">
     <div class="d-flex flex-column ga-6">
-      <div>
+      <header class="setup-complete-header">
+        <p>{{ brand.name }}</p>
         <v-card-title class="text-h4 justify-center">
           {{ $t('admin.setup.setup-complete') }}
         </v-card-title>
         <v-card-subtitle class="justify-center">
           {{ $t('admin.setup.here-are-a-few-things-to-help-you-get-started') }}
         </v-card-subtitle>
-      </div>
+      </header>
       <div
         v-for="section, idx in sections"
         :key="idx"
@@ -21,8 +22,9 @@
           <v-card
             v-for="link, linkIdx in section.links"
             :key="linkIdx"
-            clas="link-card"
-            :href="link.to"
+            class="link-card"
+            :class="{ 'link-card--primary': !capabilities.legacyRecipes && idx === 0 && linkIdx === 0 }"
+            :to="link.to"
             :title="link.text"
             :subtitle="link.description"
             :append-icon="$globals.icons.chevronRight"
@@ -43,6 +45,7 @@ const auth = useMealieAuth();
 const groupSlug = computed(() => auth.user.value?.groupSlug);
 const { $globals } = useNuxtApp();
 const capabilities = useAppCapabilities();
+const brand = useAppBrand();
 
 const sections = ref([
   {
@@ -102,33 +105,65 @@ const sections = ref([
 ]);
 
 if (!capabilities.value.legacyRecipes) {
-  sections.value[0].title = i18n.t("settings.backup-and-exports");
-  sections.value[0].links = sections.value[0].links.slice(0, 1);
-  sections.value[1] = {
-    title: i18n.t("guide.create-guides"),
-    color: "success",
-    links: [
-      {
-        icon: $globals.icons.createAlt,
-        to: computed(() => `/g/${groupSlug.value || ""}/guides/create`),
-        text: i18n.t("guide.new-guide"),
-        description: i18n.t("guide.create-guide-description"),
-      },
-    ],
-  };
+  sections.value = [
+    {
+      title: i18n.t("guide.create-guides"),
+      color: "success",
+      links: [
+        {
+          icon: $globals.icons.createAlt,
+          to: computed(() => `/g/${groupSlug.value || ""}/guides/create`),
+          text: i18n.t("guide.new-guide"),
+          description: i18n.t("guide.create-guide-description"),
+        },
+      ],
+    },
+    sections.value[2],
+  ];
 }
 </script>
 
-<style>
-.v-container {
-  .v-card-title,
-  .v-card-subtitle {
-    padding: 0;
-    white-space: unset;
-  }
+<style scoped>
+.end-page-content {
+  padding-block: 48px 72px;
+}
+.setup-complete-header {
+  max-width: 640px;
+  margin-inline: auto;
+  text-align: center;
+}
+.setup-complete-header p {
+  margin-bottom: 12px;
+  color: rgb(var(--v-theme-primary));
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.end-page-content :deep(.v-card-title),
+.end-page-content :deep(.v-card-subtitle) {
+  padding: 0;
+  white-space: unset;
+}
+.end-page-content :deep(.v-card-item) {
+  gap: 0.5rem;
+}
+.link-card {
+  min-height: 88px;
+  padding: 8px;
+  border: 1px solid rgb(var(--v-theme-outline));
+  background: rgb(var(--v-theme-surface));
+}
+.link-card--primary {
+  min-height: 112px;
+  border-color: rgb(var(--v-theme-primary), 0.45);
+  background: rgb(var(--v-theme-primary), 0.09);
+  box-shadow: 0 12px 30px rgb(38 33 28 / 8%);
+}
 
-  .v-card-item {
-    gap: 0.5rem;
+@media (max-width: 599px) {
+  .end-page-content {
+    padding: 32px 12px 88px;
   }
 }
 </style>
