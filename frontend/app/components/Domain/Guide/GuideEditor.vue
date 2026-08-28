@@ -1,11 +1,14 @@
 <template>
-  <v-form @submit.prevent="emit('save')">
+  <v-form
+    class="guide-editor"
+    :aria-label="guide ? $t('guide.edit-guide') : $t('guide.new-guide')"
+    @submit.prevent="emit('save')"
+  >
     <v-text-field
       v-model="model.title"
       :label="$t('guide.title')"
       :rules="[value => !!value?.trim() || $t('guide.title-required')]"
       variant="outlined"
-      autofocus
     />
     <v-textarea
       v-model="model.description"
@@ -636,6 +639,11 @@ onMounted(loadRelatedGuides);
 }
 
 @media (max-width: 599px) {
+  .guide-editor :deep(.v-btn--icon.v-btn--size-small) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
   .guide-callout-kind,
   .guide-requirement-kind {
     max-width: none;

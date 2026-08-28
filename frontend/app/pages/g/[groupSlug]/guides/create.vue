@@ -3,10 +3,10 @@
     <v-btn variant="text" :prepend-icon="$globals.icons.backArrow" :to="`/g/${groupSlug}/guides`">
       {{ $t("guide.back-to-guides") }}
     </v-btn>
-    <v-card class="mt-3 pa-5">
-      <v-card-title class="text-h5 px-0 mb-4">
+    <v-card class="guide-editor-card mt-3 pa-4 pa-sm-5">
+      <h1 class="text-h5 mb-4">
         {{ $t("guide.new-guide") }}
-      </v-card-title>
+      </h1>
       <GuideEditor v-model="draft" :loading="loading" :error="error" @save="save" />
     </v-card>
   </v-container>
@@ -63,5 +63,11 @@ async function save() {
 <style scoped>
 .guide-container {
   max-width: 900px;
+}
+
+@media (max-width: 599px) {
+  .guide-container {
+    padding-inline: 12px;
+  }
 }
 </style>

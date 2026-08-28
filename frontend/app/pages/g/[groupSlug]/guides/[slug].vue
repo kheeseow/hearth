@@ -9,13 +9,22 @@
       {{ $t("guide.back-to-guides") }}
     </v-btn>
 
-    <div v-if="loading" class="d-flex justify-center py-12">
-      <v-progress-circular indeterminate color="primary" />
+    <div v-if="loading" class="d-flex justify-center py-12" role="status" aria-live="polite">
+      <v-progress-circular indeterminate color="primary" :aria-label="$t('guide.loading-guide')" />
+      <span class="d-sr-only">{{ $t("guide.loading-guide") }}</span>
     </div>
     <v-alert v-else-if="error" type="error" variant="tonal" class="mt-4">
       {{ error }}
+      <template #append>
+        <v-btn variant="text" @click="loadGuide">
+          {{ $t("general.retry") }}
+        </v-btn>
+      </template>
     </v-alert>
-    <v-card v-else-if="guide && editing" class="mt-3 pa-5">
+    <v-card v-else-if="guide && editing" class="mt-3 pa-4 pa-sm-5">
+      <h1 class="text-h5 mb-4">
+        {{ $t("guide.edit-guide") }}
+      </h1>
       <GuideEditor
         v-model="draft"
         :guide="guide"
@@ -131,6 +140,7 @@ function setDraft() {
 
 async function loadGuide() {
   loading.value = true;
+  error.value = "";
   const { data } = await api.guides.getOne(slug.value);
   if (data) {
     guide.value = data;
@@ -191,6 +201,12 @@ onMounted(loadGuide);
   .guide-container {
     max-width: none;
     padding: 0 !important;
+  }
+}
+
+@media (max-width: 599px) {
+  .guide-container {
+    padding-inline: 12px;
   }
 }
 </style>

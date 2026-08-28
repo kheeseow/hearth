@@ -7,9 +7,14 @@
     cover
     class="guide-media-image"
   />
-  <v-skeleton-loader v-else-if="loading" type="image" />
+  <div v-else-if="loading" role="status" :aria-label="$t('general.loading')">
+    <v-skeleton-loader type="image" />
+    <span class="d-sr-only">{{ $t("general.loading") }}</span>
+  </div>
   <div v-else class="d-flex align-center justify-center text-medium-emphasis guide-media-placeholder">
-    <v-icon>{{ $globals.icons.fileImage }}</v-icon>
+    <v-icon aria-hidden="true">
+      {{ $globals.icons.fileImage }}
+    </v-icon>
   </div>
 </template>
 

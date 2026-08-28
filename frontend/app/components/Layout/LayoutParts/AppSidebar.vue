@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer v-model="modelValue" class="d-flex flex-column d-print-none position-fixed" touchless>
+  <v-navigation-drawer id="app-navigation" v-model="modelValue" class="d-flex flex-column d-print-none position-fixed" touchless>
     <AnnouncementDialog v-model="showAnnouncementsDialog" />
     <LanguageDialog v-model="state.languageDialog" />
     <!-- User Profile -->

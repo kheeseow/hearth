@@ -1,10 +1,14 @@
 <template>
   <v-app dark>
+    <AppSkipLink />
     <TheSnackbar />
 
     <AppHeader>
       <v-btn
         icon
+        :aria-label="$t('general.menu')"
+        aria-controls="app-navigation"
+        :aria-expanded="sidebar"
         @click.stop="sidebar = !sidebar"
       >
         <v-icon> {{ $globals.icons.menu }}</v-icon>
@@ -19,7 +23,7 @@
       :secondary-links="developerLinks"
     />
 
-    <v-main>
+    <v-main id="main-content" tabindex="-1">
       <v-scroll-x-transition>
         <div>
           <NuxtPage />
@@ -32,6 +36,7 @@
 <script setup lang="ts">
 import AppHeader from "@/components/Layout/LayoutParts/AppHeader.vue";
 import AppSidebar from "@/components/Layout/LayoutParts/AppSidebar.vue";
+import AppSkipLink from "~/components/Layout/LayoutParts/AppSkipLink.vue";
 import TheSnackbar from "~/components/Layout/LayoutParts/TheSnackbar.vue";
 import type { SidebarLinks } from "~/types/application-types";
 import { useGlobalI18n } from "~/composables/use-global-i18n";

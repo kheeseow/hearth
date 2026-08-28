@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-4">
+  <div class="guide-step-media-editor mt-4">
     <div class="d-flex flex-wrap align-center ga-2 mb-2">
       <strong>{{ $t("guide.step-images") }}</strong>
       <span class="text-body-2 text-medium-emphasis">{{ $t("guide.step-images-hint") }}</span>
@@ -194,5 +194,17 @@ async function remove(imageId: string) {
 .guide-replace-input {
   min-width: 190px;
   max-width: 260px;
+}
+
+@media (max-width: 599px) {
+  .guide-step-media-editor :deep(.v-btn--icon.v-btn--size-small) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .guide-replace-input {
+    min-width: 0;
+    max-width: none;
+  }
 }
 </style>

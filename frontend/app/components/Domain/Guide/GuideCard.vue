@@ -9,7 +9,7 @@
       :aspect-ratio="16 / 9"
     />
     <v-card-title class="d-flex align-center ga-2">
-      <v-icon color="primary">
+      <v-icon color="primary" aria-hidden="true">
         {{ $globals.icons.book }}
       </v-icon>
       <span class="text-wrap">{{ guide.title }}</span>

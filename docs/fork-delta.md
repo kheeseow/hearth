@@ -1,7 +1,7 @@
 # Hearth Fork Delta
 
 This file records the expected Hearth-owned paths and the small set of shared
-Mealie files touched by Product Slices 1 through 10. Use it when reviewing
+Mealie files touched by Product Slices 1 through 11. Use it when reviewing
 upstream merges.
 
 ## Hearth-owned paths
@@ -26,6 +26,9 @@ frontend/app/composables/use-default-activity.ts
 mealie/core/settings/branding.py
 frontend/app/lib/app-brand.ts
 frontend/app/lib/guide-reader.ts
+frontend/app/lib/locale-head.ts
+frontend/app/plugins/i18n-head.client.ts
+frontend/app/components/Layout/LayoutParts/AppSkipLink.vue
 frontend/app/composables/use-app-brand.ts
 frontend/public/icons/hearth-mark.svg
 ```
@@ -50,10 +53,12 @@ mealie/routes/spa/manifest.py                     branded, capability-aware inst
 mealie/services/backups_v2/alchemy_exporter.py    Guide review-date restoration only
 frontend/app/lib/api/client-user.ts               API client registration only
 frontend/app/components/Layout/DefaultLayout.vue  capability-filtered navigation
+frontend/app/layouts/basic.vue                    accessible main-content target only
+frontend/app/layouts/blank.vue                    accessible main-content target only
 frontend/app/components/Layout/LayoutParts/AppSidebar.vue  capability-filtered favorites link
 frontend/app/components/Domain/Admin/Setup/EndPageContent.vue  Guide-first setup links
 frontend/app/pages/admin/setup.vue                 capability-aware first-run steps
-frontend/app/layouts/admin.vue                     capability-filtered Recipe debug links
+frontend/app/layouts/admin.vue                     capability-filtered Recipe debug links and accessible main target
 frontend/app/pages/admin/site-settings.vue         capability-filtered Recipe statistics
 frontend/app/pages/admin/maintenance/index.vue     capability-filtered Recipe maintenance
 frontend/app/pages/admin/backups.vue               capability-filtered Recipe migration link

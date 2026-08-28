@@ -4,8 +4,9 @@
     max-width="988px"
     content-class="top-dialog"
     :scrollable="false"
+    :aria-label="$t('guide.search')"
   >
-    <v-card :rounded="!$vuetify.display.xs" :loading="search.loading.value">
+    <v-card :rounded="!$vuetify.display.xs" :loading="search.loading.value" :aria-busy="search.loading.value">
       <v-toolbar color="primary-lighten-1">
         <v-text-field
           id="guide-arrow-search"
@@ -21,6 +22,8 @@
           hide-details
           single-line
           :placeholder="$t('guide.search')"
+          :aria-label="$t('guide.search')"
+          aria-controls="guide-search-results"
           :prepend-inner-icon="$globals.icons.search"
         />
         <v-btn
@@ -34,21 +37,22 @@
         </v-btn>
       </v-toolbar>
 
-      <v-card-actions>
-        <div class="mr-auto">
-          {{ $t("search.results") }}
+      <v-card-actions aria-live="polite">
+        <div class="mr-auto" role="status">
+          {{ search.loading.value
+            ? $t("guide.loading-guides")
+            : $t("guide.results-count", search.data.value.length) }}
         </div>
       </v-card-actions>
 
       <v-alert v-if="search.error.value" type="error" variant="tonal" class="ma-3">
         {{ $t(search.error.value) }}
       </v-alert>
-      <v-list v-else class="guide-search-results pa-1">
+      <v-list v-else id="guide-search-results" class="guide-search-results pa-1">
         <v-list-item
-          v-for="(guide, index) in search.data.value"
+          v-for="guide in search.data.value"
           :key="guide.id"
           :to="`/g/${groupSlug}/guides/${guide.slug}`"
-          :tabindex="index"
           class="ma-1 arrow-nav"
           rounded="lg"
           @click="close"
@@ -63,7 +67,7 @@
             {{ guide.description }}
           </v-list-item-subtitle>
         </v-list-item>
-        <v-list-item v-if="!search.loading.value && !search.data.value.length">
+        <v-list-item v-if="!search.loading.value && !search.data.value.length" role="status">
           <v-list-item-title class="text-medium-emphasis">
             {{ $t("search.no-results") }}
           </v-list-item-title>

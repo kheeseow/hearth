@@ -1,5 +1,6 @@
 <template>
   <v-app dark>
+    <AppSkipLink />
     <TheSnackbar />
 
     <v-banner
@@ -11,7 +12,7 @@
       </div>
     </v-banner>
 
-    <v-main>
+    <v-main id="main-content" tabindex="-1">
       <v-scroll-x-transition>
         <div>
           <NuxtPage />
@@ -23,4 +24,5 @@
 
 <script setup lang="ts">
 import TheSnackbar from "~/components/Layout/LayoutParts/TheSnackbar.vue";
+import AppSkipLink from "~/components/Layout/LayoutParts/AppSkipLink.vue";
 </script>

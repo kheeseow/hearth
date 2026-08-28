@@ -27,6 +27,7 @@
             :complete="currentPage > Pages.LANDING"
             :color="getStepperColor(currentPage, Pages.LANDING)"
             :title="$t('general.start')"
+            :aria-label="$t('general.start')"
           />
           <v-divider />
           <v-stepper-item
@@ -35,6 +36,7 @@
             :complete="currentPage > Pages.USER_INFO"
             :color="getStepperColor(currentPage, Pages.USER_INFO)"
             :title="$t('user-registration.account-details')"
+            :aria-label="$t('user-registration.account-details')"
           />
           <v-divider v-if="capabilities.legacyRecipes" />
           <v-stepper-item
@@ -44,6 +46,7 @@
             :complete="currentPage > Pages.PAGE_2"
             :color="getStepperColor(currentPage, Pages.PAGE_2)"
             :title="$t('settings.site-settings')"
+            :aria-label="$t('settings.site-settings')"
           />
           <v-divider v-if="capabilities.legacyRecipes" />
           <v-stepper-item
@@ -53,6 +56,7 @@
             :complete="currentPage > Pages.AI_PROVIDERS"
             :color="getStepperColor(currentPage, Pages.AI_PROVIDERS)"
             :title="$t('group.ai-provider-settings.ai-providers')"
+            :aria-label="$t('group.ai-provider-settings.ai-providers')"
           />
           <v-divider />
           <v-stepper-item
@@ -61,6 +65,7 @@
             :complete="currentPage > Pages.CONFIRM"
             :color="getStepperColor(currentPage, Pages.CONFIRM)"
             :title="$t('admin.maintenance.summary-title')"
+            :aria-label="$t('admin.maintenance.summary-title')"
           />
           <v-divider />
           <v-stepper-item
@@ -69,6 +74,7 @@
             :complete="currentPage > Pages.END"
             :color="getStepperColor(currentPage, Pages.END)"
             :title="$t('admin.setup.setup-complete')"
+            :aria-label="$t('admin.setup.setup-complete')"
           />
         </v-stepper-header>
         <v-progress-linear
@@ -76,21 +82,22 @@
           color="primary"
           indeterminate
           class="mb-2"
+          :aria-label="$t('general.loading')"
         />
 
         <v-stepper-window :transition="false" class="stepper-window">
           <!-- LANDING -->
           <v-stepper-window-item :value="Pages.LANDING">
-            <v-container class="mb-12">
+            <v-container class="mb-6 mb-sm-12">
               <AppLogo />
-              <v-card-title class="text-headline-medium my-5 justify-center text-center text-break text-pre-wrap">
+              <h1 class="text-h4 my-5 text-center text-break text-pre-wrap">
                 {{ $t('admin.setup.welcome-to-product-get-started', { product: brand.name }) }}
-              </v-card-title>
+              </h1>
               <p class="text-body-1 text-center">
                 {{ $t('admin.setup.previous-installation') }}
               </p>
               <v-btn
-                to="backups"
+                to="/admin/backups"
                 rounded
                 variant="outlined"
                 color="primary"
@@ -104,8 +111,7 @@
                 rounded
                 variant="outlined"
                 color="grey-lighten-1"
-                class="text-subtitle-2 d-flex mx-auto"
-                style="width: fit-content;"
+                class="setup-home-link text-subtitle-2 d-flex mx-auto"
               >
                 {{ $t('admin.setup.already-set-up-bring-to-homepage') }}
               </v-btn>
@@ -663,6 +669,21 @@ async function onFinish() {
   await handleSubmit(Pages.END);
 }
 </script>
+
+<style scoped>
+.setup-home-link {
+  width: fit-content;
+  max-width: 100%;
+  height: auto !important;
+  min-height: 44px;
+}
+
+.setup-home-link :deep(.v-btn__content) {
+  padding-block: 0.5rem;
+  white-space: normal;
+  text-align: center;
+}
+</style>
 
 <style>
 .icon-white {

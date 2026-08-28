@@ -19,7 +19,7 @@ rewrite Mealie's platform or erase its repository history.
 ## Current status
 
 - Phase 1 architecture research is complete.
-- Product Slices 1 through 10 are implemented and validated locally.
+- Product Slices 1 through 11 are implemented and validated locally.
 - The Hearth fork is checked out from Mealie `v3.24.0` at commit
   `2c04da733f88836f788234a4bf1127599fbc1294`.
 - `origin` points to `kheeseow/hearth`; `upstream` points to
@@ -50,10 +50,13 @@ rewrite Mealie's platform or erase its repository history.
 - Fresh-install setup and shared settings now expose only Hearth-relevant
   choices, while upgraded installations retain their full Mealie-compatible
   settings, notification tools, data management, and administration routes.
+- Core Guide, setup, and shared-navigation flows now provide keyboard focus,
+  accessible names and status feedback, correct document language and
+  direction, reduced-motion support, and verified 320-pixel reflow.
 - Phase 4 is complete. Its Guide domain, export, and backup checkpoint remains
   additive and does not alter Recipe persistence.
-- Phase 2 remains open for Guide events. Phase 3 remains open for complete
-  accessibility verification. Phase 5 capability isolation is underway.
+- Phase 2 remains open for Guide events. Phase 3 is complete. Phase 5 product
+  polish and capability isolation is underway.
 
 ## Product Slice 1 — Minimal Guide CRUD (complete)
 
@@ -485,6 +488,55 @@ Validation completed on 2026-08-28:
 - A synthetic merge with upstream `mealie-next` at
   `2b81b6b0a3e591a017e009cad9a92b3ad7a3b837` completed without conflicts;
   the fork was 14 commits ahead and 29 commits behind at the checkpoint
+
+## Product Slice 11 — Accessibility, reflow, and measured performance (complete)
+
+Included:
+
+- A shared skip link and focusable main-content target across default, admin,
+  basic, and blank layouts
+- Correct document language and text direction derived from the active locale
+- Visible keyboard focus and reduced-motion behavior at the shared stylesheet
+  layer
+- Accessible names and state for navigation, Guide search, profile, mobile,
+  setup-stepper, loading, result-count, empty, error, retry, edit, and print
+  controls
+- Semantic Guide library search with clear-filter recovery, differentiated
+  empty states, and stale-result removal after failures
+- Guide reader, editor, media controls, setup, and shared navigation reflow at
+  a 320-pixel viewport without horizontal scrolling or clipped actions
+- Removal of editor autofocus and positive result tabindex values so native
+  keyboard and phone behavior remains predictable
+- Focused component and locale-head tests without adding a parallel component
+  system or altering the Guide API, schema, or stored data
+
+Validation completed on 2026-08-28:
+
+- Frontend ESLint: passed
+- Full frontend suite: 33 files and 299 tests passed
+- Nuxt production build and PWA generation: passed
+- Guide backend integration suite: 11 passed
+- Fresh-install browser check: Guide-only navigation, four-step setup,
+  accessible control names, loading and recovery states, and 320-pixel reflow
+  passed
+- Upgraded browser check: Recipes, Guides, Meal Planner, and Shopping Lists
+  remained available and the complete six-step setup remained intact
+- Guide library search check: a no-match query produced a specific empty state
+  and Clear filters restored all 15 seeded Guides
+- Semantic browser check: the document reported `en-US` and left-to-right
+  direction; layouts exposed a first skip link and named main region; Guide
+  list, create, edit, and reader pages each retained a clear primary heading
+- Phone-width browser check: Guide library, reader, editor, and setup matched
+  their viewport width at 320 pixels with no horizontal overflow
+- Measured production Guide JavaScript remained small: library 3.9 KB, reader
+  4.2 KB, editor 4.9 KB, and search dialog 4.1 KB compressed. The larger shared
+  Nuxt/Vuetify chunk is upstream platform code, so no speculative Guide-specific
+  splitting or shared-framework rewrite was introduced
+- The local development capability profile was restored to upgraded mode after
+  testing; seeded Guides and application data were not changed
+- A synthetic merge with upstream `mealie-next` at
+  `2b81b6b0a3e591a017e009cad9a92b3ad7a3b837` completed without conflicts;
+  the fork was 17 commits ahead and 29 commits behind at the checkpoint
 
 ## Product outcome
 
@@ -1295,20 +1347,14 @@ Record material decisions here as they are made.
 | 2026-08-28 | Print the responsive Guide reader directly | Keep one presentation model and use native browser printing instead of adding a PDF service |
 | 2026-08-28 | Gate shared legacy settings instead of deleting them | Keep fresh Hearth focused while allowing upgraded installations and upstream tests to retain complete Mealie behavior |
 | 2026-08-28 | Run a whole-product UI/UX audit after Slice 11 | Audit stable, accessible, responsive core flows before another major feature expands the interface |
+| 2026-08-28 | Keep current Guide route chunks after measuring them | The four main Guide flows are only 3.9–4.9 KB compressed; changing shared Nuxt/Vuetify loading would add upstream merge risk without a demonstrated Guide performance problem |
 
 ## Immediate next action
 
-Begin Product Slice 11 with Phase 5's accessibility, performance, and
-responsive pass. Audit the Guide library, create/edit flow, reader, setup, and
-shared navigation with keyboard-only and phone-width browser checks; correct
-focus order, accessible names, loading and empty feedback, contrast, and layout
-overflow without redesigning Mealie's shared component system. Measure the
-Guide list and reader bundles before choosing any performance work.
-
-Follow it with Product Slice 12, a whole-product UI/UX audit before starting
-another major feature. Apply a heuristic review and cognitive walkthrough to
-first run, Guide discovery, search and filtering, creation/editing, reading,
-printing, settings, and error recovery. Score findings by severity, fix all
-task-blocking and major issues, then prioritize minor visual and interaction
-polish separately so the audit produces a focused improvement pass rather than
-an open-ended redesign.
+Begin Product Slice 12, a whole-product UI/UX audit before starting another
+major feature. Apply a heuristic review and cognitive walkthrough to first run,
+Guide discovery, search and filtering, creation/editing, reading, printing,
+settings, and error recovery. Score findings by severity, fix all task-blocking
+and major issues, then prioritize minor visual and interaction polish
+separately so the audit produces a focused improvement pass rather than an
+open-ended redesign.

@@ -1,12 +1,12 @@
 <template>
   <v-container class="lg-container">
-    <v-sheet class="guide-library-hero pa-6 pa-sm-9 mb-7" rounded="xl">
+    <v-sheet class="guide-library-hero pa-4 pa-sm-9 mb-7" rounded="xl">
       <div class="d-flex align-start justify-space-between ga-6 mb-7">
         <div>
           <div class="text-overline font-weight-bold mb-1">
             {{ brand.name }}
           </div>
-          <h1 class="text-h3 text-sm-h2 font-weight-bold mb-3">
+          <h1 class="text-h4 text-sm-h2 font-weight-bold mb-3">
             {{ $t("guide.find-guide") }}
           </h1>
           <p class="text-body-1 text-sm-h6 guide-library-intro mb-0">
@@ -18,7 +18,7 @@
         </v-icon>
       </div>
 
-      <div class="d-flex flex-column flex-sm-row ga-3">
+      <v-form class="d-flex flex-column flex-sm-row ga-3" role="search" @submit.prevent="loadGuides">
         <v-text-field
           v-model="search"
           :label="$t('guide.search')"
@@ -27,121 +27,138 @@
           bg-color="surface"
           clearable
           hide-details
-          @keyup.enter="loadGuides"
           @click:clear="loadGuides"
         />
-        <v-btn color="primary" size="large" :loading="loading" @click="loadGuides">
+        <v-btn type="submit" color="primary" size="large" :loading="loading">
           {{ $t("search.search") }}
         </v-btn>
-      </div>
+      </v-form>
     </v-sheet>
 
-    <div class="d-flex flex-column flex-sm-row justify-space-between align-sm-center ga-3 mb-5">
-      <div>
-        <h2 class="text-h5 font-weight-bold">
-          {{ $t("guide.browse-library") }}
-        </h2>
-        <p class="text-body-2 text-medium-emphasis mb-0">
-          {{ $t("guide.page-description") }}
-        </p>
+    <section aria-labelledby="guide-library-heading" :aria-busy="loading">
+      <div class="d-flex flex-column flex-sm-row justify-space-between align-sm-center ga-3 mb-5">
+        <div>
+          <h2 id="guide-library-heading" class="text-h5 font-weight-bold">
+            {{ $t("guide.browse-library") }}
+          </h2>
+          <p class="text-body-2 text-medium-emphasis mb-0">
+            {{ $t("guide.page-description") }}
+          </p>
+        </div>
+        <div class="d-flex flex-wrap ga-2">
+          <v-btn
+            v-if="hasActiveFilters"
+            variant="text"
+            @click="clearFilters"
+          >
+            {{ $t("guide.clear-filters") }}
+          </v-btn>
+          <v-btn
+            color="primary"
+            variant="flat"
+            :prepend-icon="$globals.icons.create"
+            :to="`/g/${groupSlug}/guides/create`"
+          >
+            {{ $t("guide.new-guide") }}
+          </v-btn>
+          <v-btn
+            color="info"
+            variant="outlined"
+            :prepend-icon="$globals.icons.download"
+            :loading="exporting"
+            :disabled="!guides.length"
+            @click="exportGuides"
+          >
+            {{ $t("guide.export-guides") }}
+          </v-btn>
+        </div>
       </div>
-      <div class="d-flex flex-wrap ga-2">
-        <v-btn
-          color="primary"
-          variant="flat"
-          :prepend-icon="$globals.icons.create"
-          :to="`/g/${groupSlug}/guides/create`"
-        >
-          {{ $t("guide.new-guide") }}
-        </v-btn>
-        <v-btn
-          color="info"
-          variant="outlined"
-          :prepend-icon="$globals.icons.download"
-          :loading="exporting"
-          :disabled="!guides.length"
-          @click="exportGuides"
-        >
-          {{ $t("guide.export-guides") }}
-        </v-btn>
+
+      <v-row density="compact" class="mb-4">
+        <v-col cols="12" sm="6" lg="3">
+          <v-select
+            v-model="guideType"
+            :label="$t('guide.type')"
+            :items="guideTypeItems"
+            variant="outlined"
+            clearable
+            hide-details
+            @update:model-value="loadGuides"
+          />
+        </v-col>
+        <v-col cols="12" sm="6" lg="3">
+          <v-select
+            v-model="difficulty"
+            :label="$t('guide.difficulty')"
+            :items="difficultyItems"
+            variant="outlined"
+            clearable
+            hide-details
+            @update:model-value="loadGuides"
+          />
+        </v-col>
+        <v-col cols="12" sm="6" lg="3">
+          <v-select
+            v-model="frequency"
+            :label="$t('guide.frequency')"
+            :items="frequencyItems"
+            variant="outlined"
+            clearable
+            hide-details
+            @update:model-value="loadGuides"
+          />
+        </v-col>
+        <v-col cols="12" sm="6" lg="3">
+          <v-text-field
+            v-model="category"
+            :label="$t('guide.category')"
+            variant="outlined"
+            clearable
+            hide-details
+            @keyup.enter="loadGuides"
+            @click:clear="loadGuides"
+          />
+        </v-col>
+        <v-col cols="12" sm="6" lg="3">
+          <v-text-field
+            v-model="tag"
+            :label="$t('guide.tag')"
+            variant="outlined"
+            clearable
+            hide-details
+            @keyup.enter="loadGuides"
+            @click:clear="loadGuides"
+          />
+        </v-col>
+      </v-row>
+
+      <v-alert v-if="error" type="error" variant="tonal" class="mb-4">
+        {{ error }}
+        <template #append>
+          <v-btn variant="text" @click="loadGuides">
+            {{ $t("general.retry") }}
+          </v-btn>
+        </template>
+      </v-alert>
+      <p v-else-if="!loading" class="text-body-2 text-medium-emphasis mb-4" role="status" aria-live="polite">
+        {{ $t("guide.results-count", guides.length) }}
+      </p>
+      <v-row v-if="guides.length">
+        <v-col v-for="guide in guides" :key="guide.id" cols="12" sm="6" lg="4">
+          <GuideCard :guide="guide" :to="`/g/${groupSlug}/guides/${guide.slug}`" />
+        </v-col>
+      </v-row>
+      <v-empty-state
+        v-else-if="!loading && !error"
+        :title="hasActiveFilters ? $t('guide.no-matching-guides') : $t('guide.no-guides')"
+        :text="hasActiveFilters ? $t('guide.no-matching-guides-description') : $t('guide.no-guides-description')"
+        :icon="$globals.icons.book"
+      />
+      <div v-else-if="loading" class="d-flex justify-center py-12" role="status" aria-live="polite">
+        <v-progress-circular indeterminate color="primary" :aria-label="$t('guide.loading-guides')" />
+        <span class="d-sr-only">{{ $t("guide.loading-guides") }}</span>
       </div>
-    </div>
-
-    <v-row density="compact" class="mb-4">
-      <v-col cols="12" sm="6" lg="3">
-        <v-select
-          v-model="guideType"
-          :label="$t('guide.type')"
-          :items="guideTypeItems"
-          variant="outlined"
-          clearable
-          hide-details
-          @update:model-value="loadGuides"
-        />
-      </v-col>
-      <v-col cols="12" sm="6" lg="3">
-        <v-select
-          v-model="difficulty"
-          :label="$t('guide.difficulty')"
-          :items="difficultyItems"
-          variant="outlined"
-          clearable
-          hide-details
-          @update:model-value="loadGuides"
-        />
-      </v-col>
-      <v-col cols="12" sm="6" lg="3">
-        <v-select
-          v-model="frequency"
-          :label="$t('guide.frequency')"
-          :items="frequencyItems"
-          variant="outlined"
-          clearable
-          hide-details
-          @update:model-value="loadGuides"
-        />
-      </v-col>
-      <v-col cols="12" sm="6" lg="3">
-        <v-text-field
-          v-model="category"
-          :label="$t('guide.category')"
-          variant="outlined"
-          clearable
-          hide-details
-          @keyup.enter="loadGuides"
-          @click:clear="loadGuides"
-        />
-      </v-col>
-      <v-col cols="12" sm="6" lg="3">
-        <v-text-field
-          v-model="tag"
-          :label="$t('guide.tag')"
-          variant="outlined"
-          clearable
-          hide-details
-          @keyup.enter="loadGuides"
-          @click:clear="loadGuides"
-        />
-      </v-col>
-    </v-row>
-
-    <v-alert v-if="error" type="error" variant="tonal" class="mb-4">
-      {{ error }}
-    </v-alert>
-    <v-row v-if="guides.length">
-      <v-col v-for="guide in guides" :key="guide.id" cols="12" sm="6" lg="4">
-        <GuideCard :guide="guide" :to="`/g/${groupSlug}/guides/${guide.slug}`" />
-      </v-col>
-    </v-row>
-    <v-empty-state
-      v-else-if="!loading && !error"
-      :title="$t('guide.no-guides')"
-      :text="$t('guide.no-guides-description')"
-      :icon="$globals.icons.book"
-    />
-    <div v-else class="d-flex justify-center py-12">
-      <v-progress-circular indeterminate color="primary" />
-    </div>
+    </section>
   </v-container>
 </template>
 
@@ -170,6 +187,14 @@ const guides = ref<GuideSummary[]>([]);
 const loading = ref(false);
 const exporting = ref(false);
 const error = ref("");
+const hasActiveFilters = computed(() => Boolean(
+  search.value
+  || guideType.value
+  || difficulty.value
+  || frequency.value
+  || category.value
+  || tag.value,
+));
 const guideTypeItems = computed(() => [
   { title: i18n.t("guide.types.cleaning"), value: "cleaning" },
   { title: i18n.t("guide.types.maintenance"), value: "maintenance" },
@@ -206,9 +231,20 @@ async function loadGuides() {
     guides.value = data.items;
   }
   else {
+    guides.value = [];
     error.value = i18n.t("guide.load-error");
   }
   loading.value = false;
+}
+
+function clearFilters() {
+  search.value = "";
+  guideType.value = null;
+  difficulty.value = null;
+  frequency.value = null;
+  category.value = "";
+  tag.value = "";
+  loadGuides();
 }
 
 async function exportGuides() {

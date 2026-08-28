@@ -1,10 +1,14 @@
 <template>
   <v-app dark>
+    <AppSkipLink />
     <TheSnackbar />
 
     <AppHeader>
       <v-btn
         icon
+        :aria-label="$t('general.menu')"
+        aria-controls="app-navigation"
+        :aria-expanded="sidebar"
         @click.stop="sidebar = !sidebar"
       >
         <v-icon> {{ $globals.icons.menu }}</v-icon>
@@ -83,7 +87,7 @@
         </v-list>
       </v-menu>
     </AppSidebar>
-    <v-main class="pt-12">
+    <v-main id="main-content" tabindex="-1" class="pt-12">
       <v-scroll-x-transition>
         <div>
           <NuxtPage />
@@ -95,6 +99,7 @@
 
 <script setup lang="ts">
 import { useLoggedInState } from "~/composables/use-logged-in-state";
+import AppSkipLink from "~/components/Layout/LayoutParts/AppSkipLink.vue";
 import type { SideBarLink } from "~/types/application-types";
 import { useGroupSelf } from "~/composables/use-groups";
 import { useCookbookPreferences } from "~/composables/use-users/preferences";

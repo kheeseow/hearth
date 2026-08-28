@@ -7,7 +7,7 @@
       :size="size"
     >
       <slot>
-        <v-icon color="white" :size="size * 0.68">
+        <v-icon color="white" :size="size * 0.68" aria-hidden="true">
           {{ $globals.icons.primary }}
         </v-icon>
       </slot>

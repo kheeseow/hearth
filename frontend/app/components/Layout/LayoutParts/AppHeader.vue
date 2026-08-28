@@ -8,26 +8,25 @@
     class="d-print-none"
   >
     <slot />
-    <RouterLink :to="routerLink">
-      <v-btn
-        icon
-        color="white"
-      >
-        <v-icon size="40"> {{ $globals.icons.primary }} </v-icon>
-      </v-btn>
-    </RouterLink>
-
-    <div
-      btn
-      class="pl-2"
+    <v-btn
+      :to="routerLink"
+      icon
+      color="white"
+      :aria-label="$t('general.product-home', { product: brand.name })"
     >
-      <v-toolbar-title
-        style="cursor: pointer"
-        @click="$router.push(routerLink)"
-      >
+      <v-icon size="40" aria-hidden="true">
+        {{ $globals.icons.primary }}
+      </v-icon>
+    </v-btn>
+
+    <RouterLink
+      :to="routerLink"
+      class="app-header-title pl-2"
+    >
+      <v-toolbar-title>
         {{ brand.name }}
       </v-toolbar-title>
-    </div>
+    </RouterLink>
     <GuideDialogSearch ref="domSearchDialog" />
 
     <v-spacer />
@@ -37,7 +36,10 @@
       <v-responsive
         v-if="!xs"
         max-width="250"
+        role="search"
         @click="activateSearch"
+        @keydown.enter.prevent="activateSearch"
+        @keydown.space.prevent="activateSearch"
       >
         <v-text-field
           readonly
@@ -47,6 +49,7 @@
           density="compact"
           flat
           :prepend-inner-icon="$globals.icons.search"
+          :aria-label="$t('guide.search')"
           bg-color="primary-darken-1"
           :placeholder="$t('search.search-hint')"
         />
@@ -54,6 +57,7 @@
       <v-btn
         v-else
         icon
+        :aria-label="$t('guide.search')"
         @click="activateSearch"
       >
         <v-icon> {{ $globals.icons.search }}</v-icon>
@@ -62,6 +66,7 @@
         v-if="loggedIn"
         :variant="smAndUp ? 'text' : undefined"
         :icon="xs"
+        :aria-label="xs ? $t('user.logout') : undefined"
         @click="logout()"
       >
         <v-icon :start="smAndUp">
@@ -137,5 +142,10 @@ async function logout() {
 <style scoped>
 .v-toolbar {
   z-index: 2010 !important;
+}
+
+.app-header-title {
+  color: inherit;
+  text-decoration: none;
 }
 </style>
