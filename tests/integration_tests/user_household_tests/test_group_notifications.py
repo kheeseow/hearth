@@ -21,6 +21,9 @@ def preferences_generator():
         recipe_created=random_bool(),
         recipe_updated=random_bool(),
         recipe_deleted=random_bool(),
+        guide_created=random_bool(),
+        guide_updated=random_bool(),
+        guide_deleted=random_bool(),
         user_signup=random_bool(),
         data_migrations=random_bool(),
         data_export=random_bool(),
@@ -71,6 +74,9 @@ def test_create_notification(api_client: TestClient, unique_user: TestUser):
 
     assert payload_as_dict["name"] == payload["name"]
     assert payload_as_dict["enabled"] is True
+    assert payload_as_dict["options"]["guideCreated"] is False
+    assert payload_as_dict["options"]["guideUpdated"] is False
+    assert payload_as_dict["options"]["guideDeleted"] is False
 
     # Ensure Apprise URL Stays Private
     assert "apprise_url" not in payload_as_dict

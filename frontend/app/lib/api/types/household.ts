@@ -54,6 +54,9 @@ export interface GroupEventNotifierOptions {
   recipeCreated?: boolean;
   recipeUpdated?: boolean;
   recipeDeleted?: boolean;
+  guideCreated?: boolean;
+  guideUpdated?: boolean;
+  guideDeleted?: boolean;
   userSignup?: boolean;
   dataMigrations?: boolean;
   dataExport?: boolean;
@@ -83,6 +86,9 @@ export interface GroupEventNotifierOptionsOut {
   recipeCreated?: boolean;
   recipeUpdated?: boolean;
   recipeDeleted?: boolean;
+  guideCreated?: boolean;
+  guideUpdated?: boolean;
+  guideDeleted?: boolean;
   userSignup?: boolean;
   dataMigrations?: boolean;
   dataExport?: boolean;
@@ -113,6 +119,9 @@ export interface GroupEventNotifierOptionsSave {
   recipeCreated?: boolean;
   recipeUpdated?: boolean;
   recipeDeleted?: boolean;
+  guideCreated?: boolean;
+  guideUpdated?: boolean;
+  guideDeleted?: boolean;
   userSignup?: boolean;
   dataMigrations?: boolean;
   dataExport?: boolean;

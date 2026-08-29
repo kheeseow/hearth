@@ -1,7 +1,7 @@
 # Hearth Fork Delta
 
 This file records the expected Hearth-owned paths and the small set of shared
-Mealie files touched by Product Slices 1 through 12. Use it when reviewing
+Mealie files touched through Product Slice 13. Use it when reviewing
 upstream merges.
 
 ## Hearth-owned paths
@@ -32,6 +32,8 @@ frontend/app/plugins/i18n-head.client.ts
 frontend/app/components/Layout/LayoutParts/AppSkipLink.vue
 frontend/app/composables/use-app-brand.ts
 frontend/public/icons/hearth-mark.svg
+tests/unit_tests/test_guide_recipe_import_boundary.py
+docs/operator-compatibility.md
 ```
 
 ## Shared Mealie integration points
@@ -52,6 +54,10 @@ mealie/routes/app/app_about.py                    capability response only
 mealie/routes/admin/admin_about.py                capability response only
 mealie/routes/spa/manifest.py                     branded, capability-aware install metadata
 mealie/services/backups_v2/alchemy_exporter.py    Guide review-date restoration only
+mealie/services/event_bus_service/event_types.py  additive Guide lifecycle event contract only
+mealie/schema/household/group_events.py           additive Guide notifier preferences only
+mealie/db/models/household/events.py              additive Guide notifier preference columns only
+mealie/services/urls/url_constructors.py           canonical Guide notification URL only
 frontend/app/lib/api/client-user.ts               API client registration only
 frontend/app/components/Layout/DefaultLayout.vue  route-preserving Hearth shell, capability-filtered navigation, phone navigation
 frontend/app/layouts/basic.vue                    accessible main-content target only
@@ -66,9 +72,11 @@ frontend/app/pages/admin/backups.vue               capability-filtered Recipe mi
 frontend/app/pages/group/index.vue                 capability-filtered Recipe AI settings
 frontend/app/components/Domain/Group/GroupPreferencesEditor.vue  capability-filtered announcements
 frontend/app/components/Domain/Household/HouseholdPreferencesEditor.vue  capability-filtered legacy preferences
-frontend/app/pages/user/profile/index.vue          capability-filtered Recipe cards
+frontend/app/pages/user/profile/index.vue          capability-filtered Recipe cards and Guide notifier entry
 frontend/app/pages/user/profile/edit.vue           Guide-first landing preference
 frontend/app/composables/use-groups.ts             capability guard for Recipe AI preferences
+frontend/app/lib/app-capability-routes.ts           Guide notifier route retained for fresh profiles
+frontend/app/pages/household/notifiers.vue          Guide event controls; legacy controls capability-filtered
 frontend/app/components/Layout/LayoutParts/AppHeader.vue  Guide search, household context, theme/create actions, and Hearth identity
 frontend/app/components/Layout/LayoutParts/AppFooter.vue  Hearth product identity only
 frontend/app/components/global/AppLogo.vue         Hearth product mark only
@@ -84,6 +92,7 @@ mealie/lang/messages/en-US.json                    Hearth email wording only
 mealie/services/email/email_service.py             centralized email brand rendering only
 mealie/services/email/templates/default.html       Hearth email header and attribution only
 frontend/app/lib/api/types/admin.ts               generated capability output
+frontend/app/lib/api/types/household.ts           generated Guide notifier fields
 frontend/app/lib/api/types/response.ts            generated output
 tests/utils/api_routes/__init__.py                 generated output
 ```
@@ -97,6 +106,7 @@ mealie/alembic/versions/2026-08-26-15.57.59_de0599e50a71_add_guide_frequency_req
 mealie/alembic/versions/2026-08-27-14.10.45_f5ba4484ce44_add_guide_media.py
 mealie/alembic/versions/2026-08-27-15.49.15_11a81b5bc6c5_add_guide_knowledge_metadata.py
 mealie/alembic/versions/2026-08-27-22.54.52_ed9f015280d3_add_app_capabilities.py
+mealie/alembic/versions/2026-08-29-10.00.00_a4c9d2e7f1b3_add_guide_notifier_events.py
 ```
 
 The first migration creates `guides` and `guide_steps`. The second adds Guide
@@ -114,11 +124,19 @@ profile. It initializes fresh databases with Guides only and databases with
 existing users with every legacy capability preserved. It does not gate or
 alter legacy backend data.
 
+The seventh migration adds three false-by-default Guide lifecycle preferences
+to the existing notifier-options table. It alters no Recipe table and is
+reversible on both SQLite and PostgreSQL.
+
 ## Boundary rule
 
 Guide-owned backend modules may import platform infrastructure, but must not
 import Recipe models, schemas, repositories, routes, or services. The same
-principle applies to Guide frontend domain components.
+principle applies to Guide frontend production modules. The repeatable backend
+and frontend check is
+`tests/unit_tests/test_guide_recipe_import_boundary.py`; operator upgrade,
+compatibility, data-preservation, and rollback guidance is published in
+`docs/operator-compatibility.md`.
 
 ## Slice 12 shared-shell rationale
 
@@ -141,10 +159,17 @@ conflicts during upstream merges, not as a forked frontend architecture.
 
 ## Latest upstream checkpoint
 
-On 2026-08-28, the current Hearth branch was checked against
-`upstream/mealie-next` at
-`2b81b6b0a3e591a017e009cad9a92b3ad7a3b837` using Git's synthetic merge-tree
-operation. It produced a merged tree without unresolved conflicts. At that
-checkpoint Hearth was 29 commits ahead and 29 commits behind upstream. The
-Slice 12 shared-shell seams listed above therefore remain review costs, but do
-not currently prevent taking a Mealie update.
+On 2026-08-29, `git fetch upstream --prune` refreshed the Mealie remote.
+Upstream's advertised `HEAD` and the intended Hearth integration target were
+both `refs/heads/mealie-next`, at
+`e7fbf5dfa5ff8b28169729c731424af85aa5503c`. A temporary Git commit made from
+the complete Slice 13 verification snapshot (without moving the branch or
+working tree) was `83b6bad10b9c320777354708b6e699591d597143`, with tree
+`1526e1bdd2e18e937eb4dfe1de7cb0f950f04649` and merge base
+`2c04da733f88836f788234a4bf1127599fbc1294`.
+
+The snapshot was 35 commits ahead and 30 commits behind upstream. The read-only
+merge-tree operation produced synthetic tree
+`c59f8b828e41ac3e8f6bff7e6951083c96f1ad85` without unresolved conflicts. The
+Slice 12 shared-shell seams and Slice 13 notifier touchpoints listed above
+remain review costs, but do not currently prevent taking this Mealie update.

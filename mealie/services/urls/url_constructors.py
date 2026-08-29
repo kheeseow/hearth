@@ -16,6 +16,11 @@ def recipe_url(group_slug: str, recipe_slug: str, base_url: str | None) -> str:
     return f"{base}/g/{group_slug}/r/{recipe_slug}"
 
 
+def guide_url(group_slug: str, guide_slug: str, base_url: str | None) -> str:
+    base = _base_or(base_url)
+    return f"{base}/g/{group_slug}/guides/{guide_slug}"
+
+
 def shopping_list_url(shopping_list_id: UUID4 | str, base_url: str | None) -> str:
     base = _base_or(base_url)
     return f"{base}/shopping-list/{shopping_list_id}"

@@ -22,6 +22,10 @@ class GroupEventNotifierOptionsModel(SqlAlchemyBase, BaseMixins):
     recipe_updated: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     recipe_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
+    guide_created: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    guide_updated: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    guide_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
     user_signup: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     data_migrations: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

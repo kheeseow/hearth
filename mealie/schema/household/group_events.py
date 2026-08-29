@@ -23,6 +23,10 @@ class GroupEventNotifierOptions(MealieModel):
     recipe_updated: bool = False
     recipe_deleted: bool = False
 
+    guide_created: bool = False
+    guide_updated: bool = False
+    guide_deleted: bool = False
+
     user_signup: bool = False
 
     data_migrations: bool = False

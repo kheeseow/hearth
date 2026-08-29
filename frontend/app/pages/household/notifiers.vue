@@ -204,6 +204,7 @@ definePageMeta({
 
 const api = useUserApi();
 const i18n = useI18n();
+const capabilities = useAppCapabilities();
 
 useSeoMeta({
   title: i18n.t("profile.notifiers"),
@@ -259,9 +260,28 @@ async function testNotifier(notifier: GroupEventNotifierOut) {
 // ===============================================================
 // Options Definitions
 
-const optionsSections: OptionSection[] = [
+const guideOptionsSection: OptionSection = {
+  id: 1,
+  text: i18n.t("events.guide-events"),
+  options: [
+    {
+      text: i18n.t("general.create") as string,
+      key: "guideCreated",
+    },
+    {
+      text: i18n.t("general.update") as string,
+      key: "guideUpdated",
+    },
+    {
+      text: i18n.t("general.delete") as string,
+      key: "guideDeleted",
+    },
+  ],
+};
+
+const legacyOptionsSections: OptionSection[] = [
   {
-    id: 1,
+    id: 2,
     text: i18n.t("events.recipe-events"),
     options: [
       {
@@ -279,7 +299,7 @@ const optionsSections: OptionSection[] = [
     ],
   },
   {
-    id: 2,
+    id: 3,
     text: i18n.t("events.user-events"),
     options: [
       {
@@ -289,7 +309,7 @@ const optionsSections: OptionSection[] = [
     ],
   },
   {
-    id: 3,
+    id: 4,
     text: i18n.t("events.mealplan-events"),
     options: [
       {
@@ -307,7 +327,7 @@ const optionsSections: OptionSection[] = [
     ],
   },
   {
-    id: 4,
+    id: 5,
     text: i18n.t("events.shopping-list-events"),
     options: [
       {
@@ -325,7 +345,7 @@ const optionsSections: OptionSection[] = [
     ],
   },
   {
-    id: 5,
+    id: 6,
     text: i18n.t("events.cookbook-events"),
     options: [
       {
@@ -343,7 +363,7 @@ const optionsSections: OptionSection[] = [
     ],
   },
   {
-    id: 6,
+    id: 7,
     text: i18n.t("events.tag-events"),
     options: [
       {
@@ -361,7 +381,7 @@ const optionsSections: OptionSection[] = [
     ],
   },
   {
-    id: 7,
+    id: 8,
     text: i18n.t("events.category-events"),
     options: [
       {
@@ -379,7 +399,7 @@ const optionsSections: OptionSection[] = [
     ],
   },
   {
-    id: 8,
+    id: 9,
     text: i18n.t("events.label-events"),
     options: [
       {
@@ -397,6 +417,12 @@ const optionsSections: OptionSection[] = [
     ],
   },
 ];
+
+const optionsSections = computed(() =>
+  capabilities.value.legacyRecipes
+    ? [guideOptionsSection, ...legacyOptionsSections]
+    : [guideOptionsSection],
+);
 </script>
 
 <style>

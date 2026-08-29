@@ -53,7 +53,7 @@ def test_alembic_revisions_are_in_order() -> None:
 
 @pytest.mark.parametrize("existing_users", [0, 1], ids=["fresh Hearth", "upgraded Mealie"])
 def test_app_capability_migration_preserves_installation_profile(existing_users: int) -> None:
-    migration_path = sorted(ALEMBIC_MIGRATIONS.glob("*.py"))[-1]
+    migration_path = next(ALEMBIC_MIGRATIONS.glob("*add_app_capabilities.py"))
     migration = import_file("app_capability_migration", migration_path)
     engine = sa.create_engine("sqlite://")
 
@@ -74,3 +74,32 @@ def test_app_capability_migration_preserves_installation_profile(existing_users:
     assert bool(capabilities["meal_planning"]) is legacy_features
     assert bool(capabilities["shopping_lists"]) is legacy_features
     assert bool(capabilities["nutrition"]) is legacy_features
+
+
+def test_guide_notifier_event_migration_is_reversible() -> None:
+    migration_path = next(ALEMBIC_MIGRATIONS.glob("*add_guide_notifier_events.py"))
+    migration = import_file("guide_notifier_event_migration", migration_path)
+    engine = sa.create_engine("sqlite://")
+
+    with engine.begin() as connection:
+        connection.execute(sa.text("CREATE TABLE group_events_notifier_options (id INTEGER PRIMARY KEY)"))
+        connection.execute(sa.text("INSERT INTO group_events_notifier_options (id) VALUES (1)"))
+
+        context = MigrationContext.configure(connection)
+        with Operations.context(context):
+            migration.upgrade()
+
+        columns = {column["name"] for column in sa.inspect(connection).get_columns("group_events_notifier_options")}
+        assert {"guide_created", "guide_updated", "guide_deleted"} <= columns
+        options = (
+            connection.execute(sa.text("SELECT * FROM group_events_notifier_options WHERE id = 1")).mappings().one()
+        )
+        assert not options["guide_created"]
+        assert not options["guide_updated"]
+        assert not options["guide_deleted"]
+
+        with Operations.context(context):
+            migration.downgrade()
+
+        columns = {column["name"] for column in sa.inspect(connection).get_columns("group_events_notifier_options")}
+        assert columns == {"id"}

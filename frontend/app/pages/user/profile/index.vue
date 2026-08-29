@@ -194,7 +194,7 @@
             </UserProfileLinkCard>
           </v-col>
         </AdvancedOnly>
-        <AdvancedOnly v-if="capabilities.legacyRecipes">
+        <AdvancedOnly>
           <v-col
             cols="12"
             sm="12"

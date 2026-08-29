@@ -8,7 +8,7 @@ from starlette.responses import FileResponse
 
 from mealie.core.dependencies.dependencies import get_temporary_zip_path
 from mealie.core.security import create_file_token
-from mealie.routes._base import BaseUserController, controller
+from mealie.routes._base import BaseCrudController, controller
 from mealie.routes._base.routers import MealieCrudRoute, UserAPIRouter
 from mealie.schema.group.group_exports import GroupDataExport
 from mealie.schema.guide import (
@@ -25,6 +25,8 @@ from mealie.schema.guide import (
     GuideUpdate,
 )
 from mealie.schema.response import PaginationQuery
+from mealie.services import urls
+from mealie.services.event_bus_service.event_types import EventGuideData, EventOperation, EventTypes
 from mealie.services.guide import GuideExportService, GuideService
 
 router = UserAPIRouter(prefix="/guides", tags=["Guides"], route_class=MealieCrudRoute)
@@ -37,7 +39,7 @@ class GuideImageSize(StrEnum):
 
 
 @controller(router)
-class GuideController(BaseUserController):
+class GuideController(BaseCrudController):
     @cached_property
     def service(self) -> GuideService:
         return GuideService(self.session, self.user)
@@ -74,7 +76,19 @@ class GuideController(BaseUserController):
 
     @router.post("", response_model=GuideRead, status_code=status.HTTP_201_CREATED)
     def create(self, data: GuideCreate) -> GuideRead:
-        return self.service.create(data)
+        guide = self.service.create(data)
+        self.publish_event(
+            event_type=EventTypes.guide_created,
+            document_data=EventGuideData(operation=EventOperation.create, guide_slug=guide.slug),
+            group_id=guide.group_id,
+            household_id=guide.household_id,
+            message=self.t(
+                "notifications.generic-created-with-url",
+                name=guide.title,
+                url=urls.guide_url(self.group.slug, guide.slug, self.settings.BASE_URL),
+            ),
+        )
+        return guide
 
     @router.post("/export", response_model=GroupDataExport, status_code=status.HTTP_201_CREATED)
     def export_guides(self, data: GuideExportRequest) -> GroupDataExport:
@@ -94,26 +108,42 @@ class GuideController(BaseUserController):
 
     @router.put("/{slug_or_id}", response_model=GuideRead)
     def update(self, slug_or_id: str, data: GuideUpdate) -> GuideRead:
-        return self.service.update(slug_or_id, data)
+        guide = self.service.update(slug_or_id, data)
+        self._publish_guide_updated(guide)
+        return guide
 
     @router.patch("/{slug_or_id}", response_model=GuideRead)
     def patch(self, slug_or_id: str, data: GuidePatch) -> GuideRead:
-        return self.service.patch(slug_or_id, data)
+        guide = self.service.patch(slug_or_id, data)
+        self._publish_guide_updated(guide)
+        return guide
 
     @router.delete("/{slug_or_id}", response_model=GuideRead)
     def delete(self, slug_or_id: str) -> GuideRead:
-        return self.service.delete(slug_or_id)
+        guide = self.service.delete(slug_or_id)
+        self.publish_event(
+            event_type=EventTypes.guide_deleted,
+            document_data=EventGuideData(operation=EventOperation.delete, guide_slug=guide.slug),
+            group_id=guide.group_id,
+            household_id=guide.household_id,
+            message=self.t("notifications.generic-deleted", name=guide.title),
+        )
+        return guide
 
     @router.put("/{slug_or_id}/image", response_model=GuideRead)
     def update_cover_image(self, slug_or_id: str, image: bytes = File(...), extension: str = Form(...)) -> GuideRead:
         try:
-            return self.service.update_cover_image(slug_or_id, image, extension)
+            guide = self.service.update_cover_image(slug_or_id, image, extension)
         except ValueError as exc:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
+        self._publish_guide_updated(guide)
+        return guide
 
     @router.delete("/{slug_or_id}/image", response_model=GuideRead)
     def delete_cover_image(self, slug_or_id: str) -> GuideRead:
-        return self.service.delete_cover_image(slug_or_id)
+        guide = self.service.delete_cover_image(slug_or_id)
+        self._publish_guide_updated(guide)
+        return guide
 
     @router.get("/{slug_or_id}/image/{size}", response_class=FileResponse)
     def get_cover_image(self, slug_or_id: str, size: GuideImageSize = GuideImageSize.original) -> FileResponse:
@@ -131,11 +161,13 @@ class GuideController(BaseUserController):
     ) -> GuideRead:
         metadata = GuideStepImageUpdate(caption=caption, alt_text=alt_text)
         try:
-            return self.service.add_step_image(
+            guide = self.service.add_step_image(
                 slug_or_id, step_id, image, extension, metadata.caption, metadata.alt_text
             )
         except ValueError as exc:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
+        self._publish_guide_updated(guide)
+        return guide
 
     @router.patch("/{slug_or_id}/steps/{step_id}/images/{image_id}", response_model=GuideRead)
     def update_step_image(
@@ -145,7 +177,9 @@ class GuideController(BaseUserController):
         image_id: UUID4,
         data: GuideStepImageUpdate,
     ) -> GuideRead:
-        return self.service.update_step_image(slug_or_id, step_id, image_id, data)
+        guide = self.service.update_step_image(slug_or_id, step_id, image_id, data)
+        self._publish_guide_updated(guide)
+        return guide
 
     @router.put("/{slug_or_id}/steps/{step_id}/images/{image_id}/file", response_model=GuideRead)
     def replace_step_image(
@@ -157,17 +191,36 @@ class GuideController(BaseUserController):
         extension: str = Form(...),
     ) -> GuideRead:
         try:
-            return self.service.replace_step_image(slug_or_id, step_id, image_id, image, extension)
+            guide = self.service.replace_step_image(slug_or_id, step_id, image_id, image, extension)
         except ValueError as exc:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
+        self._publish_guide_updated(guide)
+        return guide
 
     @router.put("/{slug_or_id}/steps/{step_id}/images/order", response_model=GuideRead)
     def reorder_step_images(self, slug_or_id: str, step_id: UUID4, data: GuideStepImageOrder) -> GuideRead:
-        return self.service.reorder_step_images(slug_or_id, step_id, data)
+        guide = self.service.reorder_step_images(slug_or_id, step_id, data)
+        self._publish_guide_updated(guide)
+        return guide
 
     @router.delete("/{slug_or_id}/steps/{step_id}/images/{image_id}", response_model=GuideRead)
     def delete_step_image(self, slug_or_id: str, step_id: UUID4, image_id: UUID4) -> GuideRead:
-        return self.service.delete_step_image(slug_or_id, step_id, image_id)
+        guide = self.service.delete_step_image(slug_or_id, step_id, image_id)
+        self._publish_guide_updated(guide)
+        return guide
+
+    def _publish_guide_updated(self, guide: GuideRead) -> None:
+        self.publish_event(
+            event_type=EventTypes.guide_updated,
+            document_data=EventGuideData(operation=EventOperation.update, guide_slug=guide.slug),
+            group_id=guide.group_id,
+            household_id=guide.household_id,
+            message=self.t(
+                "notifications.generic-updated-with-url",
+                name=guide.title,
+                url=urls.guide_url(self.group.slug, guide.slug, self.settings.BASE_URL),
+            ),
+        )
 
     @router.get(
         "/{slug_or_id}/steps/{step_id}/images/{image_id}/{size}",

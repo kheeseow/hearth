@@ -21,7 +21,6 @@ describe("app capability routes", () => {
     ["/user/123/favorites", "/user/profile"],
     ["/group/data/foods", "/user/profile"],
     ["/group/migrations", "/user/profile"],
-    ["/household/notifiers", "/user/profile"],
     ["/household/webhooks", "/user/profile"],
     ["/household", "/user/profile"],
     ["/admin/debug/parser", "/user/profile"],
@@ -31,6 +30,10 @@ describe("app capability routes", () => {
 
   it("allows guide routes on a fresh Hearth installation", () => {
     expect(getCapabilityRedirect("/g/home/guides/router-reset", freshHearth)).toBeUndefined();
+  });
+
+  it("allows Guide notifier settings on a fresh Hearth installation", () => {
+    expect(getCapabilityRedirect("/household/notifiers", freshHearth)).toBeUndefined();
   });
 
   it("keeps legacy routes available for upgraded Mealie installations", () => {

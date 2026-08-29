@@ -31,7 +31,7 @@ export function getCapabilityRedirect(path: string, capabilities: AppCapabilitie
     return "/user/profile";
   }
 
-  if (!capabilities.legacyRecipes && (path.startsWith("/household/notifiers") || path.startsWith("/admin/debug"))) {
+  if (!capabilities.legacyRecipes && path.startsWith("/admin/debug")) {
     return "/user/profile";
   }
 

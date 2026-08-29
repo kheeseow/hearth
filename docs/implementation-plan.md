@@ -19,7 +19,7 @@ rewrite Mealie's platform or erase its repository history.
 ## Current status
 
 - Phase 1 architecture research is complete.
-- Product Slices 1 through 11 are implemented and validated locally.
+- Product Slices 1 through 13 are implemented and validated locally.
 - The Hearth fork is checked out from Mealie `v3.24.0` at commit
   `2c04da733f88836f788234a4bf1127599fbc1294`.
 - `origin` points to `kheeseow/hearth`; `upstream` points to
@@ -55,8 +55,8 @@ rewrite Mealie's platform or erase its repository history.
   direction, reduced-motion support, and verified 320-pixel reflow.
 - Phase 4 is complete. Its Guide domain, export, and backup checkpoint remains
   additive and does not alter Recipe persistence.
-- Phase 2 remains open for Guide events. Phase 3 is complete. Phase 5 product
-  polish and capability isolation is underway.
+- Phase 2 and Phase 3 are complete. Phase 5 product polish, capability
+  isolation, operator guidance, and upstream checkpoint are complete.
 - QR codes are deferred to the final optional phase and do not block the first
   complete Hearth release.
 
@@ -640,6 +640,50 @@ Rollout gate:
 - Engineering is complete and suitable for controlled trials
 - Broad rollout remains blocked only by the five independent household-user
   sessions and thresholds in [`ui-ux-assumptions.md`](ui-ux-assumptions.md)
+
+## Product Slice 13 — Foundation closure (complete)
+
+Included:
+
+- Added typed `guide_created`, `guide_updated`, and `guide_deleted` lifecycle
+  events to Mealie's existing event bus
+- Added false-by-default Guide event preferences to the existing notifier
+  model, API schema, generated frontend contract, and reversible migration
+- Published one Guide event after each successful create, update, patch,
+  delete, cover-image mutation, or step-image mutation; failed mutations do
+  not publish events
+- Added canonical group-scoped Guide links to create and update notifications
+- Added Guide notification controls to the existing notifier screen
+- Made Guide notifiers available in fresh Hearth while hiding legacy event
+  controls there; upgraded installations retain every Mealie notifier option
+- Published backup-first upgrade, compatibility, validation, and rollback
+  guidance in [`operator-compatibility.md`](operator-compatibility.md)
+- Added an automatic backend and frontend check that prevents Guide production
+  modules from importing Recipe-domain code
+- Completed the Phase 5 upstream checkpoint without merging or changing the
+  selected Mealie baseline
+
+The Slice 13 migration adds three boolean columns to
+`group_events_notifier_options`. It changes no Recipe table, defaults every
+existing and new Guide subscription to off, and downgrades cleanly on SQLite
+and PostgreSQL.
+
+Validation completed on 2026-08-29:
+
+- Code generation completed and the generated household notifier types contain
+  all three Guide fields
+- 27 focused event, notifier, migration, Guide CRUD, and import-boundary tests
+  passed
+- Full backend suite passed 2,672 tests with 16 existing upstream skips
+- Python formatting, lint, and type checks passed
+- Frontend ESLint passed; the capability-route test passed all 14 cases
+- Full frontend suite passed all 35 files and 311 tests
+- Nuxt production build and PWA generation passed
+- Fresh SQLite and PostgreSQL 16 upgrade, downgrade, and re-upgrade paths passed
+- The Guide-to-Recipe production import boundary passed for backend and
+  frontend code
+- The exact final-tree upstream checkpoint is recorded in
+  [`fork-delta.md`](fork-delta.md)
 
 ## Product outcome
 
@@ -1465,12 +1509,14 @@ Record material decisions here as they are made.
 | 2026-08-28 | Keep Slice 12 foundations Guide-scoped and system-font based | Improve the core Guide experience without replacing Mealie's frontend foundations or adding a font and theme migration |
 | 2026-08-28 | Make Guide library state URL-addressable | Preserve search and filters across refresh and sharing without changing the Guide API or router shape |
 | 2026-08-29 | Move QR codes to the final optional phase | The core household Guide product and first release do not depend on QR access; compatibility and release readiness provide more immediate value |
+| 2026-08-29 | Reuse Mealie's notifier system for Guide events | Additive event types and preferences keep integrations working without a parallel notification architecture |
 
 ## Immediate next action
 
-Do not begin another implementation slice until it is approved. The next
-planned slice should close the remaining foundation and release-readiness work:
-Guide event registration, operator compatibility and rollback guidance, and
-the Phase 5 upstream merge checkpoint. Phase 6 then performs the complete
-upgrade and release-hardening matrix. QR codes remain the final optional Phase
-8 enhancement and do not block the core release.
+Do not begin another implementation slice until it is approved. The next slice
+should define and implement Hearth's authenticated Hermes interface before
+release: use the existing Guide REST API and a small Hermes-native integration
+unless discovery proves MCP adds a concrete benefit. Confirm read-only versus
+write access before implementation. Phase 6 then performs the complete upgrade
+and release-hardening matrix. QR codes remain the final optional Phase 8
+enhancement and do not block the core release.

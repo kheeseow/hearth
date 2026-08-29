@@ -29,6 +29,10 @@ class EventTypes(Enum):
     recipe_updated = auto()
     recipe_deleted = auto()
 
+    guide_created = auto()
+    guide_updated = auto()
+    guide_deleted = auto()
+
     user_signup = auto()
 
     data_migrations = auto()
@@ -71,6 +75,7 @@ class EventDocumentType(Enum):
     shopping_list = "shopping_list"
     shopping_list_item = "shopping_list_item"
     recipe = "recipe"
+    guide = "guide"
     recipe_bulk_report = "recipe_bulk_report"
     recipe_timeline_event = "recipe_timeline_event"
     tag = "tag"
@@ -147,6 +152,11 @@ class EventShoppingListItemBulkData(EventDocumentDataBase):
 class EventRecipeData(EventDocumentDataBase):
     document_type: EventDocumentType = EventDocumentType.recipe
     recipe_slug: str
+
+
+class EventGuideData(EventDocumentDataBase):
+    document_type: EventDocumentType = EventDocumentType.guide
+    guide_slug: str
 
 
 class EventRecipeBulkData(EventDocumentDataBase):

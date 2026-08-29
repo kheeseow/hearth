@@ -2,11 +2,14 @@ import json
 from pathlib import Path
 from zipfile import ZipFile
 
+import pytest
 from fastapi.testclient import TestClient
 
 from mealie.core.dependencies.dependencies import validate_file_token
 from mealie.db.db_setup import session_context
 from mealie.repos.all_repositories import get_repositories
+from mealie.services.event_bus_service.event_bus_service import EventBusService
+from mealie.services.event_bus_service.event_types import EventGuideData, EventOperation, EventTypes
 from mealie.services.guide import GuideDataService
 from tests import data
 from tests.utils.factories import random_string
@@ -15,12 +18,137 @@ from tests.utils.fixture_schemas import TestUser
 GUIDES = "/api/guides"
 
 
+@pytest.fixture
+def dispatched_events(monkeypatch: pytest.MonkeyPatch) -> list[dict]:
+    events: list[dict] = []
+
+    def capture_event(_event_bus: EventBusService, **kwargs) -> None:
+        events.append(kwargs)
+
+    monkeypatch.setattr(EventBusService, "dispatch", capture_event)
+    return events
+
+
 def guide_payload(title: str | None = None) -> dict:
     return {
         "title": title or f"Guide {random_string(8)}",
         "description": "A practical description for finding this guide",
         "steps": [{"text": "First step"}, {"text": "Second step"}],
     }
+
+
+def test_guide_create_dispatches_lifecycle_event(
+    api_client: TestClient, unique_user: TestUser, dispatched_events: list[dict]
+) -> None:
+    response = api_client.post(GUIDES, json=guide_payload("Test the smoke alarm"), headers=unique_user.token)
+
+    assert response.status_code == 201
+    assert len(dispatched_events) == 1
+    event = dispatched_events[0]
+    assert event["event_type"] is EventTypes.guide_created
+    assert event["group_id"] == unique_user._group_id
+    assert event["household_id"] == unique_user._household_id
+    assert event["document_data"] == EventGuideData(
+        operation=EventOperation.create,
+        guide_slug="test-the-smoke-alarm",
+    )
+    assert "/g/" in event["message"]
+    assert "/guides/test-the-smoke-alarm" in event["message"]
+
+
+def test_guide_update_dispatches_lifecycle_event(
+    api_client: TestClient, unique_user: TestUser, dispatched_events: list[dict]
+) -> None:
+    guide = api_client.post(GUIDES, json=guide_payload("Test the fuse box"), headers=unique_user.token).json()
+    dispatched_events.clear()
+
+    response = api_client.put(
+        f"{GUIDES}/{guide['slug']}",
+        json=guide_payload("Label the fuse box"),
+        headers=unique_user.token,
+    )
+
+    assert response.status_code == 200
+    assert len(dispatched_events) == 1
+    event = dispatched_events[0]
+    assert event["event_type"] is EventTypes.guide_updated
+    assert event["document_data"] == EventGuideData(
+        operation=EventOperation.update,
+        guide_slug=guide["slug"],
+    )
+
+
+def test_guide_patch_dispatches_lifecycle_event(
+    api_client: TestClient, unique_user: TestUser, dispatched_events: list[dict]
+) -> None:
+    guide = api_client.post(GUIDES, json=guide_payload("Inspect the roof"), headers=unique_user.token).json()
+    dispatched_events.clear()
+
+    response = api_client.patch(
+        f"{GUIDES}/{guide['slug']}",
+        json={"description": "Inspect it safely"},
+        headers=unique_user.token,
+    )
+
+    assert response.status_code == 200
+    assert len(dispatched_events) == 1
+    assert dispatched_events[0]["event_type"] is EventTypes.guide_updated
+
+
+def test_guide_delete_dispatches_lifecycle_event(
+    api_client: TestClient, unique_user: TestUser, dispatched_events: list[dict]
+) -> None:
+    guide = api_client.post(GUIDES, json=guide_payload("Retire an old appliance"), headers=unique_user.token).json()
+    dispatched_events.clear()
+
+    response = api_client.delete(f"{GUIDES}/{guide['slug']}", headers=unique_user.token)
+
+    assert response.status_code == 200
+    assert len(dispatched_events) == 1
+    event = dispatched_events[0]
+    assert event["event_type"] is EventTypes.guide_deleted
+    assert event["document_data"] == EventGuideData(
+        operation=EventOperation.delete,
+        guide_slug=guide["slug"],
+    )
+
+
+def test_guide_media_mutations_dispatch_one_update_after_success(
+    api_client: TestClient, unique_user: TestUser, dispatched_events: list[dict]
+) -> None:
+    guide = api_client.post(GUIDES, json=guide_payload("Document a repair"), headers=unique_user.token).json()
+    step_id = guide["steps"][0]["id"]
+    dispatched_events.clear()
+
+    invalid = api_client.put(
+        f"{GUIDES}/{guide['slug']}/image",
+        data={"extension": "txt"},
+        files={"image": ("bad.txt", b"not an image", "text/plain")},
+        headers=unique_user.token,
+    )
+    assert invalid.status_code == 400
+    assert dispatched_events == []
+
+    cover = api_client.put(
+        f"{GUIDES}/{guide['slug']}/image",
+        data={"extension": "jpg"},
+        files={"image": ("cover.jpg", data.images_test_image_1.read_bytes(), "image/jpeg")},
+        headers=unique_user.token,
+    )
+    assert cover.status_code == 200
+    assert len(dispatched_events) == 1
+    assert dispatched_events[0]["event_type"] is EventTypes.guide_updated
+
+    dispatched_events.clear()
+    step_image = api_client.post(
+        f"{GUIDES}/{guide['slug']}/steps/{step_id}/images",
+        data={"extension": "png"},
+        files={"image": ("step.png", data.images_test_image_2.read_bytes(), "image/png")},
+        headers=unique_user.token,
+    )
+    assert step_image.status_code == 200
+    assert len(dispatched_events) == 1
+    assert dispatched_events[0]["event_type"] is EventTypes.guide_updated
 
 
 def test_guide_crud_preserves_step_order_and_slug(api_client: TestClient, unique_user: TestUser) -> None:
