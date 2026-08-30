@@ -128,6 +128,7 @@ def test_hermes_guide_openapi_contract(api_client: TestClient) -> None:
     assert pagination_items == {"$ref": "#/components/schemas/GuideSummary"}
     assert set(schemas["GuideSummary"]["properties"]) == GUIDE_SUMMARY_FIELDS
     assert set(schemas["GuideRead"]["properties"]) == GUIDE_READ_FIELDS
+    assert schemas["GuideRead"]["properties"]["steps"]["items"] == {"$ref": "#/components/schemas/GuideStepOut"}
     assert {"id", "slug"}.issubset(schemas["GuideRead"]["required"])
     assert {"id", "position"}.issubset(schemas["GuideStepOut"]["required"])
 
