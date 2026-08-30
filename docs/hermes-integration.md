@@ -75,8 +75,13 @@ After the gateway is running with reachable Hearth credentials:
    image if media is in scope.
 4. Ask Hermes to delete the test Guide and verify that it requests
    confirmation before the second call.
-5. Confirm the token's user and `integrationId` are visible as expected in
-   Hearth's resulting activity or notifications.
+5. In Hearth, confirm the test Guide has the expected patched fields and any
+   attached image, then delete it if it is no longer useful.
+
+`integrationId` is neither a permission scope nor a standard notification or
+actor field. Hearth adds it only as custom metadata for supported custom
+Apprise notification URLs; ordinary notifications and the API-token screen do
+not display it. It is not part of this normal smoke test.
 
 Typical failures are direct: 401 means the token is wrong or revoked; 403
 means the dedicated user lacks the necessary household access; and connection
