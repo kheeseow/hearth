@@ -57,6 +57,11 @@ rewrite Mealie's platform or erase its repository history.
   additive and does not alter Recipe persistence.
 - Phase 2 and Phase 3 are complete. Phase 5 product polish, capability
   isolation, operator guidance, and upstream checkpoint are complete.
+- Product Slice 14 is complete locally: Hermes uses the authenticated Guide
+  REST contract through its standalone plugin, with a dedicated operator guide
+  and contract coverage for Guide reads, writes, and image uploads. Live
+  activation remains pending a reachable `HEARTH_URL` and dedicated
+  `HEARTH_TOKEN` on the Hermes host.
 - QR codes are deferred to the final optional phase and do not block the first
   complete Hearth release.
 
@@ -1510,13 +1515,20 @@ Record material decisions here as they are made.
 | 2026-08-28 | Make Guide library state URL-addressable | Preserve search and filters across refresh and sharing without changing the Guide API or router shape |
 | 2026-08-29 | Move QR codes to the final optional phase | The core household Guide product and first release do not depend on QR access; compatibility and release readiness provide more immediate value |
 | 2026-08-29 | Reuse Mealie's notifier system for Guide events | Additive event types and preferences keep integrations working without a parallel notification architecture |
+| 2026-08-30 | Use a standalone Hermes plugin over the authenticated Guide REST API | One known consumer can reuse Hearth validation, household scoping, media handling, and event attribution without a second server or database |
+| 2026-08-30 | Use a dedicated Hearth user and token for Hermes | Hearth has no per-token scopes; the token inherits the user's household and permissions, so the user is the least-privilege boundary |
 
 ## Immediate next action
 
-Do not begin another implementation slice until it is approved. The next slice
-should define and implement Hearth's authenticated Hermes interface before
-release: use the existing Guide REST API and a small Hermes-native integration
-unless discovery proves MCP adds a concrete benefit. Confirm read-only versus
-write access before implementation. Phase 6 then performs the complete upgrade
-and release-hardening matrix. QR codes remain the final optional Phase 8
-enhancement and do not block the core release.
+Slice 14 is complete locally after focused verification: the Hearth OpenAPI
+contract and Guide backend suite passed 19 tests; the focused lint and Python
+type check passed; and the Hermes plugin, plugin-loading, and configuration
+checks passed 31 tests. No live activation or remote smoke test has run.
+
+The next action is operational, not another local code change: provide a
+dedicated user's `HEARTH_TOKEN` and a `HEARTH_URL` reachable from the Hermes
+gateway, then follow `docs/hermes-integration.md` for a backup, gateway
+recreate, and smoke test. Keep Residence and its isolated worker out of that
+activation. Phase 6 then performs the complete upgrade and release-hardening
+matrix. QR codes remain the final optional Phase 8 enhancement and do not
+block the core release.
