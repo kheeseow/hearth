@@ -4,7 +4,7 @@
 
 **Goal:** Publish Hearth's production image and deploy a persistent, browser-accessible Hearth stack to Andrew's NAS without disturbing Olympus or Hermes.
 
-**Architecture:** Build an AMD64 image from `hearth-main` in the public Hearth repository. Deploy it through a manual workflow in the private Hermes deployment repository, using that repository's existing NAS/Tailscale credentials and an isolated Compose project attached to `meg_net`.
+**Architecture:** Hearth owns its AMD64 image build, NAS Compose file, deployment workflow, and credentials. The Hearth workflow connects to the NAS, updates a dedicated Hearth checkout through Git, and starts the matching immutable image on Hearth's own Docker network.
 
 **Tech Stack:** Docker Buildx, GitHub Container Registry, GitHub Actions, Docker Compose, Synology NAS, SQLite.
 
@@ -31,25 +31,25 @@
 - [ ] Validate the workflow and push `hearth-main`.
 - [ ] Wait for the image build and verify the published image digest.
 
-### Task 2: Add the isolated NAS stack
+### Task 2: Add the isolated NAS stack inside Hearth
 
 **Files:**
-- Create: `/Users/andrewtay/Engineering/meg-hermes-deploy/integrations/hearth/docker-compose.nas.yml`
-- Create: `/Users/andrewtay/Engineering/meg-hermes-deploy/.github/workflows/deploy-hearth.yml`
+- Create: `deploy/nas/compose.yml`
+- Create: `.github/workflows/deploy-nas.yml`
 
-- [ ] Define the `hearth` service with port `9091:9000`, persistent `./data`, SQLite, the production health check, and external `meg_net`.
-- [ ] Add a manual workflow that backs up/stages the Compose file, refuses a conflicting port, pulls an explicit image tag, starts only Hearth, and verifies health.
-- [ ] Validate both YAML files and commit them without touching unrelated Hermes test edits.
+- [ ] Define the `hearth` service with port `9091:9000`, persistent Hearth-owned data, SQLite, and the production health check.
+- [ ] Add a manual Hearth workflow that refuses a conflicting port, pulls the requested Hearth commit with Git, starts its matching image, and verifies health.
+- [ ] Validate both YAML files and commit them only in Hearth.
 
 ### Task 3: Deploy and verify
 
-- [ ] Push the private deployment commit and run the manual Hearth workflow with the immutable image tag.
+- [ ] Push the Hearth deployment commit and run its manual workflow with that full commit SHA.
 - [ ] Verify the container health, `/api/app/about`, expected port mapping, data mount, network membership, and absence of changes to Hermes/Residence/Olympus.
 - [ ] Open `http://jollyroger.lowpew.com:9091` and complete the first administrator password change.
 - [ ] Record the live image digest and backup location.
 
-### Task 4: Activate Hermes after token creation
+### Task 4: Configure clients separately after token creation
 
 - [ ] Create a dedicated Hearth user and API token without exposing it in logs or chat.
-- [ ] Follow `docs/hermes-integration.md` to back up and update the live main Hermes profile.
-- [ ] Recreate only the main Hermes gateway and run read, batch-create, update, image, and confirmation-gated delete smoke tests.
+- [ ] Configure any client only in that client's own repository or runtime.
+- [ ] Keep Hearth deployment ownership entirely within Hearth.

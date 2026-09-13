@@ -1,0 +1,18 @@
+name: hearth
+
+services:
+  hearth:
+    image: ${HEARTH_IMAGE:?HEARTH_IMAGE must identify an immutable Hearth image}
+    container_name: hearth
+    restart: unless-stopped
+    ports:
+      - "9091:9000"
+    volumes:
+      - ${HEARTH_DATA_DIR:-/volume2/docker/hearth/data}:/app/data
+    environment:
+      ALLOW_SIGNUP: "false"
+      BASE_URL: ${HEARTH_BASE_URL:-http://jollyroger.lowpew.com:9091}
+      DB_ENGINE: sqlite
+      HEARTH_LEGACY_FEATURES: "false"
+      LOG_LEVEL: info
+      TZ: Asia/Kuala_Lumpur

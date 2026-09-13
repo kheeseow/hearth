@@ -1,0 +1,161 @@
+name: Deploy Hearth to NAS
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Full Hearth commit SHA whose nas-<SHA> image should be deployed
+        required: true
+        type: string
+
+concurrency:
+  group: hearth-nas-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Hearth
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.commit_sha }}
+
+      - name: Validate requested commit
+        env:
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+        run: |
+          set -eu
+          if ! printf '%s' "$COMMIT_SHA" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "commit_sha must be a full 40-character lowercase Git SHA"
+            exit 1
+          fi
+          test "$(git rev-parse HEAD)" = "$COMMIT_SHA"
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          version: latest
+
+      - name: Set up Hearth SSH key
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.NAS_SSH_PRIVATE_KEY }}
+
+      - name: Trust the NAS host key
+        env:
+          NAS_HOST: ${{ secrets.NAS_HOST }}
+          NAS_SSH_PORT: ${{ secrets.NAS_SSH_PORT }}
+        run: |
+          set -eu
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          for attempt in $(seq 1 12); do
+            if ssh-keyscan -T 10 -p "$NAS_SSH_PORT" -H "$NAS_HOST" >> ~/.ssh/known_hosts; then
+              chmod 600 ~/.ssh/known_hosts
+              exit 0
+            fi
+            echo "NAS host-key scan failed; retry $attempt/12"
+            sleep 5
+          done
+          exit 1
+
+      - name: Pull Hearth from Git and deploy its image
+        env:
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+          NAS_HOST: ${{ secrets.NAS_HOST }}
+          NAS_SSH_PORT: ${{ secrets.NAS_SSH_PORT }}
+          NAS_USER: ${{ secrets.NAS_USER }}
+        run: |
+          set -eu
+          ssh -p "$NAS_SSH_PORT" "$NAS_USER@$NAS_HOST" \
+            "COMMIT_SHA='$COMMIT_SHA' sh -s" <<'REMOTE'
+          set -eu
+
+          case "$COMMIT_SHA" in
+            ''|*[!0-9a-f]* ) echo "invalid commit SHA"; exit 1 ;;
+          esac
+          test "${#COMMIT_SHA}" -eq 40
+
+          docker_bin=/var/packages/ContainerManager/target/usr/bin/docker
+          docker="sudo -n $docker_bin"
+          hearth_root=/volume2/docker/hearth
+          repo_dir=$hearth_root/repo
+          data_dir=$hearth_root/data
+          backup_root=$hearth_root/.backups
+          image="ghcr.io/kheeseow/hearth:nas-$COMMIT_SHA"
+
+          $docker_bin compose version >/dev/null
+          $docker ps >/dev/null
+          mkdir -p "$repo_dir" "$data_dir" "$backup_root"
+
+          if ! $docker inspect hearth >/dev/null 2>&1; then
+            if netstat -ltn 2>/dev/null | awk '{print $4}' | grep -Eq '(^|:)9091$'; then
+              echo "NAS port 9091 is already used by a non-Hearth service"
+              exit 1
+            fi
+          fi
+
+          git_image=alpine/git:latest
+          uid=$(id -u)
+          gid=$(id -g)
+          if [ -d "$repo_dir/.git" ]; then
+            $docker run --rm --user "$uid:$gid" -v "$repo_dir:/repo" \
+              "$git_image" -C /repo fetch --depth=1 origin "$COMMIT_SHA"
+          else
+            if [ -n "$(find "$repo_dir" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
+              echo "$repo_dir exists but is not an empty Git checkout"
+              exit 1
+            fi
+            $docker run --rm --user "$uid:$gid" -v "$hearth_root:/work" \
+              "$git_image" clone --no-checkout https://github.com/kheeseow/hearth.git /work/repo
+            $docker run --rm --user "$uid:$gid" -v "$repo_dir:/repo" \
+              "$git_image" -C /repo fetch --depth=1 origin "$COMMIT_SHA"
+          fi
+          $docker run --rm --user "$uid:$gid" -v "$repo_dir:/repo" \
+            "$git_image" -C /repo checkout --detach --force "$COMMIT_SHA"
+          deployed_sha=$($docker run --rm --user "$uid:$gid" -v "$repo_dir:/repo" \
+            "$git_image" -C /repo rev-parse HEAD)
+          test "$deployed_sha" = "$COMMIT_SHA"
+
+          compose_file=$repo_dir/deploy/nas/compose.yml
+          test -f "$compose_file"
+          timestamp=$(date -u +%Y%m%dT%H%M%SZ)
+          backup_dir=$backup_root/$timestamp
+          mkdir -p "$backup_dir"
+          if [ -f "$hearth_root/deployed-sha" ]; then
+            cp -p "$hearth_root/deployed-sha" "$backup_dir/deployed-sha"
+          fi
+
+          HEARTH_IMAGE="$image" HEARTH_DATA_DIR="$data_dir" \
+            $docker compose -p hearth -f "$compose_file" config >/dev/null
+          HEARTH_IMAGE="$image" HEARTH_DATA_DIR="$data_dir" \
+            $docker compose -p hearth -f "$compose_file" pull hearth
+          HEARTH_IMAGE="$image" HEARTH_DATA_DIR="$data_dir" \
+            $docker compose -p hearth -f "$compose_file" up -d --no-deps hearth
+
+          for attempt in $(seq 1 36); do
+            health=$($docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' hearth)
+            if [ "$health" = healthy ]; then
+              break
+            fi
+            if [ "$health" = unhealthy ] || [ "$health" = exited ] || [ "$attempt" -eq 36 ]; then
+              $docker logs --tail 160 hearth
+              echo "Hearth failed its health check: $health"
+              exit 1
+            fi
+            sleep 5
+          done
+
+          curl -fsS http://127.0.0.1:9091/api/app/about >/dev/null
+          printf '%s\n' "$COMMIT_SHA" > "$hearth_root/deployed-sha"
+          $docker inspect --format 'image={{.Config.Image}} id={{.Image}} status={{.State.Status}} health={{.State.Health.Status}}' hearth
+          echo "commit=$deployed_sha"
+          echo "backup=$backup_dir"
+          REMOTE
