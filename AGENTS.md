@@ -1,5 +1,13 @@
 # Mealie Development Guide for AI Agents
 
+## Repository Isolation (Executive Rule)
+
+- Hearth is an independent application and repository.
+- All Hearth source, configuration, credentials, Compose files, deployment workflows, API/MCP implementation, and tests must remain in the Hearth repository.
+- Never place Hearth-owned files or automation in Hermes or any other repository without Andrew's explicit prior approval for that exact cross-repository change.
+- Other applications may communicate with Hearth only through a documented external API or MCP boundary. Their repositories and deployment systems remain separate.
+- If Hearth needs credentials that exist only in another repository, stop and ask Andrew to provision those credentials directly in Hearth. Never route Hearth deployment through the other repository for convenience.
+
 ## Project Overview
 
 Mealie is a self-hosted recipe manager, meal planner, and shopping list application with a FastAPI backend (Python 3.12) and Nuxt 4 frontend (Vue 3 + TypeScript). It uses SQLAlchemy ORM with support for SQLite and PostgreSQL databases.
